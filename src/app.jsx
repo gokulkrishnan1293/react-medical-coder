@@ -588,26 +588,44 @@ function Notepad({ np, setNp, innerRef, ghost, setSnap, narrow, count, children,
     el.addEventListener('pointerup', up);
     el.addEventListener('pointercancel', up);
   };
-  const resize = (e) => {
+  const resize = (dir) => (e) => {
     e.preventDefault();
     e.stopPropagation();
     const el = e.currentTarget;
     el.setPointerCapture(e.pointerId);
-    const sx = e.clientX, sy = e.clientY, ow = np.w, oh = np.h;
+    const sx = e.clientX, sy = e.clientY, o = { x: np.x, y: np.y, w: np.w, h: np.h };
+    const MW = 290, MH = 240;
+    document.body.classList.add('resizing');
     const mv = (ev) => {
-      setNp((n) => ({
-        ...n,
-        w: clamp(ow + ev.clientX - sx, 290, window.innerWidth - n.x - 4),
-        h: clamp(oh + ev.clientY - sy, 240, window.innerHeight - n.y - 4),
-      }));
+      const dx = ev.clientX - sx, dy = ev.clientY - sy;
+      const r = { ...o };
+      if (dir.includes('e')) r.w = clamp(o.w + dx, MW, window.innerWidth - o.x - 4);
+      if (dir.includes('s')) r.h = clamp(o.h + dy, MH, window.innerHeight - o.y - 4);
+      if (dir.includes('w')) { const w = clamp(o.w - dx, MW, o.x + o.w - 4); r.x = o.x + o.w - w; r.w = w; }
+      if (dir.includes('n')) { const h = clamp(o.h - dy, MH, o.y + o.h - 4); r.y = o.y + o.h - h; r.h = h; }
+      setNp((n) => ({ ...n, ...r }));
     };
-    const up = () => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); };
+    const up = () => {
+      document.body.classList.remove('resizing');
+      el.removeEventListener('pointermove', mv);
+      el.removeEventListener('pointerup', up);
+      el.removeEventListener('pointercancel', up);
+    };
     el.addEventListener('pointermove', mv);
     el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+  };
+  const toggleTall = (e) => {
+    if (e.target.closest('button')) return;
+    setNp((n) => {
+      if (n.prev) return { ...n, ...n.prev, prev: null };
+      const top = 8, h = window.innerHeight - 16;
+      return { ...n, prev: { x: n.x, y: n.y, w: n.w, h: n.h }, y: top, h, w: Math.max(n.w, Math.min(460, window.innerWidth - 16)), x: clamp(n.x, 4, window.innerWidth - Math.max(n.w, Math.min(460, window.innerWidth - 16)) - 4) };
+    });
   };
   return (
     <div ref={innerRef} className={cls('np', ghost && 'ghost')} style={{ left: np.x, top: np.y, width: np.w, height: np.h }} onMouseEnter={() => setNpHover(true)} onMouseLeave={() => setNpHover(false)} role="region" aria-label="Notepad">
-      <div className="np-head" onPointerDown={drag}>
+      <div className="np-head" onPointerDown={drag} onDoubleClick={toggleTall} title="Drag to move · double-click to fit to screen height">
         <span className="grip"><Ic.grip size={14} /></span>
         <span className="np-title">Notepad</span>
         <span className="badge">{count}</span>
@@ -618,7 +636,9 @@ function Notepad({ np, setNp, innerRef, ghost, setSnap, narrow, count, children,
         <button className="ib sm" title="Close" aria-label="Close notepad" onClick={onClose}><Ic.close size={14} /></button>
       </div>
       {children}
-      <div className="np-rz" onPointerDown={resize} aria-hidden="true" />
+      {['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].map((d) => (
+        <div key={d} className={'np-rz rz-' + d} onPointerDown={resize(d)} aria-hidden="true" />
+      ))}
     </div>
   );
 }
@@ -1050,6 +1070,18 @@ function App() {
   const minimize = () => setNp((n) => ({ ...n, mode: 'min', lastMode: keepLast(n) }));
   const closeNp = () => setNp((n) => ({ ...n, mode: 'closed', lastMode: keepLast(n) }));
   const toggleNp = () => setNp((n) => ({ ...n, mode: n.mode === 'float' || n.mode === 'dock' ? 'min' : n.lastMode || 'float', lastMode: n.mode === 'float' || n.mode === 'dock' ? n.mode : n.lastMode }));
+  const railResize = (e) => {
+    e.preventDefault();
+    const el = e.currentTarget;
+    el.setPointerCapture(e.pointerId);
+    const sx = e.clientX, ow = np.railW || 360;
+    document.body.classList.add('resizing', 'ew');
+    const mv = (ev) => setNp((n) => ({ ...n, railW: clamp(ow - (ev.clientX - sx), 280, Math.min(720, window.innerWidth - 380)) }));
+    const up = () => { document.body.classList.remove('resizing', 'ew'); el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+    el.addEventListener('pointermove', mv);
+    el.addEventListener('pointerup', up);
+    el.addEventListener('pointercancel', up);
+  };
   const openFull = (t = 'findings') => { setFull(t); setSeen((x) => ({ ...x, full: true })); setCard(null); };
 
   const step = (d) => {
@@ -1216,7 +1248,8 @@ function App() {
           <Minimap scrollerRef={scrollerRef} ordered={ordered} onJump={(id) => jumpTo(id)} activeId={activeId} />
         </div>
         {docked && (
-          <aside ref={railRef} className={cls('rail', np.railCollapsed && 'collapsed')} aria-label="Notes">
+          <aside ref={railRef} className={cls('rail', np.railCollapsed && 'collapsed')} style={!np.railCollapsed && !narrow ? { width: np.railW || 360 } : undefined} aria-label="Notes">
+            {!np.railCollapsed && !narrow && <div className="rail-rz" onPointerDown={railResize} onDoubleClick={() => setNp((n) => ({ ...n, railW: 360 }))} title="Drag to resize · double-click to reset" aria-hidden="true" />}
             {np.railCollapsed ? (
               <button className="rail-tab" onClick={() => setNp((n) => ({ ...n, railCollapsed: false }))} aria-label="Expand notes">
                 <Ic.left size={15} />

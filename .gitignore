@@ -3,3 +3,4 @@ build/*.png
 build/preview.html
 build/app.js
 shot.js
+rz.js

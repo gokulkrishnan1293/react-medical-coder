@@ -169,7 +169,27 @@ button { font: inherit; color: inherit; }
 .rail-head { cursor: default; }
 .grip { color: var(--ink-3); display: grid; }
 .np-title { font-weight: 700; font-size: 13px; }
-.np-rz { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 55%, var(--ink-3) 55%, var(--ink-3) 62%, transparent 62%, transparent 72%, var(--ink-3) 72%, var(--ink-3) 79%, transparent 79%); opacity: .6; }
+.np-rz { position: absolute; z-index: 2; touch-action: none; }
+.rz-n, .rz-s { left: 12px; right: 12px; height: 8px; cursor: ns-resize; }
+.rz-n { top: -3px; } .rz-s { bottom: -3px; }
+.rz-e, .rz-w { top: 12px; bottom: 12px; width: 8px; cursor: ew-resize; }
+.rz-e { right: -3px; } .rz-w { left: -3px; }
+.rz-ne, .rz-nw, .rz-se, .rz-sw { width: 16px; height: 16px; }
+.rz-ne { top: -3px; right: -3px; cursor: nesw-resize; } .rz-sw { bottom: -3px; left: -3px; cursor: nesw-resize; }
+.rz-nw { top: -3px; left: -3px; cursor: nwse-resize; }
+.rz-se { bottom: 0; right: 0; width: 18px; height: 18px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--ink-3) 50%, var(--ink-3) 57%, transparent 57%, transparent 68%, var(--ink-3) 68%, var(--ink-3) 75%, transparent 75%); opacity: .7; }
+.np:hover .rz-se { opacity: 1; }
+.rz-e:hover, .rz-w:hover { background: linear-gradient(90deg, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
+.rz-n:hover, .rz-s:hover { background: linear-gradient(180deg, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
+.np { overflow: visible; }
+.np > .np-head { border-radius: 12px 12px 0 0; }
+.np > .nb { overflow: hidden; border-radius: 0 0 12px 12px; }
+body.resizing { user-select: none; cursor: nwse-resize; }
+body.resizing.ew { cursor: ew-resize; }
+body.resizing .np { transition: none; }
+.rail { position: relative; }
+.rail-rz { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 3; touch-action: none; }
+.rail-rz:hover, body.resizing.ew .rail-rz { background: linear-gradient(90deg, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
 .catch { animation: catch .45s ease-out; }
 @keyframes catch { 0% { transform: scale(1); } 40% { transform: scale(1.025); } 100% { transform: scale(1); } }
 .rail { width: 360px; flex: none; display: flex; flex-direction: column; min-height: 0; background: var(--chrome); border-left: 1px solid var(--line); }

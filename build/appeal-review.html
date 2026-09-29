@@ -174,7 +174,27 @@ button { font: inherit; color: inherit; }
 .rail-head { cursor: default; }
 .grip { color: var(--ink-3); display: grid; }
 .np-title { font-weight: 700; font-size: 13px; }
-.np-rz { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 55%, var(--ink-3) 55%, var(--ink-3) 62%, transparent 62%, transparent 72%, var(--ink-3) 72%, var(--ink-3) 79%, transparent 79%); opacity: .6; }
+.np-rz { position: absolute; z-index: 2; touch-action: none; }
+.rz-n, .rz-s { left: 12px; right: 12px; height: 8px; cursor: ns-resize; }
+.rz-n { top: -3px; } .rz-s { bottom: -3px; }
+.rz-e, .rz-w { top: 12px; bottom: 12px; width: 8px; cursor: ew-resize; }
+.rz-e { right: -3px; } .rz-w { left: -3px; }
+.rz-ne, .rz-nw, .rz-se, .rz-sw { width: 16px; height: 16px; }
+.rz-ne { top: -3px; right: -3px; cursor: nesw-resize; } .rz-sw { bottom: -3px; left: -3px; cursor: nesw-resize; }
+.rz-nw { top: -3px; left: -3px; cursor: nwse-resize; }
+.rz-se { bottom: 0; right: 0; width: 18px; height: 18px; cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--ink-3) 50%, var(--ink-3) 57%, transparent 57%, transparent 68%, var(--ink-3) 68%, var(--ink-3) 75%, transparent 75%); opacity: .7; }
+.np:hover .rz-se { opacity: 1; }
+.rz-e:hover, .rz-w:hover { background: linear-gradient(90deg, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
+.rz-n:hover, .rz-s:hover { background: linear-gradient(180deg, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
+.np { overflow: visible; }
+.np > .np-head { border-radius: 12px 12px 0 0; }
+.np > .nb { overflow: hidden; border-radius: 0 0 12px 12px; }
+body.resizing { user-select: none; cursor: nwse-resize; }
+body.resizing.ew { cursor: ew-resize; }
+body.resizing .np { transition: none; }
+.rail { position: relative; }
+.rail-rz { position: absolute; left: -4px; top: 0; bottom: 0; width: 8px; cursor: ew-resize; z-index: 3; touch-action: none; }
+.rail-rz:hover, body.resizing.ew .rail-rz { background: linear-gradient(90deg, transparent 3px, var(--accent) 3px, var(--accent) 5px, transparent 5px); }
 .catch { animation: catch .45s ease-out; }
 @keyframes catch { 0% { transform: scale(1); } 40% { transform: scale(1.025); } 100% { transform: scale(1); } }
 .rail { width: 360px; flex: none; display: flex; flex-direction: column; min-height: 0; background: var(--chrome); border-left: 1px solid var(--line); }
@@ -930,22 +950,35 @@ button { font: inherit; color: inherit; }
         el.removeEventListener("pointermove", mv), el.removeEventListener("pointerup", up), el.removeEventListener("pointercancel", up), setSnap(!1), near && onDock();
       };
       el.addEventListener("pointermove", mv), el.addEventListener("pointerup", up), el.addEventListener("pointercancel", up);
-    }, resize = (e) => {
+    }, resize = (dir) => (e) => {
       e.preventDefault(), e.stopPropagation();
       let el = e.currentTarget;
       el.setPointerCapture(e.pointerId);
-      let sx = e.clientX, sy = e.clientY, ow = np.w, oh = np.h, mv = (ev) => {
-        setNp((n) => ({
-          ...n,
-          w: clamp(ow + ev.clientX - sx, 290, window.innerWidth - n.x - 4),
-          h: clamp(oh + ev.clientY - sy, 240, window.innerHeight - n.y - 4)
-        }));
+      let sx = e.clientX, sy = e.clientY, o = { x: np.x, y: np.y, w: np.w, h: np.h }, MW = 290, MH = 240;
+      document.body.classList.add("resizing");
+      let mv = (ev) => {
+        let dx = ev.clientX - sx, dy = ev.clientY - sy, r = { ...o };
+        if (dir.includes("e") && (r.w = clamp(o.w + dx, MW, window.innerWidth - o.x - 4)), dir.includes("s") && (r.h = clamp(o.h + dy, MH, window.innerHeight - o.y - 4)), dir.includes("w")) {
+          let w = clamp(o.w - dx, MW, o.x + o.w - 4);
+          r.x = o.x + o.w - w, r.w = w;
+        }
+        if (dir.includes("n")) {
+          let h = clamp(o.h - dy, MH, o.y + o.h - 4);
+          r.y = o.y + o.h - h, r.h = h;
+        }
+        setNp((n) => ({ ...n, ...r }));
       }, up = () => {
-        el.removeEventListener("pointermove", mv), el.removeEventListener("pointerup", up);
+        document.body.classList.remove("resizing"), el.removeEventListener("pointermove", mv), el.removeEventListener("pointerup", up), el.removeEventListener("pointercancel", up);
       };
-      el.addEventListener("pointermove", mv), el.addEventListener("pointerup", up);
+      el.addEventListener("pointermove", mv), el.addEventListener("pointerup", up), el.addEventListener("pointercancel", up);
+    }, toggleTall = (e) => {
+      e.target.closest("button") || setNp((n) => {
+        if (n.prev) return { ...n, ...n.prev, prev: null };
+        let top = 8, h = window.innerHeight - 16;
+        return { ...n, prev: { x: n.x, y: n.y, w: n.w, h: n.h }, y: top, h, w: Math.max(n.w, Math.min(460, window.innerWidth - 16)), x: clamp(n.x, 4, window.innerWidth - Math.max(n.w, Math.min(460, window.innerWidth - 16)) - 4) };
+      });
     };
-    return /* @__PURE__ */ React.createElement("div", { ref: innerRef, className: cls("np", ghost && "ghost"), style: { left: np.x, top: np.y, width: np.w, height: np.h }, onMouseEnter: () => setNpHover(!0), onMouseLeave: () => setNpHover(!1), role: "region", "aria-label": "Notepad" }, /* @__PURE__ */ React.createElement("div", { className: "np-head", onPointerDown: drag }, /* @__PURE__ */ React.createElement("span", { className: "grip" }, /* @__PURE__ */ React.createElement(Ic.grip, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "np-title" }, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, count), /* @__PURE__ */ React.createElement("span", { className: "sp" }), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Full notes (F)", "aria-label": "Full notes", onClick: onFull }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 })), !narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Dock to the right (D)", "aria-label": "Dock", onClick: onDock }, /* @__PURE__ */ React.createElement(Ic.dock, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Minimize (N)", "aria-label": "Minimize", onClick: onMin }, /* @__PURE__ */ React.createElement(Ic.min, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Close", "aria-label": "Close notepad", onClick: onClose }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), children, /* @__PURE__ */ React.createElement("div", { className: "np-rz", onPointerDown: resize, "aria-hidden": "true" }));
+    return /* @__PURE__ */ React.createElement("div", { ref: innerRef, className: cls("np", ghost && "ghost"), style: { left: np.x, top: np.y, width: np.w, height: np.h }, onMouseEnter: () => setNpHover(!0), onMouseLeave: () => setNpHover(!1), role: "region", "aria-label": "Notepad" }, /* @__PURE__ */ React.createElement("div", { className: "np-head", onPointerDown: drag, onDoubleClick: toggleTall, title: "Drag to move \xB7 double-click to fit to screen height" }, /* @__PURE__ */ React.createElement("span", { className: "grip" }, /* @__PURE__ */ React.createElement(Ic.grip, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "np-title" }, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, count), /* @__PURE__ */ React.createElement("span", { className: "sp" }), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Full notes (F)", "aria-label": "Full notes", onClick: onFull }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 })), !narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Dock to the right (D)", "aria-label": "Dock", onClick: onDock }, /* @__PURE__ */ React.createElement(Ic.dock, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Minimize (N)", "aria-label": "Minimize", onClick: onMin }, /* @__PURE__ */ React.createElement(Ic.min, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Close", "aria-label": "Close notepad", onClick: onClose }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), children, ["n", "s", "e", "w", "ne", "nw", "se", "sw"].map((d) => /* @__PURE__ */ React.createElement("div", { key: d, className: "np-rz rz-" + d, onPointerDown: resize(d), "aria-hidden": "true" })));
   }
   function buildLetter(ordered, s) {
     let live = ordered.filter((f) => isLive(f) && !f.outsideDos), ev = (el) => live.filter((f) => f.mdm && f.mdm.el === el), cite = (f) => `${f.mdm.label}: \u201C${f.text}\u201D (p. ${f.page})`, out = [];
@@ -1128,7 +1161,17 @@ On behalf of ${CASE.provider}` }), out;
       commit([...findings, f], `Added ${f.code || mdmTag(f) || "note"} to notes`), fly(from, tagOf(f) || "NOTE", notesTarget()), window.getSelection() && window.getSelection().removeAllRanges(), setSel(null), setCompose(null), setActiveId(id), setFlashId(id), setTimeout(() => setFlashId((x) => x === id ? null : x), 1800);
     }, dock = () => {
       setNp((n) => ({ ...n, mode: "dock", railCollapsed: !1 })), setSeen((x) => ({ ...x, dock: !0 }));
-    }, float = () => setNp((n) => ({ ...n, mode: "float", ...narrow ? {} : { x: clamp(n.x, 4, window.innerWidth - n.w - 40) } })), keepLast = (n) => n.mode === "float" || n.mode === "dock" ? n.mode : n.lastMode, minimize = () => setNp((n) => ({ ...n, mode: "min", lastMode: keepLast(n) })), closeNp = () => setNp((n) => ({ ...n, mode: "closed", lastMode: keepLast(n) })), toggleNp = () => setNp((n) => ({ ...n, mode: n.mode === "float" || n.mode === "dock" ? "min" : n.lastMode || "float", lastMode: n.mode === "float" || n.mode === "dock" ? n.mode : n.lastMode })), openFull = (t = "findings") => {
+    }, float = () => setNp((n) => ({ ...n, mode: "float", ...narrow ? {} : { x: clamp(n.x, 4, window.innerWidth - n.w - 40) } })), keepLast = (n) => n.mode === "float" || n.mode === "dock" ? n.mode : n.lastMode, minimize = () => setNp((n) => ({ ...n, mode: "min", lastMode: keepLast(n) })), closeNp = () => setNp((n) => ({ ...n, mode: "closed", lastMode: keepLast(n) })), toggleNp = () => setNp((n) => ({ ...n, mode: n.mode === "float" || n.mode === "dock" ? "min" : n.lastMode || "float", lastMode: n.mode === "float" || n.mode === "dock" ? n.mode : n.lastMode })), railResize = (e) => {
+      e.preventDefault();
+      let el = e.currentTarget;
+      el.setPointerCapture(e.pointerId);
+      let sx = e.clientX, ow = np.railW || 360;
+      document.body.classList.add("resizing", "ew");
+      let mv = (ev) => setNp((n) => ({ ...n, railW: clamp(ow - (ev.clientX - sx), 280, Math.min(720, window.innerWidth - 380)) })), up = () => {
+        document.body.classList.remove("resizing", "ew"), el.removeEventListener("pointermove", mv), el.removeEventListener("pointerup", up), el.removeEventListener("pointercancel", up);
+      };
+      el.addEventListener("pointermove", mv), el.addEventListener("pointerup", up), el.addEventListener("pointercancel", up);
+    }, openFull = (t = "findings") => {
       setFull(t), setSeen((x) => ({ ...x, full: !0 })), setCard(null);
     }, step = (d) => {
       if (!ordered.length) return;
@@ -1245,7 +1288,7 @@ On behalf of ${CASE.provider}` }), out;
     } }, /* @__PURE__ */ React.createElement("div", { className: "pages" }, PAGES.map((p) => {
       let off = p.dos !== CASE.dos;
       return /* @__PURE__ */ React.createElement("section", { key: p.n, id: "page-" + p.n, "data-page": p.n, className: cls("page", off && "offdos", off && view.dos && "dim"), "aria-label": `Page ${p.n}` }, off && /* @__PURE__ */ React.createElement("div", { className: "dos-banner" }, /* @__PURE__ */ React.createElement(Ic.alert, { size: 13 }), "Different visit \xB7 DOS ", p.dos, ". Findings here don't count for the ", CASE.dos, " claim."), /* @__PURE__ */ React.createElement("div", { className: "page-body" }, p.blocks.map((b) => /* @__PURE__ */ React.createElement(Block, { key: b.id, b, fs: byBlock[b.id] || [], hotId: hoverId, activeId, flashId, onEnter: onEvEnter, onLeave: onEvLeave, onClickEv: onEvClick }))), /* @__PURE__ */ React.createElement("div", { className: "page-foot" }, /* @__PURE__ */ React.createElement("span", null, "Printed from EHR 03/19/2026 09:14 \xB7 Riverbend IMA"), /* @__PURE__ */ React.createElement("span", null, "Page ", p.n, " of ", PAGES.length)));
-    }))), /* @__PURE__ */ React.createElement("div", { className: "pagepill" }, "Page ", cur, " of ", PAGES.length), /* @__PURE__ */ React.createElement(Minimap, { scrollerRef, ordered, onJump: (id) => jumpTo(id), activeId })), docked && /* @__PURE__ */ React.createElement("aside", { ref: railRef, className: cls("rail", np.railCollapsed && "collapsed"), "aria-label": "Notes" }, np.railCollapsed ? /* @__PURE__ */ React.createElement("button", { className: "rail-tab", onClick: () => setNp((n) => ({ ...n, railCollapsed: !1 })), "aria-label": "Expand notes" }, /* @__PURE__ */ React.createElement(Ic.left, { size: 15 }), /* @__PURE__ */ React.createElement("span", { className: "vert" }, "Notes"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length)) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "np-head rail-head" }, /* @__PURE__ */ React.createElement("span", { className: "np-title" }, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length), /* @__PURE__ */ React.createElement("span", { className: "sp" }), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Full notes (F)", "aria-label": "Full notes", onClick: () => openFull("findings") }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Float (D)", "aria-label": "Float notepad", onClick: float }, /* @__PURE__ */ React.createElement(Ic.float, { size: 14 })), !narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Collapse", "aria-label": "Collapse notes", onClick: () => setNp((n) => ({ ...n, railCollapsed: !0 })) }, /* @__PURE__ */ React.createElement(Ic.right, { size: 14 })), narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Close", "aria-label": "Close", onClick: minimize }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), notesBody))), np.mode === "float" && /* @__PURE__ */ React.createElement(
+    }))), /* @__PURE__ */ React.createElement("div", { className: "pagepill" }, "Page ", cur, " of ", PAGES.length), /* @__PURE__ */ React.createElement(Minimap, { scrollerRef, ordered, onJump: (id) => jumpTo(id), activeId })), docked && /* @__PURE__ */ React.createElement("aside", { ref: railRef, className: cls("rail", np.railCollapsed && "collapsed"), style: !np.railCollapsed && !narrow ? { width: np.railW || 360 } : void 0, "aria-label": "Notes" }, !np.railCollapsed && !narrow && /* @__PURE__ */ React.createElement("div", { className: "rail-rz", onPointerDown: railResize, onDoubleClick: () => setNp((n) => ({ ...n, railW: 360 })), title: "Drag to resize \xB7 double-click to reset", "aria-hidden": "true" }), np.railCollapsed ? /* @__PURE__ */ React.createElement("button", { className: "rail-tab", onClick: () => setNp((n) => ({ ...n, railCollapsed: !1 })), "aria-label": "Expand notes" }, /* @__PURE__ */ React.createElement(Ic.left, { size: 15 }), /* @__PURE__ */ React.createElement("span", { className: "vert" }, "Notes"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length)) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "np-head rail-head" }, /* @__PURE__ */ React.createElement("span", { className: "np-title" }, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length), /* @__PURE__ */ React.createElement("span", { className: "sp" }), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Full notes (F)", "aria-label": "Full notes", onClick: () => openFull("findings") }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Float (D)", "aria-label": "Float notepad", onClick: float }, /* @__PURE__ */ React.createElement(Ic.float, { size: 14 })), !narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Collapse", "aria-label": "Collapse notes", onClick: () => setNp((n) => ({ ...n, railCollapsed: !0 })) }, /* @__PURE__ */ React.createElement(Ic.right, { size: 14 })), narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Close", "aria-label": "Close", onClick: minimize }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), notesBody))), np.mode === "float" && /* @__PURE__ */ React.createElement(
       Notepad,
       {
         np,
