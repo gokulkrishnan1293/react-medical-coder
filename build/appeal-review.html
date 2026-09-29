@@ -1,0 +1,1299 @@
+<title>Appeal Review Workbench</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: document-first canvas. Record fills the stage; notepad floats or docks right; minimap rail on the scroll edge. */
+:root {
+  --desk: #DDE3E8;
+  --paper: #FFFFFD;
+  --chrome: #F4F6F8;
+  --chrome-2: #E9EDF1;
+  --ink: #17222D;
+  --ink-2: #485664;
+  --ink-3: #7C8997;
+  --ink-faint: rgba(23, 34, 45, 0.22);
+  --line: #CDD5DC;
+  --accent: #0A6B74;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #D3EBED;
+  --ai: #2C62D4;
+  --ai-fill: rgba(44, 98, 212, 0.09);
+  --ok: #1B8047;
+  --ok-fill: rgba(27, 128, 71, 0.11);
+  --add: #BF6508;
+  --add-fill: rgba(214, 125, 20, 0.17);
+  --rej: #BE3434;
+  --rej-fill: rgba(190, 52, 52, 0.07);
+  --on-tag: #FFFFFF;
+  --shadow: 0 18px 40px -12px rgba(18, 32, 46, 0.32), 0 2px 6px rgba(18, 32, 46, 0.10);
+  --page-shadow: 0 1px 2px rgba(18, 32, 46, 0.12), 0 10px 28px -14px rgba(18, 32, 46, 0.28);
+  --scrim: rgba(12, 22, 32, 0.42);
+  --ui: 'Public Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --desk: #0E1318; --paper: #1A2129; --chrome: #141A20; --chrome-2: #1F2830;
+    --ink: #DCE3E9; --ink-2: #A5B1BC; --ink-3: #6E7B87; --ink-faint: rgba(220, 227, 233, 0.2);
+    --line: #2B3540; --accent: #4DB6C0; --accent-ink: #062629; --accent-soft: #123A3F;
+    --ai: #74A0FF; --ai-fill: rgba(116, 160, 255, 0.13);
+    --ok: #52C584; --ok-fill: rgba(82, 197, 132, 0.13);
+    --add: #F2A348; --add-fill: rgba(242, 163, 72, 0.18);
+    --rej: #F07474; --rej-fill: rgba(240, 116, 116, 0.09);
+    --on-tag: #0B1116;
+    --shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+    --page-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
+    --scrim: rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --desk: #0E1318; --paper: #1A2129; --chrome: #141A20; --chrome-2: #1F2830;
+  --ink: #DCE3E9; --ink-2: #A5B1BC; --ink-3: #6E7B87; --ink-faint: rgba(220, 227, 233, 0.2);
+  --line: #2B3540; --accent: #4DB6C0; --accent-ink: #062629; --accent-soft: #123A3F;
+  --ai: #74A0FF; --ai-fill: rgba(116, 160, 255, 0.13);
+  --ok: #52C584; --ok-fill: rgba(82, 197, 132, 0.13);
+  --add: #F2A348; --add-fill: rgba(242, 163, 72, 0.18);
+  --rej: #F07474; --rej-fill: rgba(240, 116, 116, 0.09);
+  --on-tag: #0B1116;
+  --shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --page-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
+  --scrim: rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}
+
+html, body { height: 100%; }
+body { background: var(--desk); color: var(--ink); font-family: var(--ui); font-size: 13.5px; overflow: hidden; }
+#root { height: 100%; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.sp { flex: 1; }
+
+/* status tokens */
+.st-ai { --c: var(--ai); --cf: var(--ai-fill); }
+.st-confirmed { --c: var(--ok); --cf: var(--ok-fill); }
+.st-added { --c: var(--add); --cf: var(--add-fill); }
+.st-rejected { --c: var(--rej); --cf: var(--rej-fill); }
+
+.app { height: 100%; display: grid; grid-template-rows: auto auto minmax(0, 1fr); }
+
+/* ---- top bar ---- */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; padding: 10px 16px; background: var(--chrome); border-bottom: 1px solid var(--line); }
+.case { min-width: 0; }
+.case-l1 { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.case-id { font: 600 11px/1 var(--mono); letter-spacing: 0.03em; color: var(--accent); background: var(--accent-soft); padding: 4px 6px; border-radius: 4px; }
+.case-name { font-weight: 700; font-size: 15px; letter-spacing: -0.01em; }
+.case-mrn { font: 12px var(--mono); color: var(--ink-3); }
+.case-l2 { font-size: 12px; color: var(--ink-2); margin-top: 3px; }
+.denial { display: grid; grid-template-columns: auto auto; column-gap: 8px; align-items: baseline; }
+.den-k { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--ink-3); }
+.den-v { font: 600 14px var(--mono); }
+.den-v s { color: var(--rej); text-decoration-thickness: 1.5px; }
+.den-carc { grid-column: 1 / -1; font-size: 11.5px; color: var(--ink-2); }
+.due { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--add); background: var(--add-fill); padding: 5px 9px; border-radius: 6px; }
+.due b { font-weight: 650; }
+.controls { margin-left: auto; display: flex; gap: 4px; flex-wrap: wrap; }
+.tg { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border: 1px solid transparent; background: transparent; border-radius: 7px; cursor: pointer; font-size: 12.5px; color: var(--ink-2); }
+.tg:hover { background: var(--chrome-2); color: var(--ink); }
+.tg[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 30%, transparent); }
+.tg.cmd { border-color: var(--line); }
+.badge { font: 600 10.5px/1 var(--mono); background: var(--ink); color: var(--paper); border-radius: 999px; padding: 3px 6px; }
+
+/* ---- checkpoints ---- */
+.cps { display: flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--chrome); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.cps::-webkit-scrollbar { display: none; }
+.cps-lead { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; margin-right: 4px; }
+.cps-lead b { color: var(--ink); font-family: var(--mono); }
+.cp { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 11px 0 5px; border-radius: 999px; border: 1px solid var(--line); background: var(--paper); cursor: pointer; font-size: 12px; transition: border-color .2s, background .2s; }
+.cp:hover { border-color: var(--ink-3); }
+.cp-ic { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; border: 1.5px dashed var(--ink-3); flex: none; }
+.cp.part .cp-ic { border: 1.5px solid var(--ai); background: linear-gradient(90deg, var(--ai) 50%, transparent 50%); }
+.cp.met { border-color: color-mix(in srgb, var(--ok) 45%, transparent); background: var(--ok-fill); }
+.cp.met .cp-ic { border: 0; background: var(--ok); color: var(--on-tag); animation: pop .35s ease-out; }
+.cp-l { color: var(--ink-2); }
+.cp-v { font-weight: 650; font-variant-numeric: tabular-nums; }
+.cp-sug { font-size: 10.5px; color: var(--ai); background: var(--ai-fill); padding: 2px 6px; border-radius: 999px; }
+@keyframes pop { 0% { transform: scale(.4); } 70% { transform: scale(1.15); } 100% { transform: scale(1); } }
+
+/* ---- work area ---- */
+.work { display: flex; min-height: 0; }
+.stage { flex: 1; min-width: 0; display: flex; position: relative; }
+.scroller { flex: 1; min-width: 0; overflow-y: auto; overflow-x: hidden; padding: 28px 16px 140px; scroll-behavior: auto; }
+.pages { max-width: 800px; margin: 0 auto; display: flex; flex-direction: column; gap: 28px; }
+.pagepill { position: absolute; top: 10px; right: 30px; z-index: 5; font: 500 11.5px var(--mono); background: var(--chrome); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; pointer-events: none; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+
+/* ---- the paper ---- */
+.page { position: relative; background: var(--paper); box-shadow: var(--page-shadow); border-radius: 2px; aspect-ratio: 8.5 / 11; padding: 60px 66px 70px; font-family: var(--mono); font-size: 13px; line-height: 2.5; color: var(--ink); }
+.page-body { transition: opacity .25s; }
+.page.dim .page-body { opacity: 0.42; }
+.page.dim:hover .page-body { opacity: 0.8; }
+.dos-banner { position: absolute; top: 16px; left: 66px; right: 66px; display: flex; align-items: center; gap: 6px; font: 600 11px/1.4 var(--ui); color: var(--rej); background: var(--rej-fill); border: 1px solid color-mix(in srgb, var(--rej) 35%, transparent); padding: 5px 9px; border-radius: 5px; }
+.page-foot { position: absolute; left: 66px; right: 66px; bottom: 22px; display: flex; justify-content: space-between; gap: 12px; font-size: 10px; line-height: 1.4; color: var(--ink-3); border-top: 1px dashed var(--line); padding-top: 7px; }
+.blk { position: relative; }
+.k-org { font-weight: 600; letter-spacing: 0.08em; }
+.k-sub { font-size: 11px; color: var(--ink-2); line-height: 1.6; }
+.k-title { font-weight: 600; margin: 16px 0 6px; border-bottom: 1.5px solid var(--ink); padding-bottom: 2px; letter-spacing: 0.03em; }
+.k-meta { white-space: pre-wrap; font-size: 12px; }
+.k-h { font-weight: 600; margin-top: 16px; text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1px; }
+.k-li { padding-left: 20px; text-indent: -14px; }
+.k-li::before { content: '–  '; color: var(--ink-3); }
+
+/* ---- evidence boxes ---- */
+.ev { position: relative; color: inherit; background: var(--cf); border-radius: 3px; padding: 2px 2px; outline: 1.5px dashed var(--c); outline-offset: 0; cursor: pointer; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background .2s, outline-color .2s; }
+.ev.st-confirmed, .ev.st-added { outline-style: solid; }
+.ev.st-rejected { outline: 1px dotted var(--c); background: transparent; text-decoration: line-through; text-decoration-color: var(--rej); color: var(--ink-3); }
+.ev::before { content: attr(data-tag); position: absolute; left: -1.5px; bottom: 100%; margin-bottom: 1px; font: 600 8.5px/1 var(--mono); letter-spacing: 0.04em; padding: 2px 4px 2px; border-radius: 3px 3px 0 0; background: var(--c); color: var(--on-tag); white-space: nowrap; pointer-events: none; text-indent: 0; text-decoration: none; }
+.ev.st-rejected::before { opacity: .7; }
+.ev:hover, .ev.hot { background: color-mix(in srgb, var(--c) 22%, transparent); }
+.ev.active { outline-width: 2.5px; }
+.ev.hot, .ev.flash { animation: ring 1s ease-out 2; }
+@keyframes ring { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent); } 100% { box-shadow: 0 0 0 10px transparent; } }
+.clean .ev { outline: none; background: none; text-decoration: none; color: inherit; }
+.clean .ev::before { display: none; }
+.spot .blk { color: var(--ink-faint); }
+.spot .blk .ev { color: var(--ink); }
+.spot .blk .ev.st-rejected { color: var(--ink-faint); }
+::selection { background: color-mix(in srgb, var(--add) 35%, transparent); }
+
+/* ---- minimap ---- */
+.mm { width: 20px; flex: none; position: relative; background: var(--chrome); border-left: 1px solid var(--line); cursor: pointer; }
+.mm-page { position: absolute; left: 0; right: 0; border-top: 1px solid var(--line); }
+.mm-page.off { background: var(--rej-fill); }
+.mm-vp { position: absolute; left: 2px; right: 2px; background: color-mix(in srgb, var(--ink) 8%, transparent); border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent); border-radius: 4px; pointer-events: none; transition: top .06s linear; }
+.mm-tick { position: absolute; left: 4px; right: 4px; height: 4px; border: 0; padding: 0; border-radius: 2px; background: var(--c); cursor: pointer; }
+.mm-tick::after { content: ''; position: absolute; inset: -4px -4px; }
+.mm-tick.st-rejected { opacity: .45; }
+.mm-tick.active { left: 1px; right: 1px; box-shadow: 0 0 0 2px var(--chrome), 0 0 0 3.5px var(--c); }
+
+/* ---- notepad + rail ---- */
+.np { position: fixed; z-index: 40; display: flex; flex-direction: column; background: var(--chrome); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; transition: opacity .25s ease; }
+.np.ghost { opacity: 0.3; }
+.np-head { display: flex; align-items: center; gap: 7px; padding: 7px 8px 7px 10px; border-bottom: 1px solid var(--line); cursor: grab; user-select: none; touch-action: none; background: var(--chrome); }
+.np-head:active { cursor: grabbing; }
+.rail-head { cursor: default; }
+.grip { color: var(--ink-3); display: grid; }
+.np-title { font-weight: 700; font-size: 13px; }
+.np-rz { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; background: linear-gradient(135deg, transparent 55%, var(--ink-3) 55%, var(--ink-3) 62%, transparent 62%, transparent 72%, var(--ink-3) 72%, var(--ink-3) 79%, transparent 79%); opacity: .6; }
+.catch { animation: catch .45s ease-out; }
+@keyframes catch { 0% { transform: scale(1); } 40% { transform: scale(1.025); } 100% { transform: scale(1); } }
+.rail { width: 360px; flex: none; display: flex; flex-direction: column; min-height: 0; background: var(--chrome); border-left: 1px solid var(--line); }
+.rail.collapsed { width: 42px; }
+.rail-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px 0; border: 0; background: transparent; cursor: pointer; color: var(--ink-2); }
+.rail-tab:hover { background: var(--chrome-2); }
+.vert { writing-mode: vertical-rl; font-weight: 650; letter-spacing: 0.06em; font-size: 12px; }
+
+.nb { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.nb-sub { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.tabs { display: inline-flex; background: var(--chrome-2); border-radius: 7px; padding: 2px; }
+.tabs button { border: 0; background: transparent; padding: 4px 9px; border-radius: 5px; cursor: pointer; font-size: 12px; color: var(--ink-2); display: inline-flex; gap: 5px; align-items: center; }
+.tabs button.on { background: var(--paper); color: var(--ink); box-shadow: 0 1px 2px rgba(0, 0, 0, .12); font-weight: 600; }
+.tabs .n { font: 500 10.5px var(--mono); color: var(--ink-3); }
+.tabs.big button { font-size: 13px; padding: 6px 12px; }
+.follow { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--ink-3); border: 0; background: transparent; cursor: pointer; padding: 3px 6px; border-radius: 5px; font-variant-numeric: tabular-nums; }
+.follow:hover { background: var(--chrome-2); color: var(--ink); }
+.follow.pinned { color: var(--accent); background: var(--accent-soft); }
+.follow.static { cursor: default; background: none; }
+.nb-list { flex: 1; overflow-y: auto; padding: 4px 6px 8px; min-height: 0; }
+.grp-h { position: sticky; top: 0; z-index: 1; background: var(--chrome); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); padding: 8px 6px 4px; font-weight: 600; }
+.grp-warn { color: var(--rej); }
+.row { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; gap: 9px; align-items: start; padding: 8px 8px; border-radius: 7px; cursor: pointer; border: 1px solid transparent; transition: background .15s; }
+.row:hover, .row.hot { background: var(--chrome-2); }
+.row.active { background: var(--paper); border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.row.flash { animation: rowin .9s ease-out; }
+@keyframes rowin { 0% { background: var(--cf); transform: translateX(10px); } 30% { transform: translateX(0); } 100% { background: transparent; } }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-top: 5px; flex: none; }
+.dot.st-ai { background: transparent; box-shadow: inset 0 0 0 2px var(--c); }
+.row-top { display: flex; gap: 7px; align-items: baseline; min-width: 0; }
+.row-code { font: 600 12px var(--mono); color: var(--c); flex: none; }
+.row-desc { font-size: 12.5px; font-weight: 550; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row.st-rejected .row-desc, .row.st-rejected .row-q { text-decoration: line-through; color: var(--ink-3); }
+.row-q { font: 11.5px/1.45 var(--mono); color: var(--ink-2); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.row-act { display: flex; gap: 2px; opacity: 0; transition: opacity .15s; }
+.row:hover .row-act, .row.active .row-act, .row:focus-within .row-act { opacity: 1; }
+.mini { font: 600 10px/1 var(--mono); color: var(--ink-2); background: var(--chrome-2); border-radius: 4px; padding: 3px 5px; letter-spacing: .02em; }
+.route { font-size: 10.5px; line-height: 1; padding: 3px 6px; border-radius: 4px; white-space: nowrap; }
+.r-appeal { color: var(--accent); background: var(--accent-soft); }
+.r-corrected { color: var(--add); background: var(--add-fill); }
+.r-info { color: var(--ink-2); background: var(--chrome-2); }
+.r-excluded, .r-warn { color: var(--rej); background: var(--rej-fill); }
+.empty { padding: 22px 14px; color: var(--ink-2); font-size: 12.5px; line-height: 1.55; }
+.empty b { display: block; color: var(--ink); margin-bottom: 4px; }
+.nb-foot { border-top: 1px solid var(--line); padding: 9px 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+
+.score { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.35fr); gap: 6px; }
+.sc, .sc-total { border: 1px solid var(--line); border-radius: 7px; padding: 5px 8px; background: var(--paper); min-width: 0; }
+.sc-k { display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-3); font-weight: 600; }
+.sc-v { display: block; font-size: 12px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc.hi .sc-v { color: var(--ok); }
+.sc-total.ok { background: var(--ok-fill); border-color: color-mix(in srgb, var(--ok) 45%, transparent); }
+.sc-total.short { background: var(--add-fill); border-color: color-mix(in srgb, var(--add) 45%, transparent); }
+.sc-total b { font-family: var(--mono); }
+.sc-of { font-weight: 400; color: var(--ink-2); font-size: 11px; }
+.score.compact .sc-v { font-size: 11.5px; }
+
+.bubble { position: fixed; right: 36px; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 999px; background: var(--ink); color: var(--paper); border: 0; box-shadow: var(--shadow); cursor: pointer; font-weight: 600; font-size: 13px; }
+.bubble .badge { background: var(--paper); color: var(--ink); }
+.bubble-sub { font-weight: 400; font-size: 11.5px; opacity: .75; }
+.snap-hint { position: fixed; right: 0; top: 0; bottom: 0; width: 360px; z-index: 35; background: color-mix(in srgb, var(--accent) 12%, transparent); border-left: 2px dashed var(--accent); display: grid; place-items: center; pointer-events: none; animation: fade .15s; }
+.snap-hint span { font-weight: 650; color: var(--accent); background: var(--paper); padding: 6px 12px; border-radius: 999px; box-shadow: var(--shadow); }
+@keyframes fade { from { opacity: 0; } }
+
+/* ---- buttons ---- */
+.ib { width: 28px; height: 28px; display: inline-grid; place-items: center; border: 0; background: transparent; color: var(--ink-2); border-radius: 6px; cursor: pointer; flex: none; }
+.ib.sm { width: 24px; height: 24px; }
+.ib:hover { background: var(--chrome-2); color: var(--ink); }
+.ib.ok:hover { color: var(--ok); background: var(--ok-fill); }
+.ib.no:hover { color: var(--rej); background: var(--rej-fill); }
+.btn { display: inline-flex; align-items: center; gap: 6px; justify-content: center; font-size: 12.5px; font-weight: 550; border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 7px; padding: 6px 11px; cursor: pointer; }
+.btn:hover { border-color: var(--ink-3); }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+.btn.ok { background: var(--ok); color: var(--on-tag); border-color: transparent; }
+.btn.ok .kbd { color: inherit; border-color: color-mix(in srgb, var(--on-tag) 45%, transparent); }
+.btn.wide { width: 100%; }
+.kbd { font: 500 10.5px/1.5 var(--mono); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; color: var(--ink-2); background: transparent; }
+
+/* ---- hover card ---- */
+.card { position: fixed; z-index: 60; background: var(--paper); border: 1px solid var(--line); border-radius: 11px; box-shadow: var(--shadow); padding: 12px 14px 12px; animation: rise .14s ease-out; }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+.card-top { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.card-top .ib { margin-left: auto; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--c); background: var(--cf); padding: 3px 8px 3px 6px; border-radius: 999px; white-space: nowrap; }
+.chip .dot { margin: 0; width: 7px; height: 7px; }
+.conf { font: 11px var(--mono); color: var(--ink-3); }
+.card-code { font: 600 17px var(--mono); letter-spacing: -0.01em; }
+.card-desc { font-size: 13px; font-weight: 550; margin-top: 2px; line-height: 1.4; text-wrap: balance; }
+.card-mdm { display: flex; align-items: center; gap: 6px; margin-top: 7px; font-size: 12px; color: var(--ink-2); flex-wrap: wrap; }
+.card-note { font-size: 12px; color: var(--ink-2); margin-top: 7px; line-height: 1.5; }
+.card-q { margin: 9px 0 0; padding: 7px 10px; border-left: 2px solid var(--c, var(--line)); background: var(--chrome); font: 12px/1.5 var(--mono); color: var(--ink); border-radius: 0 5px 5px 0; }
+.card-q.sm { max-height: 64px; overflow: hidden; border-left-color: var(--add); }
+.card-meta { font-size: 11.5px; color: var(--ink-3); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.card-actions { display: flex; gap: 6px; margin-top: 11px; flex-wrap: wrap; }
+.warn { display: flex; gap: 7px; align-items: flex-start; margin-top: 8px; font-size: 12px; line-height: 1.45; color: var(--rej); background: var(--rej-fill); border-radius: 6px; padding: 7px 9px; }
+.warn svg { flex: none; margin-top: 1px; }
+.warn.big { font-size: 13px; padding: 11px 13px; align-items: flex-start; color: var(--ink); background: var(--add-fill); }
+.warn.big svg { color: var(--add); }
+.okbox { display: flex; gap: 8px; font-size: 13px; line-height: 1.45; padding: 11px 13px; border-radius: 7px; background: var(--ok-fill); }
+.okbox svg { color: var(--ok); flex: none; margin-top: 2px; }
+
+/* ---- selection tool + compose ---- */
+.seltb { position: fixed; z-index: 70; display: flex; align-items: center; gap: 2px; padding: 4px; background: var(--ink); color: var(--paper); border-radius: 9px; box-shadow: var(--shadow); animation: rise .12s ease-out; white-space: nowrap; }
+.seltb.note { padding: 8px 12px; font-size: 12px; white-space: normal; }
+.seltb-lead { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; opacity: .6; padding: 0 6px 0 8px; }
+.seltb button { border: 0; background: transparent; color: var(--paper); padding: 6px 9px; border-radius: 6px; cursor: pointer; font-size: 12.5px; font-weight: 550; }
+.seltb button:hover { background: color-mix(in srgb, var(--paper) 16%, transparent); }
+.compose { position: fixed; z-index: 70; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); padding: 10px; display: flex; flex-direction: column; gap: 8px; animation: rise .14s ease-out; }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--chrome-2); border-radius: 8px; padding: 2px; }
+.seg button { border: 0; background: transparent; padding: 5px 4px; border-radius: 6px; font-size: 12px; cursor: pointer; color: var(--ink-2); }
+.seg button.on { background: var(--paper); color: var(--ink); font-weight: 650; box-shadow: 0 1px 2px rgba(0, 0, 0, .14); }
+.compose .card-q { margin: 0; }
+.search { display: flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 8px; padding: 0 9px; background: var(--chrome); color: var(--ink-3); }
+.search:focus-within { border-color: var(--accent); }
+.search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; padding: 7px 0; font: 13px var(--ui); color: var(--ink); }
+.search.big input { font-size: 15px; padding: 12px 0; }
+.opt-list { display: flex; flex-direction: column; gap: 1px; max-height: 210px; overflow-y: auto; outline: 0; }
+.opt-list.tall { max-height: 260px; }
+.opt { display: grid; grid-template-columns: 76px minmax(0, 1fr) auto; gap: 8px; align-items: center; text-align: left; border: 0; background: transparent; padding: 6px 7px; border-radius: 6px; cursor: pointer; }
+.opt.on { background: var(--accent-soft); }
+.opt-code { font: 600 11.5px var(--mono); color: var(--accent); }
+.opt-code.el-risk, .opt-code.el-problems, .opt-code.el-data { color: var(--add); }
+.opt-desc { font-size: 12.5px; line-height: 1.35; }
+.opt-flag { font-size: 10px; color: var(--ink-3); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; }
+.opt-flag.sug { color: var(--add); border-color: color-mix(in srgb, var(--add) 45%, transparent); background: var(--add-fill); }
+.route-hint { font-size: 11.5px; color: var(--ink-2); padding: 0 2px; }
+.note-in { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font: 13px/1.5 var(--ui); background: var(--chrome); color: var(--ink); resize: vertical; outline: 0; }
+.note-in:focus { border-color: var(--accent); }
+.compose-foot { display: flex; align-items: center; gap: 6px; border-top: 1px solid var(--line); padding-top: 8px; }
+.compose-foot .hint { margin-right: auto; font-size: 11px; color: var(--ink-3); display: inline-flex; gap: 3px; align-items: center; }
+
+.fly { position: fixed; z-index: 95; font: 600 11px/1 var(--mono); background: var(--add); color: var(--on-tag); padding: 6px 9px; border-radius: 6px; box-shadow: var(--shadow); pointer-events: none; white-space: nowrap; }
+
+/* ---- modal ---- */
+.modal-bg { position: fixed; inset: 0; z-index: 80; background: var(--scrim); display: grid; place-items: center; padding: 16px; animation: fade .15s; }
+.modal-bg.top { place-items: start center; padding-top: 12vh; }
+.modal { width: min(1120px, 100%); height: min(88vh, 900px); background: var(--chrome); border-radius: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; overflow: hidden; animation: rise .18s ease-out; }
+.modal-head { display: flex; align-items: center; gap: 16px; padding: 14px 16px 12px 22px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.modal-head h2 { margin: 2px 0 0; font-size: 20px; letter-spacing: -0.015em; }
+.modal-head .tabs { margin-left: auto; }
+.eyebrow { font: 600 10.5px var(--mono); letter-spacing: .06em; color: var(--ink-3); text-transform: uppercase; }
+.modal-body { flex: 1; overflow-y: auto; padding: 16px 22px 28px; min-height: 0; }
+.filters { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.fchip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--paper); border-radius: 999px; padding: 5px 11px; font-size: 12px; cursor: pointer; }
+.fchip .dot { margin: 0; }
+.fchip.on { border-color: var(--ink); font-weight: 600; }
+.fchip .n { font: 11px var(--mono); color: var(--ink-3); }
+.tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 9px; background: var(--paper); }
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 760px; }
+.tbl th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-3); font-weight: 600; padding: 9px 12px; border-bottom: 1px solid var(--line); background: var(--chrome); position: sticky; top: 0; }
+.tbl td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.45; }
+.tbl tr:last-child td { border-bottom: 0; }
+.tbl tbody tr { cursor: pointer; }
+.tbl tbody tr.static { cursor: default; }
+.tbl tbody tr:hover td { background: var(--chrome); }
+.tbl tr.st-rejected td { color: var(--ink-3); }
+.tbl .mono { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+.tbl .mono.down { color: var(--rej); }
+.tbl .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tbl .q { font-family: var(--mono); font-size: 11.5px; color: var(--ink-2); max-width: 300px; }
+.tbl .sub { font-size: 10.5px; color: var(--ink-3); font-weight: 500; margin-top: 2px; }
+.tbl .acts { white-space: nowrap; }
+.ws h3 { font-size: 14px; margin: 22px 0 8px; }
+.ws .score { max-width: 620px; }
+.muted { color: var(--ink-2); font-size: 12.5px; margin: 0 0 10px; line-height: 1.5; max-width: 70ch; }
+.verdict { font-size: 11.5px; font-weight: 600; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+.v-ok { color: var(--ok); background: var(--ok-fill); }
+.v-warn { color: var(--add); background: var(--add-fill); }
+.v-pend { color: var(--ai); background: var(--ai-fill); }
+.appeal { max-width: 780px; margin: 0 auto; display: flex; flex-direction: column; gap: 12px; }
+.letter-tools { display: flex; align-items: center; gap: 12px; justify-content: space-between; flex-wrap: wrap; }
+.letter-tools .muted { margin: 0; }
+.letter { background: var(--paper); box-shadow: var(--page-shadow); padding: 40px 48px; font-size: 13.5px; line-height: 1.65; border-radius: 3px; }
+.letter p { margin: 0 0 14px; white-space: pre-line; max-width: 68ch; }
+.letter .lmeta { font: 12px/1.7 var(--mono); color: var(--ink-2); border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 18px; }
+.letter h4 { margin: 16px 0 6px; font-size: 13.5px; }
+.lli { padding-left: 16px; position: relative; margin-bottom: 6px; max-width: 68ch; }
+.lli::before { content: ''; position: absolute; left: 3px; top: .7em; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+/* ---- palette ---- */
+.pal { width: min(560px, 100%); background: var(--paper); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; animation: rise .14s ease-out; }
+.pal .search { border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: var(--paper); padding: 0 14px; }
+.pal-list { max-height: 50vh; overflow-y: auto; padding: 6px; }
+.pal-item { width: 100%; display: flex; justify-content: space-between; align-items: center; border: 0; background: transparent; padding: 8px 10px; border-radius: 7px; cursor: pointer; font-size: 13px; text-align: left; }
+.pal-item.on { background: var(--accent-soft); }
+
+/* ---- toast ---- */
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(22px + env(safe-area-inset-bottom, 0px)); z-index: 90; display: flex; align-items: center; gap: 14px; background: var(--ink); color: var(--paper); padding: 9px 10px 9px 14px; border-radius: 9px; box-shadow: var(--shadow); font-size: 12.5px; animation: toast .2s ease-out; max-width: calc(100% - 32px); }
+.toast button { border: 0; background: color-mix(in srgb, var(--paper) 16%, transparent); color: var(--paper); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-weight: 600; font-size: 12px; }
+@keyframes toast { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+/* ---- narrow ---- */
+@media (max-width: 1100px) {
+  .controls .tg span:not(.badge) { display: none; }
+}
+@media (max-width: 760px) {
+  .bar { gap: 8px 12px; padding: 8px 16px; }
+  .denial { display: none; }
+  .controls { margin-left: 0; width: 100%; justify-content: space-between; }
+  .cps-lead { display: none; }
+  .scroller { padding: 16px 16px 120px; }
+  .page { aspect-ratio: auto; padding: 50px 18px 60px; font-size: 12px; line-height: 2.2; }
+  .dos-banner { left: 18px; right: 18px; top: 10px; }
+  .page-foot { left: 18px; right: 18px; }
+  .pagepill { display: none; }
+  .mm { width: 14px; }
+  .narrow .rail { position: fixed; right: 0; top: 0; bottom: 0; width: min(380px, 100%); z-index: 45; box-shadow: var(--shadow); }
+  .bubble { right: 24px; }
+  .modal-head { padding: 12px 16px; }
+  .modal-body { padding: 14px 16px 24px; }
+  .letter { padding: 24px 18px; }
+  .score { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+</style>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>
+(() => {
+  // src/data.js
+  var CASE = {
+    id: "APL-2026-0418",
+    patient: "DEMO, Alex",
+    mrn: "TEST-004417",
+    payer: "Northstar Health Plan",
+    claim: "NSH-88213-07",
+    dos: "03/14/2026",
+    billed: "99215",
+    paid: "99214",
+    carc: "CARC 150",
+    carcText: "Payer deems the information submitted does not support this level of service.",
+    stake: "$52.36",
+    level: "Reconsideration",
+    due: "Oct 23",
+    daysLeft: 24,
+    provider: "Mei Chen, MD",
+    practice: "Riverbend Internal Medicine Associates"
+  }, CLAIM_LINES = [
+    { code: "99215", desc: "Office visit, established patient, high MDM", paid: "99214" },
+    { code: "E11.65", desc: "Type 2 diabetes mellitus with hyperglycemia", paid: "E11.65" },
+    { code: "I10", desc: "Essential (primary) hypertension", paid: "I10" },
+    { code: "83036", desc: "Hemoglobin A1c", paid: "83036" }
+  ], CLAIM_CODES = new Set(CLAIM_LINES.map((c) => c.code)), P = (n, dos, label, blocks) => ({
+    n,
+    dos,
+    label,
+    blocks: blocks.map((b, i) => ({ id: `p${n}b${i}`, k: b[0], t: b[1], idx: i, page: n }))
+  }), PAGES = [
+    P(1, "03/14/2026", "History", [
+      ["org", "RIVERBEND INTERNAL MEDICINE ASSOCIATES"],
+      ["sub", "1200 Harbor Road, Suite 4 \xB7 Tel (555) 010-4420 \xB7 Fax (555) 010-4421"],
+      ["title", "OFFICE VISIT \u2014 ESTABLISHED PATIENT"],
+      ["meta", "Patient: DEMO, ALEX     MRN: TEST-004417     DOB: 06/02/1961     Sex: M"],
+      ["meta", "Date of service: 03/14/2026     Provider: Mei Chen, MD     Dept: Internal Medicine"],
+      ["h", "CHIEF COMPLAINT"],
+      ["p", '"My sugars are really high and I feel weak." Duration 5 days.'],
+      ["h", "HISTORY OF PRESENT ILLNESS"],
+      ["p", "64-year-old man with type 2 diabetes, hypertension and chronic kidney disease presents with 5 days of polyuria, polydipsia and fatigue. Reports home glucose readings 380\u2013450 mg/dL over the past 4 days. Ran out of metformin 2 weeks ago and did not refill."],
+      ["p", "Also reports lightheadedness on standing since yesterday. Denies chest pain, dyspnea, abdominal pain, vomiting or confusion. Seen in Mercy General ED on 02/28/2026 after a mechanical fall; no fracture."],
+      ["h", "CURRENT MEDICATIONS"],
+      ["li", "Metformin 1000 mg PO BID (not taking for 2 weeks)"],
+      ["li", "Lisinopril 20 mg PO daily"],
+      ["li", "Atorvastatin 40 mg PO daily"],
+      ["h", "ALLERGIES"],
+      ["p", "No known drug allergies."]
+    ]),
+    P(2, "03/14/2026", "Exam", [
+      ["h", "VITAL SIGNS"],
+      ["meta", "BP 108/66 seated \xB7 92/58 standing     HR 98 seated \xB7 118 standing"],
+      ["meta", "Temp 98.4 \xB0F     RR 18     SpO2 98% RA     Wt 81.2 kg (84.0 kg on 02/10/2026)"],
+      ["h", "REVIEW OF SYSTEMS"],
+      ["p", "Constitutional: fatigue, 3 kg weight loss over one month. Eyes: blurred vision when sugars are high. Cardiovascular: no chest pain, no palpitations. Respiratory: no cough or shortness of breath. GI: increased thirst, no nausea or vomiting. GU: urinary frequency and nocturia x4. Neuro: lightheaded on standing, no syncope. All other systems reviewed and negative."],
+      ["h", "PHYSICAL EXAMINATION"],
+      ["p", "General: tired-appearing, alert and oriented x3, no acute distress."],
+      ["p", "HEENT: dry mucous membranes, no oral lesions."],
+      ["p", "Patient is clinically dehydrated with a positive orthostatic drop in blood pressure and rise in heart rate."],
+      ["p", "Cardiovascular: tachycardic, regular rhythm, no murmur. Lungs: clear to auscultation bilaterally. Abdomen: soft, non-tender. Extremities: no edema. Neuro: nonfocal. Feet: monofilament sensation intact bilaterally."]
+    ]),
+    P(3, "03/14/2026", "Results & data", [
+      ["h", "IN-OFFICE RESULTS"],
+      ["p", "Point-of-care glucose: 412 mg/dL."],
+      ["p", "HbA1c (point of care): 11.2% (8.1% on 10/06/2025)."],
+      ["p", "12-lead ECG performed in office: sinus tachycardia, rate 104, normal axis, no acute ST-T changes. No prior tracing for comparison."],
+      ["h", "EXTERNAL RECORDS"],
+      ["p", "Reviewed Mercy General ED discharge summary dated 02/28/2026: creatinine 1.3 mg/dL, eGFR 55, head CT negative."],
+      ["h", "TESTS ORDERED"],
+      ["p", "Ordered basic metabolic panel, stat, to assess renal function, potassium and anion gap."],
+      ["p", "BMP resulted 16:10: Na 131, K 4.9, Cl 97, CO2 22, BUN 34, Cr 1.5, eGFR 48, glucose 398. Anion gap 12. No evidence of DKA."]
+    ]),
+    P(4, "03/14/2026", "Assessment & plan", [
+      ["h", "ASSESSMENT AND PLAN"],
+      ["p", "1. Type 2 diabetes mellitus with severe hyperglycemia. A1c 11.2%, up from 8.1%, off metformin for two weeks. No DKA (anion gap 12)."],
+      ["li", "Start insulin glargine 10 units subcutaneously at bedtime; titrate by 2 units every 3 days to fasting glucose under 150."],
+      ["li", "Resume metformin at 500 mg BID given eGFR 48. Glucometer log; diabetes education referral placed."],
+      ["p", "2. Type 2 diabetes with diabetic kidney disease, CKD stage 3a. eGFR 48 from baseline 55, likely prerenal component from volume depletion."],
+      ["li", "Hold lisinopril for 3 days. Repeat BMP in 3 days."],
+      ["p", "3. Hypertension with CKD. Low blood pressure today with orthostasis; lisinopril held as above."],
+      ["p", "4. Volume depletion with orthostasis. Oral rehydration 2\u20133 L/day; fall precautions reviewed."],
+      ["p", "Discussed direct hospital admission for IV fluids and insulin initiation; patient declined after risks and benefits were reviewed and prefers close outpatient follow-up."],
+      ["p", "Return precautions given for vomiting, confusion or glucose over 500. Nurse telephone check in 24 hours. Follow-up office visit in 3 days."]
+    ]),
+    P(5, "03/14/2026", "Attestation", [
+      ["h", "TIME AND ATTESTATION"],
+      ["p", "Total time on the date of the encounter: 34 minutes, including review of external records, examination, counseling and documentation."],
+      ["p", "I personally performed the services described in this note."],
+      ["p", "Electronically signed by Mei Chen, MD on 03/14/2026 at 17:42."]
+    ]),
+    P(6, "01/09/2026", "Prior visit", [
+      ["org", "RIVERBEND INTERNAL MEDICINE ASSOCIATES"],
+      ["title", "OFFICE VISIT \u2014 ESTABLISHED PATIENT"],
+      ["meta", "Patient: DEMO, ALEX     MRN: TEST-004417     Date of service: 01/09/2026"],
+      ["h", "HISTORY OF PRESENT ILLNESS"],
+      ["p", "Productive cough and fever to 101.2 \xB0F for 3 days. Mild pleuritic right-sided chest pain."],
+      ["h", "RESULTS"],
+      ["p", "Chest X-ray: right lower lobe infiltrate."],
+      ["h", "ASSESSMENT AND PLAN"],
+      ["p", "Community-acquired pneumonia, right lower lobe. Amoxicillin-clavulanate 875 mg BID x 7 days. Recheck in 2 weeks or sooner if worse."]
+    ])
+  ], BLOCKS = {};
+  PAGES.forEach((p) => p.blocks.forEach((b) => BLOCKS[b.id] = b));
+  function locate(page, text) {
+    let b = PAGES.find((x) => x.n === page).blocks.find((x) => x.t.includes(text));
+    return b || console.warn("anchor not found", text), b ? b.id : null;
+  }
+  var F = (id, page, text, o) => {
+    let pg = PAGES.find((x) => x.n === page);
+    return {
+      id,
+      page,
+      text,
+      block: locate(page, text),
+      source: "ai",
+      outsideDos: pg.dos !== CASE.dos,
+      ...o
+    };
+  }, INITIAL = [
+    F("f1", 4, "Type 2 diabetes mellitus with severe hyperglycemia", {
+      type: "dx",
+      code: "E11.65",
+      desc: "Type 2 diabetes mellitus with hyperglycemia",
+      mdm: { el: "problems", level: 3, label: "Chronic illness with severe exacerbation" },
+      status: "confirmed",
+      conf: 0.96
+    }),
+    F("f2", 1, "home glucose readings 380\u2013450 mg/dL", {
+      type: "mdm",
+      desc: "Severity of exacerbation: sustained glucose 380\u2013450",
+      mdm: { el: "problems", level: 3, label: "Chronic illness with severe exacerbation" },
+      status: "ai",
+      conf: 0.81
+    }),
+    F("f10", 3, "12-lead ECG performed in office", {
+      type: "px",
+      code: "93000",
+      desc: "Electrocardiogram, 12-lead, with interpretation and report",
+      note: "Performed and interpreted in office but not on the claim.",
+      status: "ai",
+      conf: 0.84
+    }),
+    F("f7", 3, "HbA1c (point of care): 11.2%", {
+      type: "px",
+      code: "83036",
+      desc: "Hemoglobin A1c",
+      mdm: { el: "data", cat: 1, label: "Ordering of unique test (HbA1c)" },
+      status: "confirmed",
+      conf: 0.95
+    }),
+    F("f6", 3, "Reviewed Mercy General ED discharge summary dated 02/28/2026", {
+      type: "mdm",
+      desc: "Review of prior external note",
+      mdm: { el: "data", cat: 1, label: "Review of prior external note" },
+      status: "confirmed",
+      conf: 0.9
+    }),
+    F("f8", 3, "Ordered basic metabolic panel", {
+      type: "mdm",
+      desc: "Ordering of unique test (BMP)",
+      mdm: { el: "data", cat: 1, label: "Ordering of unique test (BMP)" },
+      status: "ai",
+      conf: 0.86
+    }),
+    F("f9", 4, "Start insulin glargine 10 units subcutaneously at bedtime", {
+      type: "mdm",
+      desc: "Prescription drug management",
+      mdm: { el: "risk", level: 2, label: "Prescription drug management" },
+      status: "confirmed",
+      conf: 0.94
+    }),
+    F("f3", 4, "diabetic kidney disease", {
+      type: "dx",
+      code: "E11.22",
+      desc: "Type 2 diabetes mellitus with diabetic chronic kidney disease",
+      status: "ai",
+      conf: 0.9
+    }),
+    F("f4", 4, "CKD stage 3a", {
+      type: "dx",
+      code: "N18.31",
+      desc: "Chronic kidney disease, stage 3a",
+      status: "ai",
+      conf: 0.93
+    }),
+    F("f5", 4, "Hypertension with CKD", {
+      type: "dx",
+      code: "I12.9",
+      desc: "Hypertensive CKD with stage 1\u20134 or unspecified CKD",
+      note: "Replaces billed I10. ICD-10-CM guideline I.C.9.a.2 presumes a causal link between hypertension and CKD.",
+      replaces: "I10",
+      status: "ai",
+      conf: 0.88
+    }),
+    F("f11", 5, "Total time on the date of the encounter: 34 minutes", {
+      type: "time",
+      desc: "Time supports 99214 only (99215 needs 40+ minutes). Support the level with MDM.",
+      status: "ai",
+      conf: 0.99
+    }),
+    F("f12", 6, "Community-acquired pneumonia, right lower lobe", {
+      type: "dx",
+      code: "J18.9",
+      desc: "Pneumonia, unspecified organism",
+      status: "ai",
+      conf: 0.77
+    })
+  ], DICT = [
+    { code: "E86.0", kind: "dx", desc: "Dehydration", kw: "dehydrated dehydration dry mucous" },
+    { code: "E86.9", kind: "dx", desc: "Volume depletion, unspecified", kw: "volume depletion hypovolemia" },
+    { code: "I95.1", kind: "dx", desc: "Orthostatic hypotension", kw: "orthostatic hypotension orthostasis drop standing" },
+    { code: "E11.65", kind: "dx", desc: "Type 2 diabetes mellitus with hyperglycemia", kw: "type 2 diabetes hyperglycemia uncontrolled high sugars glucose" },
+    { code: "E11.22", kind: "dx", desc: "Type 2 diabetes mellitus with diabetic chronic kidney disease", kw: "diabetic kidney disease nephropathy ckd" },
+    { code: "E11.9", kind: "dx", desc: "Type 2 diabetes mellitus without complications", kw: "type 2 diabetes" },
+    { code: "N18.31", kind: "dx", desc: "Chronic kidney disease, stage 3a", kw: "ckd stage 3a chronic kidney disease egfr" },
+    { code: "N18.32", kind: "dx", desc: "Chronic kidney disease, stage 3b", kw: "ckd stage 3b chronic kidney disease" },
+    { code: "I12.9", kind: "dx", desc: "Hypertensive CKD with stage 1\u20134 or unspecified CKD", kw: "hypertension ckd hypertensive kidney" },
+    { code: "I10", kind: "dx", desc: "Essential (primary) hypertension", kw: "hypertension blood pressure htn" },
+    { code: "E87.1", kind: "dx", desc: "Hypo-osmolality and hyponatremia", kw: "hyponatremia sodium na 131" },
+    { code: "R42", kind: "dx", desc: "Dizziness and giddiness", kw: "lightheaded lightheadedness dizziness dizzy" },
+    { code: "R53.83", kind: "dx", desc: "Other fatigue", kw: "fatigue weak tired" },
+    { code: "R63.4", kind: "dx", desc: "Abnormal weight loss", kw: "weight loss" },
+    { code: "R63.1", kind: "dx", desc: "Polydipsia", kw: "polydipsia thirst" },
+    { code: "R35.1", kind: "dx", desc: "Nocturia", kw: "nocturia urinary frequency" },
+    { code: "R00.0", kind: "dx", desc: "Tachycardia, unspecified", kw: "tachycardia tachycardic heart rate" },
+    { code: "Z79.84", kind: "dx", desc: "Long term (current) use of oral hypoglycemic drugs", kw: "metformin oral hypoglycemic" },
+    { code: "Z79.4", kind: "dx", desc: "Long term (current) use of insulin", kw: "insulin glargine" },
+    { code: "E78.5", kind: "dx", desc: "Hyperlipidemia, unspecified", kw: "hyperlipidemia atorvastatin cholesterol" },
+    { code: "J18.9", kind: "dx", desc: "Pneumonia, unspecified organism", kw: "pneumonia infiltrate" },
+    { code: "99215", kind: "px", desc: "Office visit, established patient, high MDM or 40+ min", kw: "office visit level 5 established" },
+    { code: "99214", kind: "px", desc: "Office visit, established patient, moderate MDM or 30\u201339 min", kw: "office visit level 4 established" },
+    { code: "93000", kind: "px", desc: "Electrocardiogram, 12-lead, with interpretation and report", kw: "ecg ekg 12-lead electrocardiogram tracing" },
+    { code: "93010", kind: "px", desc: "Electrocardiogram, interpretation and report only", kw: "ecg ekg interpretation" },
+    { code: "83036", kind: "px", desc: "Hemoglobin A1c", kw: "hba1c a1c glycated hemoglobin" },
+    { code: "82947", kind: "px", desc: "Glucose, quantitative, blood", kw: "glucose point-of-care blood sugar" },
+    { code: "80048", kind: "px", desc: "Basic metabolic panel", kw: "basic metabolic panel bmp electrolytes" },
+    { code: "36415", kind: "px", desc: "Collection of venous blood by venipuncture", kw: "venipuncture blood draw" },
+    { code: "G2211", kind: "px", desc: "Visit complexity inherent to longitudinal care (add-on)", kw: "longitudinal complexity add-on" }
+  ], MDM_OPTS = [
+    { el: "risk", level: 3, label: "Decision regarding hospitalization", kw: ["admission", "admit", "hospital", "hospitalization", "inpatient"] },
+    { el: "risk", level: 3, label: "Drug therapy requiring intensive monitoring for toxicity", kw: ["toxicity", "intensive monitoring"] },
+    { el: "risk", level: 2, label: "Prescription drug management", kw: ["start", "resume", "hold", "mg", "units", "prescri", "titrate"] },
+    { el: "problems", level: 3, label: "Chronic illness with severe exacerbation", kw: ["severe", "uncontrolled", "exacerbation"] },
+    { el: "problems", level: 3, label: "Illness that poses a threat to life or bodily function", kw: ["threat", "life-threatening"] },
+    { el: "problems", level: 2, label: "Chronic illness with exacerbation or progression", kw: ["progression", "worsening", "worse"] },
+    { el: "data", cat: 1, label: "Review of prior external note", kw: ["reviewed", "records", "summary", "discharge"] },
+    { el: "data", cat: 1, label: "Review of result of unique test", kw: ["result", "resulted"] },
+    { el: "data", cat: 1, label: "Ordering of unique test", kw: ["ordered", "order"] },
+    { el: "data", cat: 2, label: "Independent interpretation of a test", kw: ["interpret", "independent"] },
+    { el: "data", cat: 3, label: "Discussion of management with external physician", kw: ["discussed with dr", "spoke with", "discussed with"] }
+  ];
+
+  // src/app.jsx
+  var { useState, useEffect, useRef, useMemo, useCallback, useLayoutEffect } = React, LV = ["Straightforward", "Low", "Moderate", "High"], LVS = ["SF", "L", "M", "H"], EM = ["99212", "99213", "99214", "99215"], EL = { problems: "Problems", data: "Data", risk: "Risk" }, ELS = { problems: "PROB", data: "DATA", risk: "RISK" }, STATUS_LABEL = { ai: "AI suggested", confirmed: "Confirmed", added: "Coder added", rejected: "Rejected" }, ROUTE_LABEL = { appeal: "Appeal evidence", corrected: "Corrected claim", info: "Reviewer note", excluded: "Excluded" }, reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches, cls = (...a) => a.filter(Boolean).join(" "), clamp = (v, a, b) => Math.max(a, Math.min(b, v)), isLive = (f) => f.status === "confirmed" || f.status === "added";
+  function mdmTag(f) {
+    return f.mdm ? f.mdm.el === "data" ? `DATA\xB7C${f.mdm.cat}` : `${ELS[f.mdm.el]}\xB7${LVS[f.mdm.level]}` : "";
+  }
+  function tagOf(f) {
+    let parts = [];
+    return f.code && parts.push(f.code), f.mdm && parts.push(mdmTag(f)), f.type === "time" && parts.push("TIME"), f.type === "note" && parts.push("NOTE"), parts.join(" \xB7 ");
+  }
+  function routeOf(f) {
+    return f.status === "rejected" || f.outsideDos ? "excluded" : f.type === "time" || f.type === "note" ? "info" : f.code && !CLAIM_CODES.has(f.code) ? "corrected" : "appeal";
+  }
+  function titleOf(f) {
+    return f.type === "note" ? f.note || "Reviewer note" : f.mdm && !f.code ? f.mdm.label : f.desc || "";
+  }
+  function summarize(findings, includeAi) {
+    let live = findings.filter((f) => !f.outsideDos && f.mdm && (isLive(f) || includeAi && f.status === "ai")), mx = (el) => live.filter((f) => f.mdm.el === el).reduce((m, f) => Math.max(m, f.mdm.level || 0), 0), d = live.filter((f) => f.mdm.el === "data"), c1 = d.filter((f) => f.mdm.cat === 1).length, cats = (c1 >= 3 ? 1 : 0) + (d.some((f) => f.mdm.cat === 2) ? 1 : 0) + (d.some((f) => f.mdm.cat === 3) ? 1 : 0), data = cats >= 2 ? 3 : cats >= 1 ? 2 : c1 >= 2 ? 1 : 0, prob = mx("problems"), risk = mx("risk"), s = [prob, data, risk].sort((a, b) => b - a);
+    return { prob, data, risk, c1, overall: s[1], code: EM[s[1]] };
+  }
+  function orderKey(f) {
+    let b = BLOCKS[f.block], off = b ? Math.max(0, b.t.indexOf(f.text)) : 0;
+    return f.page * 1e6 + (b ? b.idx : 0) * 1e3 + off;
+  }
+  function segments(text, fs) {
+    let ranges = [];
+    for (let f of fs) {
+      let i = text.indexOf(f.text);
+      if (i < 0) continue;
+      let r = { s: i, e: i + f.text.length, f };
+      ranges.some((x) => r.s < x.e && x.s < r.e) || ranges.push(r);
+    }
+    ranges.sort((a, b) => a.s - b.s);
+    let out = [], c = 0;
+    for (let r of ranges)
+      r.s > c && out.push(text.slice(c, r.s)), out.push(r), c = r.e;
+    return c < text.length && out.push(text.slice(c)), out;
+  }
+  function searchCodes(q, kind) {
+    let toks = q.toLowerCase().replace(/[^a-z0-9.\- ]/g, " ").split(/\s+/).filter((t) => t.length > 2), scored = DICT.filter((d) => d.kind === kind).map((d) => {
+      let hay = `${d.code} ${d.desc} ${d.kw}`.toLowerCase(), s = 0;
+      return toks.forEach((t) => {
+        hay.includes(t) && (s += t.length > 5 ? 2 : 1);
+      }), toks.some((t) => d.code.toLowerCase() === t) && (s += 10), { ...d, s };
+    }), hits = scored.filter((d) => d.s > 0).sort((a, b) => b.s - a.s);
+    return (hits.length ? hits : scored).slice(0, 6);
+  }
+  function rankMdm(text) {
+    let t = text.toLowerCase();
+    return [...MDM_OPTS.map((o, i) => ({ ...o, i, s: o.kw.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0) }))].sort((a, b) => b.s - a.s || a.i - b.i).map((o, i) => ({ ...o, suggested: i === 0 && o.s > 0 }));
+  }
+  function useNarrow() {
+    let q = "(max-width: 760px)", [n, setN] = useState(() => window.matchMedia(q).matches);
+    return useEffect(() => {
+      let m = window.matchMedia(q), h = () => setN(m.matches);
+      return m.addEventListener("change", h), () => m.removeEventListener("change", h);
+    }, []), n;
+  }
+  function useScrollTick(ref) {
+    let [, set] = useState(0);
+    useEffect(() => {
+      let el = ref.current;
+      if (!el) return;
+      let raf = 0, h = () => {
+        cancelAnimationFrame(raf), raf = requestAnimationFrame(() => set((t) => t + 1));
+      };
+      return el.addEventListener("scroll", h, { passive: !0 }), window.addEventListener("resize", h), () => {
+        el.removeEventListener("scroll", h), window.removeEventListener("resize", h), cancelAnimationFrame(raf);
+      };
+    }, [ref]);
+  }
+  function fly(fromRect, label, targetEl) {
+    if (!targetEl || !fromRect) return;
+    let to = targetEl.getBoundingClientRect(), chip = document.createElement("div");
+    chip.className = "fly", chip.textContent = label, document.body.appendChild(chip);
+    let x0 = fromRect.left, y0 = fromRect.top - 4;
+    chip.style.left = x0 + "px", chip.style.top = y0 + "px";
+    let dx = to.left + Math.min(to.width / 2, 60) - x0 - 30, dy = to.top + Math.min(to.height / 2, 70) - y0, a = chip.animate(
+      [
+        { transform: "translate(0,0) scale(1)", opacity: 1 },
+        { transform: `translate(${dx * 0.45}px, ${dy * 0.45 - 70}px) scale(1.08)`, opacity: 1, offset: 0.45 },
+        { transform: `translate(${dx}px, ${dy}px) scale(.55)`, opacity: 0.15 }
+      ],
+      { duration: reduced ? 1 : 640, easing: "cubic-bezier(.45,0,.25,1)" }
+    );
+    a.onfinish = () => {
+      chip.remove(), targetEl.classList.remove("catch"), targetEl.offsetWidth, targetEl.classList.add("catch"), setTimeout(() => targetEl.classList.remove("catch"), 500);
+    };
+  }
+  var Svg = ({ children, size = 16, sw = 1.7 }) => /* @__PURE__ */ React.createElement("svg", { width: size, height: size, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: sw, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" }, children), Ic = {
+    grip: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("g", { fill: "currentColor", stroke: "none" }, /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "6", r: "1.3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "6", r: "1.3" }), /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "12", r: "1.3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "12", r: "1.3" }), /* @__PURE__ */ React.createElement("circle", { cx: "9", cy: "18", r: "1.3" }), /* @__PURE__ */ React.createElement("circle", { cx: "15", cy: "18", r: "1.3" }))),
+    pin: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 17v5" }), /* @__PURE__ */ React.createElement("path", { d: "M9 3h6l-1 6 3 3v2H7v-2l3-3z" })),
+    expand: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" })),
+    dock: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "16", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M15 4v16" })),
+    float: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "4", width: "18", height: "16", rx: "2" }), /* @__PURE__ */ React.createElement("rect", { x: "10", y: "9", width: "8", height: "7", rx: "1" })),
+    min: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M5 18h14" })),
+    close: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M6 6l12 12M18 6L6 18" })),
+    check: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M5 12.5l4.5 4.5L19 7.5" })),
+    undo: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 14L4 9l5-5" }), /* @__PURE__ */ React.createElement("path", { d: "M4 9h11a5 5 0 010 10h-3" })),
+    spot: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "4" }), /* @__PURE__ */ React.createElement("path", { d: "M12 2v3M12 19v3M2 12h3M19 12h3" })),
+    eye: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" }), /* @__PURE__ */ React.createElement("circle", { cx: "12", cy: "12", r: "3" })),
+    cal: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "3", y: "5", width: "18", height: "16", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M3 10h18M8 3v4M16 3v4" })),
+    notes: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M6 3h9l4 4v14H6z" }), /* @__PURE__ */ React.createElement("path", { d: "M9 11h7M9 15h7M9 7h3" })),
+    search: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("circle", { cx: "11", cy: "11", r: "6" }), /* @__PURE__ */ React.createElement("path", { d: "M20 20l-4.5-4.5" })),
+    left: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M15 6l-6 6 6 6" })),
+    right: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M9 6l6 6-6 6" })),
+    copy: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("rect", { x: "8", y: "8", width: "12", height: "12", rx: "2" }), /* @__PURE__ */ React.createElement("path", { d: "M16 8V5a1 1 0 00-1-1H5a1 1 0 00-1 1v10a1 1 0 001 1h3" })),
+    alert: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M12 3l10 18H2z" }), /* @__PURE__ */ React.createElement("path", { d: "M12 10v5M12 18v.5" })),
+    play: (p) => /* @__PURE__ */ React.createElement(Svg, { ...p }, /* @__PURE__ */ React.createElement("path", { d: "M7 5l12 7-12 7z" }))
+  };
+  function StatusDot({ s }) {
+    return /* @__PURE__ */ React.createElement("span", { className: cls("dot", "st-" + s), "aria-hidden": "true" });
+  }
+  function Kbd({ children }) {
+    return /* @__PURE__ */ React.createElement("kbd", { className: "kbd" }, children);
+  }
+  function Score({ s, compact }) {
+    let cells = [["prob", "Problems"], ["data", "Data"], ["risk", "Risk"]], ok = s.code === CASE.billed;
+    return /* @__PURE__ */ React.createElement("div", { className: cls("score", compact && "compact") }, cells.map(([k, l]) => /* @__PURE__ */ React.createElement("div", { key: k, className: cls("sc", s[k] >= 3 && "hi") }, /* @__PURE__ */ React.createElement("span", { className: "sc-k" }, l), /* @__PURE__ */ React.createElement("span", { className: "sc-v" }, LV[s[k]]))), /* @__PURE__ */ React.createElement("div", { className: cls("sc-total", ok ? "ok" : "short") }, /* @__PURE__ */ React.createElement("span", { className: "sc-k" }, "Supports"), /* @__PURE__ */ React.createElement("span", { className: "sc-v" }, /* @__PURE__ */ React.createElement("b", null, s.code), " ", /* @__PURE__ */ React.createElement("span", { className: "sc-of" }, "of ", CASE.billed))));
+  }
+  function Block({ b, fs, hotId, activeId, flashId, onEnter, onLeave, onClickEv }) {
+    let segs = segments(b.t, fs);
+    return /* @__PURE__ */ React.createElement("div", { className: cls("blk", "k-" + b.k), "data-block": b.id }, segs.map(
+      (s, i) => typeof s == "string" ? /* @__PURE__ */ React.createElement(React.Fragment, { key: i }, s) : /* @__PURE__ */ React.createElement(
+        "mark",
+        {
+          key: s.f.id,
+          id: "ev-" + s.f.id,
+          "data-tag": tagOf(s.f),
+          className: cls("ev", "st-" + s.f.status, s.f.outsideDos && "odos", hotId === s.f.id && "hot", activeId === s.f.id && "active", flashId === s.f.id && "flash"),
+          onMouseEnter: (e) => onEnter(s.f.id, e),
+          onMouseLeave: onLeave,
+          onClick: (e) => onClickEv(s.f.id, e)
+        },
+        b.t.slice(s.s, s.e)
+      )
+    ));
+  }
+  function Minimap({ scrollerRef, ordered, onJump, activeId }) {
+    let [marks, setMarks] = useState([]), [pgs, setPgs] = useState([]), [vp, setVp] = useState({ top: 0, h: 0.2 }), orderedRef = useRef(ordered);
+    orderedRef.current = ordered;
+    let measure = useCallback(() => {
+      let sc = scrollerRef.current;
+      if (!sc) return;
+      let H = sc.scrollHeight || 1, base = sc.getBoundingClientRect().top - sc.scrollTop;
+      setMarks(orderedRef.current.map((f) => {
+        let el = document.getElementById("ev-" + f.id);
+        return el ? { id: f.id, status: f.status, t: (el.getBoundingClientRect().top - base) / H, code: tagOf(f) } : null;
+      }).filter(Boolean)), setPgs(PAGES.map((p) => {
+        let r = document.getElementById("page-" + p.n).getBoundingClientRect();
+        return { n: p.n, t: (r.top - base) / H, h: r.height / H, off: p.dos !== CASE.dos };
+      })), setVp({ top: sc.scrollTop / H, h: sc.clientHeight / H });
+    }, [scrollerRef]);
+    return useLayoutEffect(() => {
+      measure();
+    }, [ordered, measure]), useEffect(() => {
+      let sc = scrollerRef.current, onS = () => setVp({ top: sc.scrollTop / sc.scrollHeight, h: sc.clientHeight / sc.scrollHeight });
+      sc.addEventListener("scroll", onS, { passive: !0 });
+      let ro = new ResizeObserver(() => measure());
+      return ro.observe(sc), sc.firstElementChild && ro.observe(sc.firstElementChild), document.fonts && document.fonts.ready.then(measure), () => {
+        sc.removeEventListener("scroll", onS), ro.disconnect();
+      };
+    }, [measure, scrollerRef]), /* @__PURE__ */ React.createElement("div", { className: "mm", onClick: (e) => {
+      let sc = scrollerRef.current, r = e.currentTarget.getBoundingClientRect(), f = (e.clientY - r.top) / r.height;
+      sc.scrollTo({ top: f * sc.scrollHeight - sc.clientHeight / 2, behavior: reduced ? "auto" : "smooth" });
+    }, title: "Record overview. Click to jump." }, pgs.map((p) => /* @__PURE__ */ React.createElement("div", { key: p.n, className: cls("mm-page", p.off && "off"), style: { top: p.t * 100 + "%", height: p.h * 100 + "%" } })), /* @__PURE__ */ React.createElement("div", { className: "mm-vp", style: { top: vp.top * 100 + "%", height: vp.h * 100 + "%" } }), marks.map((m) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: m.id,
+        className: cls("mm-tick", "st-" + m.status, activeId === m.id && "active"),
+        style: { top: `calc(${m.t * 100}% - 2px)` },
+        title: m.code,
+        "aria-label": "Jump to " + m.code,
+        onClick: (e) => {
+          e.stopPropagation(), onJump(m.id);
+        }
+      }
+    )));
+  }
+  function EvCard({ f, scrollerRef, onAction, onEnter, onLeave, onClose }) {
+    useScrollTick(scrollerRef);
+    let el = document.getElementById("ev-" + f.id), sc = scrollerRef.current;
+    if (!el || !sc) return null;
+    let r = el.getBoundingClientRect(), sr = sc.getBoundingClientRect();
+    if (r.bottom < sr.top + 4 || r.top > sr.bottom - 4) return null;
+    let W = Math.min(320, window.innerWidth - 16), left = clamp(r.left, 8, window.innerWidth - W - 8), style = window.innerHeight - r.bottom > 280 ? { left, top: r.bottom + 10, width: W } : { left, bottom: window.innerHeight - r.top + 14, width: W }, route = routeOf(f);
+    return /* @__PURE__ */ React.createElement("div", { className: "card", style, onMouseEnter: onEnter, onMouseLeave: onLeave, role: "dialog", "aria-label": "Finding details" }, /* @__PURE__ */ React.createElement("div", { className: "card-top" }, /* @__PURE__ */ React.createElement("span", { className: cls("chip", "st-" + f.status) }, /* @__PURE__ */ React.createElement(StatusDot, { s: f.status }), STATUS_LABEL[f.status]), f.source === "ai" && f.conf && /* @__PURE__ */ React.createElement("span", { className: "conf" }, Math.round(f.conf * 100), "% confidence"), /* @__PURE__ */ React.createElement("button", { className: "ib sm", onClick: onClose, "aria-label": "Close" }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "card-code" }, f.code || mdmTag(f) || (f.type === "time" ? "Time" : "Note")), /* @__PURE__ */ React.createElement("div", { className: "card-desc" }, titleOf(f)), f.mdm && (f.code || f.type === "mdm") && /* @__PURE__ */ React.createElement("div", { className: "card-mdm" }, /* @__PURE__ */ React.createElement("span", { className: "mini" }, "MDM"), EL[f.mdm.el], " \xB7 ", f.mdm.el === "data" ? `Category ${f.mdm.cat}` : LV[f.mdm.level], f.code ? ` \xB7 ${f.mdm.label}` : ""), f.outsideDos && /* @__PURE__ */ React.createElement("div", { className: "warn" }, /* @__PURE__ */ React.createElement(Ic.alert, { size: 14 }), "This is from a visit on ", PAGES.find((p) => p.n === f.page).dos, ". It can't support the ", CASE.dos, " claim."), f.note && f.type !== "note" && /* @__PURE__ */ React.createElement("div", { className: "card-note" }, f.note), /* @__PURE__ */ React.createElement("blockquote", { className: "card-q" }, "\u201C", f.text, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "card-meta" }, "Page ", f.page, " \xB7 ", /* @__PURE__ */ React.createElement("span", { className: "route r-" + route }, ROUTE_LABEL[route])), /* @__PURE__ */ React.createElement("div", { className: "card-actions" }, f.status === "ai" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { className: "btn ok", onClick: () => onAction(f.id, "confirmed") }, /* @__PURE__ */ React.createElement(Ic.check, { size: 14 }), "Accept ", /* @__PURE__ */ React.createElement(Kbd, null, "A")), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => onAction(f.id, "rejected") }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }), "Reject ", /* @__PURE__ */ React.createElement(Kbd, null, "R"))), (f.status === "confirmed" || f.status === "added") && /* @__PURE__ */ React.createElement(React.Fragment, null, f.source === "ai" && /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => onAction(f.id, "ai") }, /* @__PURE__ */ React.createElement(Ic.undo, { size: 14 }), "Unaccept"), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => onAction(f.id, "rejected") }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }), "Reject ", /* @__PURE__ */ React.createElement(Kbd, null, "R"))), f.status === "rejected" && /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: () => onAction(f.id, f.source === "ai" ? "ai" : "added") }, /* @__PURE__ */ React.createElement(Ic.undo, { size: 14 }), "Restore")));
+  }
+  function SelTool({ sel, scrollerRef, onPick }) {
+    useScrollTick(scrollerRef);
+    let r = sel.range.getBoundingClientRect();
+    if (!r.width && !r.height) return null;
+    let W = sel.overlap ? 250 : 380, left = clamp(r.left + r.width / 2 - W / 2, 8, window.innerWidth - W - 8), top = r.top > 120 ? r.top - 46 : r.bottom + 8, pd = (e) => e.preventDefault();
+    return sel.overlap ? /* @__PURE__ */ React.createElement("div", { className: "seltb note", style: { left, top, width: W }, onMouseDown: pd }, "Part of this is already marked. Hover the box to edit it.") : /* @__PURE__ */ React.createElement("div", { className: "seltb", style: { left, top }, onMouseDown: pd, role: "toolbar", "aria-label": "Add finding" }, /* @__PURE__ */ React.createElement("span", { className: "seltb-lead" }, "Add"), [["dx", "Diagnosis"], ["px", "Procedure"], ["mdm", "MDM element"], ["note", "Note"]].map(([k, l]) => /* @__PURE__ */ React.createElement("button", { key: k, onClick: () => onPick(k) }, "+ ", l)));
+  }
+  function Compose({ sel, type, setType, scrollerRef, onAdd, onCancel }) {
+    useScrollTick(scrollerRef);
+    let [q, setQ] = useState(sel.text.slice(0, 80)), [pick, setPick] = useState(0), [note, setNote] = useState(""), boxRef = useRef(), results = useMemo(() => type === "dx" || type === "px" ? searchCodes(q, type) : [], [q, type]), mdm = useMemo(() => rankMdm(sel.text), [sel.text]);
+    useEffect(() => {
+      setPick(0);
+    }, [type, q]), useEffect(() => {
+      let el = boxRef.current;
+      if (!el) return;
+      let t = el.querySelector(type === "note" ? "textarea" : type === "mdm" ? ".opt-list" : "input");
+      t && t.focus({ preventScroll: !0 });
+    }, [type]);
+    let list = type === "mdm" ? mdm : results, submit = () => {
+      if (type === "note") return onAdd({ type: "note", note: note.trim() || "Reviewer note", desc: "Reviewer note" });
+      let o = list[pick];
+      o && onAdd(type === "mdm" ? { type: "mdm", desc: o.label, mdm: { el: o.el, level: o.level || 0, cat: o.cat, label: o.label } } : { type, code: o.code, desc: o.desc });
+    }, onKey = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault(), onCancel();
+        return;
+      }
+      if (type === "note") {
+        e.key === "Enter" && (e.metaKey || e.ctrlKey) && (e.preventDefault(), submit());
+        return;
+      }
+      e.key === "ArrowDown" && (e.preventDefault(), setPick((p) => Math.min(p + 1, list.length - 1))), e.key === "ArrowUp" && (e.preventDefault(), setPick((p) => Math.max(p - 1, 0))), e.key === "Enter" && (e.preventDefault(), submit());
+    }, r = sel.range.getBoundingClientRect(), W = Math.min(360, window.innerWidth - 16), left = clamp(r.left, 8, window.innerWidth - W - 8), style = window.innerHeight - r.bottom > 400 ? { left, top: r.bottom + 10, width: W } : { left, bottom: Math.max(8, window.innerHeight - r.top + 12), width: W }, cur = list[pick];
+    return /* @__PURE__ */ React.createElement("div", { className: "compose", style, ref: boxRef, onKeyDown: onKey, role: "dialog", "aria-label": "Add finding" }, /* @__PURE__ */ React.createElement("div", { className: "seg", role: "tablist" }, [["dx", "Diagnosis"], ["px", "Procedure"], ["mdm", "MDM"], ["note", "Note"]].map(([k, l]) => /* @__PURE__ */ React.createElement("button", { key: k, role: "tab", "aria-selected": type === k, className: cls(type === k && "on"), onClick: () => setType(k) }, l))), /* @__PURE__ */ React.createElement("blockquote", { className: "card-q sm" }, "\u201C", sel.text, "\u201D"), (type === "dx" || type === "px") && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("label", { className: "search" }, /* @__PURE__ */ React.createElement(Ic.search, { size: 14 }), /* @__PURE__ */ React.createElement("input", { id: "code-search", value: q, onChange: (e) => setQ(e.target.value), placeholder: type === "dx" ? "Search ICD-10-CM" : "Search CPT / HCPCS", "aria-label": "Search codes" })), /* @__PURE__ */ React.createElement("div", { className: "opt-list", role: "listbox" }, results.map((o, i) => /* @__PURE__ */ React.createElement("button", { key: o.code, role: "option", "aria-selected": i === pick, className: cls("opt", i === pick && "on"), onMouseEnter: () => setPick(i), onClick: () => {
+      setPick(i), onAdd({ type, code: o.code, desc: o.desc });
+    } }, /* @__PURE__ */ React.createElement("span", { className: "opt-code" }, o.code), /* @__PURE__ */ React.createElement("span", { className: "opt-desc" }, o.desc), CLAIM_CODES.has(o.code) && /* @__PURE__ */ React.createElement("span", { className: "opt-flag" }, "on claim")))), cur && /* @__PURE__ */ React.createElement("div", { className: "route-hint" }, CLAIM_CODES.has(cur.code) ? "On the claim. Adds evidence to the appeal." : "Not on the claim. Goes to the corrected claim list.")), type === "mdm" && /* @__PURE__ */ React.createElement("div", { className: "opt-list tall", role: "listbox", tabIndex: -1 }, mdm.map((o, i) => /* @__PURE__ */ React.createElement("button", { key: o.label, role: "option", "aria-selected": i === pick, className: cls("opt", i === pick && "on"), onMouseEnter: () => setPick(i), onClick: () => {
+      onAdd({ type: "mdm", desc: o.label, mdm: { el: o.el, level: o.level || 0, cat: o.cat, label: o.label } });
+    } }, /* @__PURE__ */ React.createElement("span", { className: cls("opt-code", "el-" + o.el) }, o.el === "data" ? `DATA\xB7C${o.cat}` : `${ELS[o.el]}\xB7${LVS[o.level]}`), /* @__PURE__ */ React.createElement("span", { className: "opt-desc" }, o.label), o.suggested && /* @__PURE__ */ React.createElement("span", { className: "opt-flag sug" }, "Suggested")))), type === "note" && /* @__PURE__ */ React.createElement("textarea", { id: "note-text", className: "note-in", rows: 3, value: note, onChange: (e) => setNote(e.target.value), placeholder: "Note for the appeal file" }), /* @__PURE__ */ React.createElement("div", { className: "compose-foot" }, /* @__PURE__ */ React.createElement("span", { className: "hint" }, type === "note" ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Kbd, null, "\u2318"), /* @__PURE__ */ React.createElement(Kbd, null, "\u21B5"), " to add") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Kbd, null, "\u2191"), /* @__PURE__ */ React.createElement(Kbd, null, "\u2193"), " choose \xB7 ", /* @__PURE__ */ React.createElement(Kbd, null, "\u21B5"), " add")), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: onCancel }, "Cancel"), /* @__PURE__ */ React.createElement("button", { className: "btn primary", onClick: submit }, "Add to notes")));
+  }
+  function Row({ f, active, hot, flash, onEnter, onLeave, onClick, onAction }) {
+    let route = routeOf(f), stop = (fn) => (e) => {
+      e.stopPropagation(), fn();
+    };
+    return /* @__PURE__ */ React.createElement("div", { "data-row": f.id, className: cls("row", "st-" + f.status, active && "active", hot && "hot", flash && "flash"), onMouseEnter: onEnter, onMouseLeave: onLeave, onClick, role: "button", tabIndex: 0, onKeyDown: (e) => {
+      e.key === "Enter" && onClick();
+    } }, /* @__PURE__ */ React.createElement(StatusDot, { s: f.status }), /* @__PURE__ */ React.createElement("div", { className: "row-main" }, /* @__PURE__ */ React.createElement("div", { className: "row-top" }, /* @__PURE__ */ React.createElement("span", { className: "row-code" }, f.code || mdmTag(f) || (f.type === "time" ? "TIME" : "NOTE")), /* @__PURE__ */ React.createElement("span", { className: "row-desc" }, titleOf(f))), /* @__PURE__ */ React.createElement("div", { className: "row-q" }, "\u201C", f.text, "\u201D"), /* @__PURE__ */ React.createElement("div", { className: "row-meta" }, f.code && f.mdm && /* @__PURE__ */ React.createElement("span", { className: "mini" }, mdmTag(f)), /* @__PURE__ */ React.createElement("span", { className: "route r-" + route }, ROUTE_LABEL[route]), f.outsideDos && /* @__PURE__ */ React.createElement("span", { className: "route r-warn" }, "Other visit"), f.replaces && /* @__PURE__ */ React.createElement("span", { className: "mini" }, "replaces ", f.replaces))), /* @__PURE__ */ React.createElement("div", { className: "row-act" }, f.status === "ai" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { className: "ib sm ok", title: "Accept (A)", "aria-label": "Accept", onClick: stop(() => onAction(f.id, "confirmed")) }, /* @__PURE__ */ React.createElement(Ic.check, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm no", title: "Reject (R)", "aria-label": "Reject", onClick: stop(() => onAction(f.id, "rejected")) }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), isLive(f) && /* @__PURE__ */ React.createElement("button", { className: "ib sm no", title: "Reject (R)", "aria-label": "Reject", onClick: stop(() => onAction(f.id, "rejected")) }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 })), f.status === "rejected" && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Restore", "aria-label": "Restore", onClick: stop(() => onAction(f.id, f.source === "ai" ? "ai" : "added")) }, /* @__PURE__ */ React.createElement(Ic.undo, { size: 14 }))));
+  }
+  function pageRange(ps) {
+    if (!ps.length) return "";
+    let a = Math.min(...ps), b = Math.max(...ps);
+    return a === b ? `p. ${a}` : `p. ${a}\u2013${b}`;
+  }
+  function NotesBody({ ordered, visible, pinned, setPinned, tab, setTab, activeId, hoverId, flashId, setHoverId, onJump, onAction, s, onFull }) {
+    let listRef = useRef(), pages = pinned || visible, inView = ordered.filter((f) => pages.includes(f.page)), list = tab === "view" ? inView : ordered, groups = [];
+    list.forEach((f) => {
+      let g = groups[groups.length - 1];
+      (!g || g.page !== f.page) && (g = { page: f.page, items: [] }, groups.push(g)), g.items.push(f);
+    }), useEffect(() => {
+      if (!activeId || !listRef.current) return;
+      let el = listRef.current.querySelector(`[data-row="${activeId}"]`);
+      el && el.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
+    }, [activeId, tab]);
+    let pending = ordered.filter((f) => f.status === "ai").length;
+    return /* @__PURE__ */ React.createElement("div", { className: "nb" }, /* @__PURE__ */ React.createElement("div", { className: "nb-sub" }, /* @__PURE__ */ React.createElement("div", { className: "tabs", role: "tablist" }, /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": tab === "view", className: cls(tab === "view" && "on"), onClick: () => setTab("view") }, "In view ", /* @__PURE__ */ React.createElement("span", { className: "n" }, inView.length)), /* @__PURE__ */ React.createElement("button", { role: "tab", "aria-selected": tab === "all", className: cls(tab === "all" && "on"), onClick: () => setTab("all") }, "All ", /* @__PURE__ */ React.createElement("span", { className: "n" }, ordered.length))), tab === "view" ? /* @__PURE__ */ React.createElement("button", { className: cls("follow", pinned && "pinned"), onClick: () => setPinned(pinned ? null : [...visible]), title: pinned ? "Unpin to follow the scroll again" : "Pin these pages" }, /* @__PURE__ */ React.createElement(Ic.pin, { size: 13 }), pinned ? `Pinned ${pageRange(pinned)}` : `Following ${pageRange(visible)}`) : /* @__PURE__ */ React.createElement("span", { className: "follow static" }, pending, " to review")), /* @__PURE__ */ React.createElement("div", { className: "nb-list", ref: listRef }, groups.length === 0 && /* @__PURE__ */ React.createElement("div", { className: "empty" }, /* @__PURE__ */ React.createElement("b", null, "Nothing marked on ", pageRange(pages), "."), "Select words on the record to add a diagnosis, procedure, MDM element or note."), groups.map((g) => {
+      let pg = PAGES.find((p) => p.n === g.page);
+      return /* @__PURE__ */ React.createElement("div", { key: g.page, className: "grp" }, /* @__PURE__ */ React.createElement("div", { className: "grp-h" }, "Page ", g.page, " \xB7 ", pg.label, pg.dos !== CASE.dos && /* @__PURE__ */ React.createElement("span", { className: "grp-warn" }, " \xB7 DOS ", pg.dos)), g.items.map((f) => /* @__PURE__ */ React.createElement(
+        Row,
+        {
+          key: f.id,
+          f,
+          active: activeId === f.id,
+          hot: hoverId === f.id,
+          flash: flashId === f.id,
+          onEnter: () => setHoverId(f.id),
+          onLeave: () => setHoverId(null),
+          onClick: () => onJump(f.id),
+          onAction
+        }
+      )));
+    })), /* @__PURE__ */ React.createElement("div", { className: "nb-foot" }, /* @__PURE__ */ React.createElement(Score, { s, compact: !0 }), /* @__PURE__ */ React.createElement("button", { className: "btn wide", onClick: onFull }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 }), "Full notes and appeal draft ", /* @__PURE__ */ React.createElement(Kbd, null, "F"))));
+  }
+  function Notepad({ np, setNp, innerRef, ghost, setSnap, narrow, count, children, onDock, onMin, onClose, onFull, setNpHover }) {
+    let drag = (e) => {
+      if (e.target.closest("button")) return;
+      e.preventDefault();
+      let el = e.currentTarget;
+      el.setPointerCapture(e.pointerId);
+      let sx = e.clientX, sy = e.clientY, ox = np.x, oy = np.y, near = !1, mv = (ev) => {
+        let nx = clamp(ox + ev.clientX - sx, 4, window.innerWidth - np.w - 4), ny = clamp(oy + ev.clientY - sy, 4, window.innerHeight - 60);
+        near = !narrow && ev.clientX > window.innerWidth - 70, setSnap(near), setNp((n) => ({ ...n, x: nx, y: ny }));
+      }, up = () => {
+        el.removeEventListener("pointermove", mv), el.removeEventListener("pointerup", up), el.removeEventListener("pointercancel", up), setSnap(!1), near && onDock();
+      };
+      el.addEventListener("pointermove", mv), el.addEventListener("pointerup", up), el.addEventListener("pointercancel", up);
+    }, resize = (e) => {
+      e.preventDefault(), e.stopPropagation();
+      let el = e.currentTarget;
+      el.setPointerCapture(e.pointerId);
+      let sx = e.clientX, sy = e.clientY, ow = np.w, oh = np.h, mv = (ev) => {
+        setNp((n) => ({
+          ...n,
+          w: clamp(ow + ev.clientX - sx, 290, window.innerWidth - n.x - 4),
+          h: clamp(oh + ev.clientY - sy, 240, window.innerHeight - n.y - 4)
+        }));
+      }, up = () => {
+        el.removeEventListener("pointermove", mv), el.removeEventListener("pointerup", up);
+      };
+      el.addEventListener("pointermove", mv), el.addEventListener("pointerup", up);
+    };
+    return /* @__PURE__ */ React.createElement("div", { ref: innerRef, className: cls("np", ghost && "ghost"), style: { left: np.x, top: np.y, width: np.w, height: np.h }, onMouseEnter: () => setNpHover(!0), onMouseLeave: () => setNpHover(!1), role: "region", "aria-label": "Notepad" }, /* @__PURE__ */ React.createElement("div", { className: "np-head", onPointerDown: drag }, /* @__PURE__ */ React.createElement("span", { className: "grip" }, /* @__PURE__ */ React.createElement(Ic.grip, { size: 14 })), /* @__PURE__ */ React.createElement("span", { className: "np-title" }, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, count), /* @__PURE__ */ React.createElement("span", { className: "sp" }), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Full notes (F)", "aria-label": "Full notes", onClick: onFull }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 })), !narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Dock to the right (D)", "aria-label": "Dock", onClick: onDock }, /* @__PURE__ */ React.createElement(Ic.dock, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Minimize (N)", "aria-label": "Minimize", onClick: onMin }, /* @__PURE__ */ React.createElement(Ic.min, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Close", "aria-label": "Close notepad", onClick: onClose }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), children, /* @__PURE__ */ React.createElement("div", { className: "np-rz", onPointerDown: resize, "aria-hidden": "true" }));
+  }
+  function buildLetter(ordered, s) {
+    let live = ordered.filter((f) => isLive(f) && !f.outsideDos), ev = (el) => live.filter((f) => f.mdm && f.mdm.el === el), cite = (f) => `${f.mdm.label}: \u201C${f.text}\u201D (p. ${f.page})`, out = [];
+    return out.push({ k: "meta", t: `RE: Request for reconsideration
+Patient: ${CASE.patient} \xB7 Member claim ${CASE.claim}
+Date of service: ${CASE.dos} \xB7 Rendering provider: ${CASE.provider}
+Billed CPT ${CASE.billed}; processed as ${CASE.paid} (${CASE.carc})` }), out.push({ k: "p", t: `To the ${CASE.payer} reconsideration unit:` }), out.push({ k: "p", t: `We request that CPT ${CASE.billed} be reinstated for this visit. Under the AMA office visit guidelines (2021, revised 2023), level 5 requires high-complexity medical decision making, which means at least two of the three MDM elements at the high level. The enclosed office note documents the following.` }), [["problems", "Number and complexity of problems addressed", s.prob], ["risk", "Risk of complications of patient management", s.risk], ["data", "Amount and complexity of data reviewed and analyzed", s.data]].forEach(([el, h, lv]) => {
+      let items = ev(el);
+      out.push({ k: "h", t: `${h}: ${LV[lv]}` }), items.length || out.push({ k: "li", t: "No confirmed evidence yet." }), items.forEach((f) => out.push({ k: "li", t: cite(f) }));
+    }), ordered.find((f) => f.type === "time" && f.status !== "rejected") && out.push({ k: "p", t: "The note documents 34 minutes of total time. This level is based on medical decision making, not time." }), out.push({ k: "p", t: `The documentation supports CPT ${s.code}. We ask that the claim be reprocessed at CPT ${CASE.billed}. The complete office note for ${CASE.dos} (pages 1\u20135) is enclosed.` }), out.push({ k: "p", t: `Sincerely,
+Revenue Cycle Appeals
+${CASE.practice}
+On behalf of ${CASE.provider}` }), out;
+  }
+  function FullNotes({ tab, setTab, ordered, s, onClose, onJump, onAction }) {
+    let [filter, setFilter] = useState("all"), [copied, setCopied] = useState(!1), letterRef = useRef(), filters = [["all", "All"], ["ai", "AI suggested"], ["confirmed", "Confirmed"], ["added", "Coder added"], ["rejected", "Rejected"]], rows = ordered.filter((f) => filter === "all" || f.status === filter), letter = buildLetter(ordered, s), newItems = ordered.filter((f) => routeOf(f) === "corrected" || f.code && !CLAIM_CODES.has(f.code) && f.status === "ai" && !f.outsideDos), uniqNew = newItems.filter((f, i) => newItems.findIndex((x) => x.id === f.id) === i), lineVerdict = (l) => {
+      if (l.code === CASE.billed)
+        return s.code === CASE.billed ? { st: "ok", t: `Record supports ${s.code} on MDM (Problems ${LV[s.prob]}, Risk ${LV[s.risk]}).`, a: "Appeal: reinstate 99215" } : { st: "warn", t: `Confirmed evidence supports ${s.code}. Level 5 needs two of three MDM elements at High.`, a: "Hold: find or confirm high-level evidence" };
+      let rep = ordered.find((f) => f.replaces === l.code && f.status !== "rejected");
+      if (rep) return isLive(rep) ? { st: "warn", t: `Record documents ${rep.desc.toLowerCase()} (p. ${rep.page}).`, a: `Correct to ${rep.code}` } : { st: "pend", t: `AI suggests ${rep.code} instead (p. ${rep.page}). Review pending.`, a: "Review suggestion" };
+      let sup = ordered.filter((f) => f.code === l.code && isLive(f));
+      return sup.length ? { st: "ok", t: `Supported on p. ${sup.map((f) => f.page).join(", ")}.`, a: "No change" } : { st: "pend", t: "No confirmed evidence yet.", a: "Review" };
+    }, copy = () => {
+      let txt = letter.map((b) => b.k === "li" ? "\u2022 " + b.t : b.t).join(`
+
+`), done = () => {
+        setCopied(!0), setTimeout(() => setCopied(!1), 1600);
+      };
+      try {
+        navigator.clipboard.writeText(txt).then(done, () => selectLetter());
+      } catch {
+        selectLetter();
+      }
+    }, selectLetter = () => {
+      let r = document.createRange();
+      r.selectNodeContents(letterRef.current);
+      let sel = window.getSelection();
+      sel.removeAllRanges(), sel.addRange(r);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "modal-bg", onMouseDown: (e) => {
+      e.target === e.currentTarget && onClose();
+    } }, /* @__PURE__ */ React.createElement("div", { className: "modal", role: "dialog", "aria-label": "Full notes" }, /* @__PURE__ */ React.createElement("div", { className: "modal-head" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "eyebrow" }, CASE.id, " \xB7 ", CASE.level), /* @__PURE__ */ React.createElement("h2", null, "Full notes")), /* @__PURE__ */ React.createElement("div", { className: "tabs big", role: "tablist" }, [["findings", "Findings"], ["worksheet", "Claim worksheet"], ["appeal", "Appeal draft"]].map(([k, l]) => /* @__PURE__ */ React.createElement("button", { key: k, role: "tab", "aria-selected": tab === k, className: cls(tab === k && "on"), onClick: () => setTab(k) }, l))), /* @__PURE__ */ React.createElement("button", { className: "ib", onClick: onClose, "aria-label": "Close full notes" }, /* @__PURE__ */ React.createElement(Ic.close, { size: 18 }))), /* @__PURE__ */ React.createElement("div", { className: "modal-body" }, tab === "findings" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "filters" }, filters.map(([k, l]) => /* @__PURE__ */ React.createElement("button", { key: k, className: cls("fchip", filter === k && "on"), onClick: () => setFilter(k) }, k !== "all" && /* @__PURE__ */ React.createElement(StatusDot, { s: k }), l, " ", /* @__PURE__ */ React.createElement("span", { className: "n" }, k === "all" ? ordered.length : ordered.filter((f) => f.status === k).length)))), /* @__PURE__ */ React.createElement("div", { className: "tbl-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Status"), /* @__PURE__ */ React.createElement("th", null, "Page"), /* @__PURE__ */ React.createElement("th", null, "Code"), /* @__PURE__ */ React.createElement("th", null, "Description"), /* @__PURE__ */ React.createElement("th", null, "Evidence in record"), /* @__PURE__ */ React.createElement("th", null, "Goes to"), /* @__PURE__ */ React.createElement("th", { "aria-label": "Actions" }))), /* @__PURE__ */ React.createElement("tbody", null, rows.map((f) => {
+      let route = routeOf(f);
+      return /* @__PURE__ */ React.createElement("tr", { key: f.id, onClick: () => onJump(f.id), className: "st-" + f.status }, /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: cls("chip", "st-" + f.status) }, /* @__PURE__ */ React.createElement(StatusDot, { s: f.status }), STATUS_LABEL[f.status])), /* @__PURE__ */ React.createElement("td", { className: "num" }, f.page), /* @__PURE__ */ React.createElement("td", { className: "mono" }, f.code || mdmTag(f) || f.type.toUpperCase(), f.code && f.mdm && /* @__PURE__ */ React.createElement("div", { className: "sub" }, mdmTag(f))), /* @__PURE__ */ React.createElement("td", null, titleOf(f)), /* @__PURE__ */ React.createElement("td", { className: "q" }, "\u201C", f.text, "\u201D"), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: "route r-" + route }, ROUTE_LABEL[route])), /* @__PURE__ */ React.createElement("td", { className: "acts", onClick: (e) => e.stopPropagation() }, f.status === "ai" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { className: "ib sm ok", "aria-label": "Accept", onClick: () => onAction(f.id, "confirmed") }, /* @__PURE__ */ React.createElement(Ic.check, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm no", "aria-label": "Reject", onClick: () => onAction(f.id, "rejected") }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), isLive(f) && /* @__PURE__ */ React.createElement("button", { className: "ib sm no", "aria-label": "Reject", onClick: () => onAction(f.id, "rejected") }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 })), f.status === "rejected" && /* @__PURE__ */ React.createElement("button", { className: "ib sm", "aria-label": "Restore", onClick: () => onAction(f.id, f.source === "ai" ? "ai" : "added") }, /* @__PURE__ */ React.createElement(Ic.undo, { size: 14 }))));
+    }))))), tab === "worksheet" && /* @__PURE__ */ React.createElement("div", { className: "ws" }, /* @__PURE__ */ React.createElement(Score, { s }), /* @__PURE__ */ React.createElement("h3", null, "Lines on the claim"), /* @__PURE__ */ React.createElement("div", { className: "tbl-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Billed"), /* @__PURE__ */ React.createElement("th", null, "Paid as"), /* @__PURE__ */ React.createElement("th", null, "Description"), /* @__PURE__ */ React.createElement("th", null, "What the record shows"), /* @__PURE__ */ React.createElement("th", null, "Action"))), /* @__PURE__ */ React.createElement("tbody", null, CLAIM_LINES.map((l) => {
+      let v = lineVerdict(l);
+      return /* @__PURE__ */ React.createElement("tr", { key: l.code, className: "static" }, /* @__PURE__ */ React.createElement("td", { className: "mono" }, l.code), /* @__PURE__ */ React.createElement("td", { className: cls("mono", l.paid !== l.code && "down") }, l.paid), /* @__PURE__ */ React.createElement("td", null, l.desc), /* @__PURE__ */ React.createElement("td", null, v.t), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: "verdict v-" + v.st }, v.a)));
+    })))), /* @__PURE__ */ React.createElement("h3", null, "Found in the record, not on the claim"), /* @__PURE__ */ React.createElement("p", { className: "muted" }, "These can't be added through an appeal. Send confirmed items to billing as a corrected claim (frequency code 7) within timely filing."), /* @__PURE__ */ React.createElement("div", { className: "tbl-wrap" }, /* @__PURE__ */ React.createElement("table", { className: "tbl" }, /* @__PURE__ */ React.createElement("thead", null, /* @__PURE__ */ React.createElement("tr", null, /* @__PURE__ */ React.createElement("th", null, "Code"), /* @__PURE__ */ React.createElement("th", null, "Description"), /* @__PURE__ */ React.createElement("th", null, "Page"), /* @__PURE__ */ React.createElement("th", null, "Status"))), /* @__PURE__ */ React.createElement("tbody", null, uniqNew.map((f) => /* @__PURE__ */ React.createElement("tr", { key: f.id, onClick: () => onJump(f.id) }, /* @__PURE__ */ React.createElement("td", { className: "mono" }, f.code, f.replaces && /* @__PURE__ */ React.createElement("div", { className: "sub" }, "replaces ", f.replaces)), /* @__PURE__ */ React.createElement("td", null, f.desc), /* @__PURE__ */ React.createElement("td", { className: "num" }, f.page), /* @__PURE__ */ React.createElement("td", null, /* @__PURE__ */ React.createElement("span", { className: cls("chip", "st-" + f.status) }, /* @__PURE__ */ React.createElement(StatusDot, { s: f.status }), f.status === "ai" ? "Needs review" : STATUS_LABEL[f.status])))))))), tab === "appeal" && /* @__PURE__ */ React.createElement("div", { className: "appeal" }, s.code !== CASE.billed && /* @__PURE__ */ React.createElement("div", { className: "warn big" }, /* @__PURE__ */ React.createElement(Ic.alert, { size: 16 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Not ready to send."), " Confirmed evidence supports ", s.code, ", not ", CASE.billed, ". Level 5 needs a second MDM element at High. Check the plan on page 4 for risk evidence the AI may have missed.")), s.code === CASE.billed && /* @__PURE__ */ React.createElement("div", { className: "okbox" }, /* @__PURE__ */ React.createElement(Ic.check, { size: 16 }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("b", null, "Ready for review."), " Problems and Risk are both High, so the record supports ", CASE.billed, ".")), /* @__PURE__ */ React.createElement("div", { className: "letter-tools" }, /* @__PURE__ */ React.createElement("span", { className: "muted" }, "Built from confirmed and coder-added findings. Page citations update as you review."), /* @__PURE__ */ React.createElement("button", { className: "btn", onClick: copy }, /* @__PURE__ */ React.createElement(Ic.copy, { size: 14 }), copied ? "Copied" : "Copy letter")), /* @__PURE__ */ React.createElement("div", { className: "letter", ref: letterRef }, letter.map(
+      (b, i) => b.k === "h" ? /* @__PURE__ */ React.createElement("h4", { key: i }, b.t) : b.k === "li" ? /* @__PURE__ */ React.createElement("div", { key: i, className: "lli" }, b.t) : /* @__PURE__ */ React.createElement("p", { key: i, className: b.k === "meta" ? "lmeta" : "" }, b.t)
+    ))))));
+  }
+  function Palette({ commands, onClose }) {
+    let [q, setQ] = useState(""), [i, setI] = useState(0), list = commands.filter((c) => q.toLowerCase().split(/\s+/).every((t) => c.label.toLowerCase().includes(t)));
+    useEffect(() => setI(0), [q]);
+    let run = (c) => {
+      onClose(), setTimeout(c.run, 10);
+    };
+    return /* @__PURE__ */ React.createElement("div", { className: "modal-bg top", onMouseDown: (e) => {
+      e.target === e.currentTarget && onClose();
+    } }, /* @__PURE__ */ React.createElement("div", { className: "pal", role: "dialog", "aria-label": "Command palette" }, /* @__PURE__ */ React.createElement("label", { className: "search big" }, /* @__PURE__ */ React.createElement(Ic.search, { size: 16 }), /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        id: "palette-input",
+        autoFocus: !0,
+        value: q,
+        onChange: (e) => setQ(e.target.value),
+        placeholder: "Type a command or page\u2026",
+        "aria-label": "Command",
+        onKeyDown: (e) => {
+          e.key === "ArrowDown" && (e.preventDefault(), setI((x) => Math.min(x + 1, list.length - 1))), e.key === "ArrowUp" && (e.preventDefault(), setI((x) => Math.max(x - 1, 0))), e.key === "Enter" && list[i] && (e.preventDefault(), run(list[i])), e.key === "Escape" && (e.preventDefault(), onClose());
+        }
+      }
+    )), /* @__PURE__ */ React.createElement("div", { className: "pal-list" }, list.map((c, k) => /* @__PURE__ */ React.createElement("button", { key: c.label, className: cls("pal-item", k === i && "on"), onMouseEnter: () => setI(k), onClick: () => run(c) }, /* @__PURE__ */ React.createElement("span", null, c.label), c.key && /* @__PURE__ */ React.createElement(Kbd, null, c.key))), !list.length && /* @__PURE__ */ React.createElement("div", { className: "empty" }, "No matching command."))));
+  }
+  function initialNp(narrow) {
+    let W = window.innerWidth, H = window.innerHeight;
+    if (narrow) return { mode: "min", x: 8, y: Math.round(H * 0.4), w: W - 16, h: Math.round(H * 0.55), railCollapsed: !1 };
+    let w = 360, h = Math.min(500, H - 210);
+    return { mode: "float", x: W - w - 40, y: 150, w, h, railCollapsed: !1 };
+  }
+  function App() {
+    let narrow = useNarrow(), [findings, setFindings] = useState(INITIAL), history = useRef([]), [toast, setToast] = useState(null), [activeId, setActiveId] = useState(null), [hoverId, setHoverId] = useState(null), [flashId, setFlashId] = useState(null), [card, setCard] = useState(null), [sel, setSel] = useState(null), [compose, setCompose] = useState(null), [view, setView] = useState({ spot: !1, clean: !1, dos: !0 }), [np, setNp] = useState(() => initialNp(window.matchMedia("(max-width: 760px)").matches)), [pinned, setPinned] = useState(null), [visible, setVisible] = useState([1]), [cur, setCur] = useState(1), [scrolling, setScrolling] = useState(!1), [npHover, setNpHover] = useState(!1), [snap, setSnap] = useState(!1), [full, setFull] = useState(null), [palette, setPalette] = useState(!1), [seen, setSeen] = useState({ card: !1, full: !1, dock: !1 }), [tab, setTab] = useState("view"), scrollerRef = useRef(), npRef = useRef(), railRef = useRef(), bubbleRef = useRef(), npBtnRef = useRef(), cardTimer = useRef(), scrollTimer = useRef(), composeRef = useRef(null);
+    composeRef.current = compose;
+    let ordered = useMemo(() => [...findings].sort((a, b) => orderKey(a) - orderKey(b)), [findings]), s = useMemo(() => summarize(findings, !1), [findings]), byBlock = useMemo(() => {
+      let m = {};
+      return findings.forEach((f) => {
+        (m[f.block] = m[f.block] || []).push(f);
+      }), m;
+    }, [findings]), commit = useCallback((next, msg) => {
+      history.current.push(findings), history.current.length > 40 && history.current.shift(), setFindings(next), setToast({ msg, id: Date.now() });
+    }, [findings]), undo = useCallback(() => {
+      let prev = history.current.pop();
+      prev && (setFindings(prev), setToast({ msg: "Undone", id: Date.now(), noUndo: !0 }));
+    }, []), setStatus = useCallback((id, status) => {
+      let f = findings.find((x) => x.id === id);
+      if (!f || f.status === status) return;
+      let verb = { confirmed: "Accepted", rejected: "Rejected", ai: "Moved back to suggestions", added: "Restored" }[status];
+      commit(findings.map((x) => x.id === id ? { ...x, status } : x), `${verb} ${f.code || mdmTag(f) || "note"}`);
+    }, [findings, commit]);
+    useEffect(() => {
+      if (!toast) return;
+      let t = setTimeout(() => setToast(null), 4200);
+      return () => clearTimeout(t);
+    }, [toast]), useEffect(() => {
+      let root = scrollerRef.current, ratios = {}, io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          ratios[e.target.dataset.page] = e.intersectionRatio;
+        });
+        let vis = Object.entries(ratios).filter(([, r]) => r > 0.04).map(([k]) => +k).sort((a, b) => a - b);
+        vis.length && setVisible((v) => v.join() === vis.join() ? v : vis);
+        let best = 1, br = -1;
+        Object.entries(ratios).forEach(([k, r]) => {
+          r > br && (br = r, best = +k);
+        }), setCur(best);
+      }, { root, threshold: [0, 0.05, 0.15, 0.3, 0.5, 0.7, 0.9, 1] });
+      return root.querySelectorAll(".page").forEach((p) => io.observe(p)), () => io.disconnect();
+    }, []);
+    let onScroll = () => {
+      scrolling || setScrolling(!0), clearTimeout(scrollTimer.current), scrollTimer.current = setTimeout(() => setScrolling(!1), 420), card && !card.pinned && setCard(null);
+    };
+    useEffect(() => {
+      narrow && setNp((n) => n.mode === "float" ? { ...initialNp(!0), lastMode: "float" } : n);
+    }, [narrow]), useEffect(() => {
+      let h = () => setNp((n) => ({ ...n, w: Math.min(n.w, window.innerWidth - 8), x: clamp(n.x, 4, Math.max(4, window.innerWidth - Math.min(n.w, window.innerWidth - 8) - 4)), y: clamp(n.y, 4, Math.max(4, window.innerHeight - 80)) }));
+      return window.addEventListener("resize", h), () => window.removeEventListener("resize", h);
+    }, []);
+    let onEvEnter = (id) => {
+      setHoverId(id), clearTimeout(cardTimer.current), !(card && card.pinned && card.id !== id) && (cardTimer.current = setTimeout(() => {
+        setCard((c) => c && c.pinned ? c : { id, pinned: !1 }), setSeen((x) => x.card ? x : { ...x, card: !0 });
+      }, 140));
+    }, onEvLeave = () => {
+      setHoverId(null), clearTimeout(cardTimer.current), cardTimer.current = setTimeout(() => setCard((c) => c && !c.pinned ? null : c), 240);
+    }, onEvClick = (id) => {
+      let ws = window.getSelection();
+      ws && !ws.isCollapsed || (setActiveId(id), setCard({ id, pinned: !0 }), setSeen((x) => ({ ...x, card: !0 })));
+    }, jumpTo = useCallback((id, openCard = !0) => {
+      let el = document.getElementById("ev-" + id);
+      setActiveId(id), el && (el.scrollIntoView({ block: "center", behavior: reduced ? "auto" : "smooth" }), setFlashId(id), setTimeout(() => setFlashId((x) => x === id ? null : x), 1300), openCard && setTimeout(() => {
+        setCard({ id, pinned: !0 });
+      }, reduced ? 0 : 420));
+    }, []), onMouseUp = () => {
+      setTimeout(() => {
+        let ws = window.getSelection();
+        if (!ws || ws.isCollapsed || !ws.rangeCount) return;
+        let raw = ws.toString().replace(/\s+/g, " ").trim();
+        if (raw.length < 3) return;
+        let range = ws.getRangeAt(0), n = range.startContainer, blkEl = (n.nodeType === 1 ? n : n.parentElement).closest(".blk");
+        if (!blkEl || !scrollerRef.current.contains(blkEl)) return;
+        let b = BLOCKS[blkEl.dataset.block], text = raw;
+        if (b.t.indexOf(text) < 0) {
+          let r2 = document.createRange();
+          r2.setStart(range.startContainer, range.startOffset), r2.setEnd(blkEl, blkEl.childNodes.length), text = r2.toString().replace(/\s+/g, " ").trim();
+        }
+        let i = b.t.indexOf(text);
+        if (i < 0 || !text) return;
+        let overlap = (byBlock[b.id] || []).some((f) => {
+          let j = b.t.indexOf(f.text);
+          return j >= 0 && i < j + f.text.length && j < i + text.length;
+        });
+        setCard(null), setCompose(null), setSel({ block: b.id, page: b.page, text, range: range.cloneRange(), overlap });
+      }, 0);
+    };
+    useEffect(() => {
+      let h = () => {
+        if (composeRef.current) return;
+        let ws = window.getSelection();
+        (!ws || ws.isCollapsed) && setSel(null);
+      };
+      return document.addEventListener("selectionchange", h), () => document.removeEventListener("selectionchange", h);
+    }, []), useEffect(() => {
+      let h = (e) => {
+        let t = e.target;
+        t.closest && (t.closest(".compose,.seltb") || composeRef.current && (setCompose(null), setSel(null)), t.closest(".card,.ev,.row,.mm-tick,.tbl") || setCard((c) => c && c.pinned ? null : c));
+      };
+      return document.addEventListener("mousedown", h), () => document.removeEventListener("mousedown", h);
+    }, []);
+    let notesTarget = () => np.mode === "float" ? npRef.current : np.mode === "dock" ? railRef.current : np.mode === "min" ? bubbleRef.current : npBtnRef.current, addFinding = (spec) => {
+      if (!sel) return;
+      let pg = PAGES.find((p) => p.n === sel.page), id = "u" + Date.now().toString(36), f = { id, page: sel.page, block: sel.block, text: sel.text, source: "coder", status: "added", outsideDos: pg.dos !== CASE.dos, ...spec }, from = sel.range.getBoundingClientRect();
+      commit([...findings, f], `Added ${f.code || mdmTag(f) || "note"} to notes`), fly(from, tagOf(f) || "NOTE", notesTarget()), window.getSelection() && window.getSelection().removeAllRanges(), setSel(null), setCompose(null), setActiveId(id), setFlashId(id), setTimeout(() => setFlashId((x) => x === id ? null : x), 1800);
+    }, dock = () => {
+      setNp((n) => ({ ...n, mode: "dock", railCollapsed: !1 })), setSeen((x) => ({ ...x, dock: !0 }));
+    }, float = () => setNp((n) => ({ ...n, mode: "float", ...narrow ? {} : { x: clamp(n.x, 4, window.innerWidth - n.w - 40) } })), keepLast = (n) => n.mode === "float" || n.mode === "dock" ? n.mode : n.lastMode, minimize = () => setNp((n) => ({ ...n, mode: "min", lastMode: keepLast(n) })), closeNp = () => setNp((n) => ({ ...n, mode: "closed", lastMode: keepLast(n) })), toggleNp = () => setNp((n) => ({ ...n, mode: n.mode === "float" || n.mode === "dock" ? "min" : n.lastMode || "float", lastMode: n.mode === "float" || n.mode === "dock" ? n.mode : n.lastMode })), openFull = (t = "findings") => {
+      setFull(t), setSeen((x) => ({ ...x, full: !0 })), setCard(null);
+    }, step = (d) => {
+      if (!ordered.length) return;
+      let idx = ordered.findIndex((f) => f.id === activeId);
+      if (idx < 0) {
+        idx = d > 0 ? ordered.findIndex((f) => f.page >= cur) : ordered.findIndex((f) => f.page >= cur) - 1, idx < 0 && (idx = d > 0 ? 0 : ordered.length - 1), jumpTo(ordered[clamp(idx, 0, ordered.length - 1)].id);
+        return;
+      }
+      jumpTo(ordered[(idx + d + ordered.length) % ordered.length].id);
+    }, nextAi = () => {
+      let idx = ordered.findIndex((f) => f.id === activeId), n = [...ordered.slice(idx + 1), ...ordered.slice(0, idx + 1)].find((f) => f.status === "ai");
+      n && jumpTo(n.id);
+    }, goPage = (n) => document.getElementById("page-" + n).scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "start" });
+    useEffect(() => {
+      let h = (e) => {
+        let tag = e.target.tagName || "", typing = tag === "INPUT" || tag === "TEXTAREA" || e.target.isContentEditable, k = e.key.toLowerCase();
+        if ((e.metaKey || e.ctrlKey) && k === "k") {
+          e.preventDefault(), setPalette((p) => !p);
+          return;
+        }
+        if ((e.metaKey || e.ctrlKey) && k === "z" && !typing) {
+          e.preventDefault(), undo();
+          return;
+        }
+        if (e.key === "Escape") {
+          palette ? setPalette(!1) : compose ? (setCompose(null), setSel(null)) : full ? setFull(null) : card ? setCard(null) : sel && (setSel(null), window.getSelection().removeAllRanges());
+          return;
+        }
+        if (typing || e.metaKey || e.ctrlKey || e.altKey || palette || compose || full && k !== "f") return;
+        let target = activeId || card && card.id;
+        switch (k) {
+          case "j":
+            e.preventDefault(), step(1);
+            break;
+          case "k":
+            e.preventDefault(), step(-1);
+            break;
+          case "a":
+            if (target) {
+              let f = findings.find((x) => x.id === target);
+              f && f.status === "ai" && setStatus(target, "confirmed");
+            }
+            break;
+          case "r":
+            target && setStatus(target, "rejected");
+            break;
+          case "n":
+            toggleNp();
+            break;
+          case "d":
+            narrow || (np.mode === "dock" ? float() : dock());
+            break;
+          case "f":
+            full ? setFull(null) : openFull("findings");
+            break;
+          case "s":
+            setView((v) => ({ ...v, spot: !v.spot, clean: !1 }));
+            break;
+          case "c":
+            setView((v) => ({ ...v, clean: !v.clean, spot: !1 }));
+            break;
+          default:
+            break;
+        }
+      };
+      return window.addEventListener("keydown", h), () => window.removeEventListener("keydown", h);
+    });
+    let commands = [
+      { label: "Next finding", key: "J", run: () => step(1) },
+      { label: "Previous finding", key: "K", run: () => step(-1) },
+      { label: "Next AI suggestion to review", run: nextAi },
+      ...PAGES.map((p) => ({ label: `Go to page ${p.n} \xB7 ${p.label}`, run: () => goPage(p.n) })),
+      { label: "Toggle spotlight", key: "S", run: () => setView((v) => ({ ...v, spot: !v.spot, clean: !1 })) },
+      { label: "Toggle clean read", key: "C", run: () => setView((v) => ({ ...v, clean: !v.clean, spot: !1 })) },
+      { label: "Toggle date-of-service filter", run: () => setView((v) => ({ ...v, dos: !v.dos })) },
+      { label: "Open full notes", key: "F", run: () => openFull("findings") },
+      { label: "Open claim worksheet", run: () => openFull("worksheet") },
+      { label: "Draft appeal letter", run: () => openFull("appeal") },
+      { label: "Dock notepad to the right", key: "D", run: dock },
+      { label: "Float notepad", run: float },
+      { label: "Minimize notepad", key: "N", run: minimize },
+      { label: "Undo last change", key: "\u2318Z", run: undo }
+    ], pendS = summarize(findings, !0), dosOpen = findings.filter((f) => f.outsideDos && f.status !== "rejected").length, aiTotal = findings.filter((f) => f.source === "ai").length, aiPending = findings.filter((f) => f.status === "ai").length, firstOf = (pred) => {
+      let f = ordered.find(pred);
+      f && jumpTo(f.id);
+    }, cps = [
+      { k: "prob", label: "Problems", val: LV[s.prob], met: s.prob >= 3, part: pendS.prob > s.prob, go: () => firstOf((f) => f.mdm && f.mdm.el === "problems") },
+      { k: "data", label: "Data", val: LV[s.data], met: s.data >= 2, part: pendS.data > s.data, go: () => firstOf((f) => f.mdm && f.mdm.el === "data" && (f.status === "ai" || !ordered.some((x) => x.mdm && x.mdm.el === "data" && x.status === "ai"))) },
+      { k: "risk", label: "Risk", val: LV[s.risk], met: s.risk >= 3, part: pendS.risk > s.risk, go: () => firstOf((f) => f.mdm && f.mdm.el === "risk" && f.mdm.level === s.risk) },
+      { k: "lvl", label: "Level", val: `${s.code} of ${CASE.billed}`, met: s.code === CASE.billed, go: () => openFull("worksheet") },
+      { k: "dos", label: "Date of service", val: dosOpen ? `${dosOpen} from another visit` : "Clear", met: !dosOpen, go: () => firstOf((f) => f.outsideDos && f.status !== "rejected") },
+      { k: "ai", label: "AI review", val: `${aiTotal - aiPending} of ${aiTotal}`, met: !aiPending, part: aiPending < aiTotal, go: nextAi }
+    ], metCount = cps.filter((c) => c.met).length, cardF = card && findings.find((f) => f.id === card.id), docked = np.mode === "dock", notesBody = /* @__PURE__ */ React.createElement(
+      NotesBody,
+      {
+        ordered,
+        visible,
+        pinned,
+        setPinned,
+        tab,
+        setTab,
+        activeId,
+        hoverId,
+        flashId,
+        setHoverId,
+        onJump: (id) => jumpTo(id),
+        onAction: setStatus,
+        s,
+        onFull: () => openFull("findings")
+      }
+    );
+    return /* @__PURE__ */ React.createElement("div", { className: cls("app", view.spot && "spot", view.clean && "clean", narrow && "narrow") }, /* @__PURE__ */ React.createElement("header", { className: "bar" }, /* @__PURE__ */ React.createElement("div", { className: "case" }, /* @__PURE__ */ React.createElement("div", { className: "case-l1" }, /* @__PURE__ */ React.createElement("span", { className: "case-id" }, CASE.id), /* @__PURE__ */ React.createElement("span", { className: "case-name" }, CASE.patient), /* @__PURE__ */ React.createElement("span", { className: "case-mrn" }, "MRN ", CASE.mrn)), /* @__PURE__ */ React.createElement("div", { className: "case-l2" }, CASE.payer, " \xB7 Claim ", CASE.claim, " \xB7 DOS ", CASE.dos)), /* @__PURE__ */ React.createElement("div", { className: "denial", title: `${CASE.carc}: ${CASE.carcText}` }, /* @__PURE__ */ React.createElement("span", { className: "den-k" }, "Downcoded"), /* @__PURE__ */ React.createElement("span", { className: "den-v" }, /* @__PURE__ */ React.createElement("s", null, CASE.billed), " \u2192 ", CASE.paid), /* @__PURE__ */ React.createElement("span", { className: "den-carc" }, CASE.carc, " \xB7 ", CASE.stake, " at stake")), /* @__PURE__ */ React.createElement("div", { className: "due" }, /* @__PURE__ */ React.createElement(Ic.cal, { size: 14 }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("b", null, CASE.level), " due ", CASE.due, " \xB7 ", CASE.daysLeft, " days")), /* @__PURE__ */ React.createElement("div", { className: "controls" }, /* @__PURE__ */ React.createElement("button", { className: "tg", "aria-pressed": view.spot, onClick: () => setView((v) => ({ ...v, spot: !v.spot, clean: !1 })), title: "Spotlight (S): dim everything except marked evidence" }, /* @__PURE__ */ React.createElement(Ic.spot, { size: 15 }), /* @__PURE__ */ React.createElement("span", null, "Spotlight")), /* @__PURE__ */ React.createElement("button", { className: "tg", "aria-pressed": view.clean, onClick: () => setView((v) => ({ ...v, clean: !v.clean, spot: !1 })), title: "Clean read (C): hide all marks" }, /* @__PURE__ */ React.createElement(Ic.eye, { size: 15 }), /* @__PURE__ */ React.createElement("span", null, "Clean read")), /* @__PURE__ */ React.createElement("button", { className: "tg", "aria-pressed": view.dos, onClick: () => setView((v) => ({ ...v, dos: !v.dos })), title: "Dim pages from other dates of service" }, /* @__PURE__ */ React.createElement(Ic.cal, { size: 15 }), /* @__PURE__ */ React.createElement("span", null, "DOS only")), /* @__PURE__ */ React.createElement("button", { ref: npBtnRef, className: "tg", "aria-pressed": np.mode === "float" || np.mode === "dock", onClick: toggleNp, title: "Notepad (N)" }, /* @__PURE__ */ React.createElement(Ic.notes, { size: 15 }), /* @__PURE__ */ React.createElement("span", null, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length)), /* @__PURE__ */ React.createElement("button", { className: "tg cmd", onClick: () => setPalette(!0), title: "Command palette" }, /* @__PURE__ */ React.createElement(Ic.search, { size: 15 }), /* @__PURE__ */ React.createElement(Kbd, null, "\u2318K")))), /* @__PURE__ */ React.createElement("nav", { className: "cps", "aria-label": "Review checkpoints" }, /* @__PURE__ */ React.createElement("span", { className: "cps-lead" }, /* @__PURE__ */ React.createElement("b", null, metCount, "/", cps.length), " \xB7 99215 needs 2 of 3 at High"), cps.map((c) => /* @__PURE__ */ React.createElement("button", { key: c.k, className: cls("cp", c.met ? "met" : c.part ? "part" : "open"), onClick: c.go }, /* @__PURE__ */ React.createElement("span", { className: "cp-ic", "aria-hidden": "true" }, c.met ? /* @__PURE__ */ React.createElement(Ic.check, { size: 11, sw: 3 }) : null), /* @__PURE__ */ React.createElement("span", { className: "cp-l" }, c.label), /* @__PURE__ */ React.createElement("span", { className: "cp-v" }, c.val), !c.met && c.part && ["prob", "data", "risk"].includes(c.k) && /* @__PURE__ */ React.createElement("span", { className: "cp-sug" }, "AI has more")))), /* @__PURE__ */ React.createElement("div", { className: cls("work", docked && !narrow && "docked") }, /* @__PURE__ */ React.createElement("div", { className: "stage" }, /* @__PURE__ */ React.createElement("div", { className: "scroller", ref: scrollerRef, onScroll, onMouseUp, onKeyUp: (e) => {
+      e.shiftKey && onMouseUp();
+    } }, /* @__PURE__ */ React.createElement("div", { className: "pages" }, PAGES.map((p) => {
+      let off = p.dos !== CASE.dos;
+      return /* @__PURE__ */ React.createElement("section", { key: p.n, id: "page-" + p.n, "data-page": p.n, className: cls("page", off && "offdos", off && view.dos && "dim"), "aria-label": `Page ${p.n}` }, off && /* @__PURE__ */ React.createElement("div", { className: "dos-banner" }, /* @__PURE__ */ React.createElement(Ic.alert, { size: 13 }), "Different visit \xB7 DOS ", p.dos, ". Findings here don't count for the ", CASE.dos, " claim."), /* @__PURE__ */ React.createElement("div", { className: "page-body" }, p.blocks.map((b) => /* @__PURE__ */ React.createElement(Block, { key: b.id, b, fs: byBlock[b.id] || [], hotId: hoverId, activeId, flashId, onEnter: onEvEnter, onLeave: onEvLeave, onClickEv: onEvClick }))), /* @__PURE__ */ React.createElement("div", { className: "page-foot" }, /* @__PURE__ */ React.createElement("span", null, "Printed from EHR 03/19/2026 09:14 \xB7 Riverbend IMA"), /* @__PURE__ */ React.createElement("span", null, "Page ", p.n, " of ", PAGES.length)));
+    }))), /* @__PURE__ */ React.createElement("div", { className: "pagepill" }, "Page ", cur, " of ", PAGES.length), /* @__PURE__ */ React.createElement(Minimap, { scrollerRef, ordered, onJump: (id) => jumpTo(id), activeId })), docked && /* @__PURE__ */ React.createElement("aside", { ref: railRef, className: cls("rail", np.railCollapsed && "collapsed"), "aria-label": "Notes" }, np.railCollapsed ? /* @__PURE__ */ React.createElement("button", { className: "rail-tab", onClick: () => setNp((n) => ({ ...n, railCollapsed: !1 })), "aria-label": "Expand notes" }, /* @__PURE__ */ React.createElement(Ic.left, { size: 15 }), /* @__PURE__ */ React.createElement("span", { className: "vert" }, "Notes"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length)) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "np-head rail-head" }, /* @__PURE__ */ React.createElement("span", { className: "np-title" }, "Notepad"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length), /* @__PURE__ */ React.createElement("span", { className: "sp" }), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Full notes (F)", "aria-label": "Full notes", onClick: () => openFull("findings") }, /* @__PURE__ */ React.createElement(Ic.expand, { size: 14 })), /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Float (D)", "aria-label": "Float notepad", onClick: float }, /* @__PURE__ */ React.createElement(Ic.float, { size: 14 })), !narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Collapse", "aria-label": "Collapse notes", onClick: () => setNp((n) => ({ ...n, railCollapsed: !0 })) }, /* @__PURE__ */ React.createElement(Ic.right, { size: 14 })), narrow && /* @__PURE__ */ React.createElement("button", { className: "ib sm", title: "Close", "aria-label": "Close", onClick: minimize }, /* @__PURE__ */ React.createElement(Ic.close, { size: 14 }))), notesBody))), np.mode === "float" && /* @__PURE__ */ React.createElement(
+      Notepad,
+      {
+        np,
+        setNp,
+        innerRef: npRef,
+        ghost: scrolling && !npHover,
+        setSnap,
+        narrow,
+        count: findings.length,
+        onDock: dock,
+        onMin: minimize,
+        onClose: closeNp,
+        onFull: () => openFull("findings"),
+        setNpHover
+      },
+      notesBody
+    ), np.mode === "min" && /* @__PURE__ */ React.createElement("button", { ref: bubbleRef, className: "bubble", onClick: () => setNp((n) => ({ ...n, mode: n.lastMode === "dock" && !narrow ? "dock" : "float" })), "aria-label": "Open notepad" }, /* @__PURE__ */ React.createElement(Ic.notes, { size: 16 }), /* @__PURE__ */ React.createElement("span", null, "Notes"), /* @__PURE__ */ React.createElement("span", { className: "badge" }, findings.length), aiPending > 0 && /* @__PURE__ */ React.createElement("span", { className: "bubble-sub" }, aiPending, " to review")), snap && /* @__PURE__ */ React.createElement("div", { className: "snap-hint" }, /* @__PURE__ */ React.createElement("span", null, "Release to dock")), cardF && /* @__PURE__ */ React.createElement(
+      EvCard,
+      {
+        f: cardF,
+        scrollerRef,
+        onAction: (id, st) => setStatus(id, st),
+        onEnter: () => clearTimeout(cardTimer.current),
+        onLeave: () => {
+          card.pinned || (cardTimer.current = setTimeout(() => setCard((c) => c && !c.pinned ? null : c), 240));
+        },
+        onClose: () => setCard(null)
+      }
+    ), sel && !compose && /* @__PURE__ */ React.createElement(SelTool, { sel, scrollerRef, onPick: (t) => setCompose({ type: t }) }), sel && compose && /* @__PURE__ */ React.createElement(
+      Compose,
+      {
+        key: sel.text,
+        sel,
+        type: compose.type,
+        setType: (t) => setCompose({ type: t }),
+        scrollerRef,
+        onAdd: addFinding,
+        onCancel: () => {
+          setCompose(null), setSel(null), window.getSelection().removeAllRanges();
+        }
+      }
+    ), full && /* @__PURE__ */ React.createElement(FullNotes, { tab: full, setTab: setFull, ordered, s, onClose: () => setFull(null), onJump: (id) => {
+      setFull(null), setTimeout(() => jumpTo(id), 60);
+    }, onAction: setStatus }), palette && /* @__PURE__ */ React.createElement(Palette, { commands, onClose: () => setPalette(!1) }), toast && /* @__PURE__ */ React.createElement("div", { className: "toast", role: "status", key: toast.id }, /* @__PURE__ */ React.createElement("span", null, toast.msg), !toast.noUndo && history.current.length > 0 && /* @__PURE__ */ React.createElement("button", { onClick: () => {
+      undo();
+    } }, "Undo")));
+  }
+  ReactDOM.createRoot(document.getElementById("root")).render(/* @__PURE__ */ React.createElement(App, null));
+})();
+
+</script>

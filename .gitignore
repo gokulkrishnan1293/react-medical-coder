@@ -1,0 +1,5 @@
+node_modules/
+build/*.png
+build/preview.html
+build/app.js
+shot.js
