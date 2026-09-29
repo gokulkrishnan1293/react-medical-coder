@@ -9,3 +9,8 @@ All patient data is synthetic.
 - `build.sh` — compiles JSX with esbuild and assembles `build/appeal-review.html` (single self-contained page; React loaded from cdnjs)
 
 Build: `npm install && bash build.sh`
+
+## Docs
+
+- [Product spec](docs/specs/product-spec.md) — problem, users, workflow, UI concept, demo scenario, data model, architecture, roadmap, open questions
+- [Checkpoint bar spec](docs/specs/checkpoint-bar.md) — MDM checkpoint rules and acceptance criteria
