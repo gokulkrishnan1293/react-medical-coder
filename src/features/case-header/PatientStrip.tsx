@@ -6,6 +6,7 @@ import { useFindings } from '@/features/findings';
 import { goPage } from '@/features/record-viewer';
 import { CompleteReview, ReviewStatusBadge } from '@/features/review';
 import { checkFields, type FieldCheck, type FieldState } from './fieldChecks';
+import { ReviewProgress } from './ReviewProgress';
 
 const STATE: Record<FieldState, { label: string; className: string; icon: React.ReactNode }> = {
   verified: { label: 'Verified', className: 'bg-ok text-on-tag', icon: <Icon.check size={10} sw={3} /> },
@@ -80,7 +81,9 @@ export function PatientStrip() {
       className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 border-b border-line bg-chrome px-4 py-2 max-[1100px]:grid-cols-[minmax(0,1fr)_auto]"
     >
       {/* Left slot: review checkpoints */}
-      <div data-slot="left" className="flex min-w-0 items-center gap-2 max-[1100px]:hidden" />
+      <div data-slot="left" data-tour="progress" className="flex min-w-0 items-center gap-2 max-[1100px]:hidden">
+        <ReviewProgress />
+      </div>
       <div className="flex min-w-0 items-center justify-center gap-4 overflow-x-auto [scrollbar-width:none] max-[1100px]:justify-start">
         <Plain label="Claim">{CLAIM.id}</Plain>
         <Sep />

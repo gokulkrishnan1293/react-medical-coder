@@ -1,4 +1,4 @@
-import { codeLabel, useFindingsStore } from '@/features/findings';
+import { READ_ONLY_MSG, codeLabel, useFindingsStore } from '@/features/findings';
 import { ui } from '@/stores/uiStore';
 import { flash, jumpTo } from '@/features/record-viewer/navigation';
 import { useAddFindingStore } from './store';
@@ -10,6 +10,7 @@ import { addFinding } from './addFinding';
  */
 
 export function startRebind(id: string, mode: 'move' | 'add' = 'move') {
+  if (useFindingsStore.getState().readOnly) return void useFindingsStore.setState({ toast: { id: Date.now(), msg: READ_ONLY_MSG, undoable: false } });
   ui().set({ full: null, card: null, menu: null });
   useAddFindingStore.getState().set({ rebind: id, rebindMode: mode, sel: null, compose: null });
   // show where the evidence is now, once the full notes have closed

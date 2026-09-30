@@ -205,7 +205,7 @@ At phone width the notepad starts as a bubble, header labels collapse to icons, 
 
 ## 8. Data model
 
-`src/types/index.ts` is the source of truth. Key shapes:
+`src/types/index.ts` is the source of truth. Case files on disk, loading and saved reviews are specified in [DATA-SPEC.md](DATA-SPEC.md). Key shapes:
 
 | Entity | Fields |
 |---|---|
@@ -232,7 +232,7 @@ Derived, never stored: route ("goes to"), MDM credit and summary, claim checks, 
 | Selectable text on scans | The overlay's text layer is the invisible OCR layer; build it before relying on select-to-add for scans |
 | Large records | Virtualise pages (`@tanstack/react-virtual`) |
 | Rules | Replace the MDM and intervention placeholder tables with the team's criteria; consider per-payer rule sets |
-| Persistence | Findings, edits, review status and comments to a backend with an audit trail |
+| Persistence | Findings, edits, review status and comments to a backend with an audit trail. Contract, dev file-system adapter and saved-review format: [DATA-SPEC.md](DATA-SPEC.md) |
 
 CLAIRE's pipeline (Document Intelligence → extraction agent) supplies the AI findings with page anchors; every accept, reject, add, code edit and evidence change is a labelled example for evaluation.
 
@@ -254,9 +254,9 @@ CLAIRE's pipeline (Document Intelligence → extraction agent) supplies the AI f
 2. **Facility level:** the ED level check uses MDM. Decide whether interventions set the facility level, MDM does, or both.
 3. **MDM on the evidence card:** kept as is for now; to be discussed.
 4. **"Supporting" label:** consider "Supports level", or naming the path (→ MDM / → Interventions).
-5. **Completed reviews are not locked;** decide whether completing should make the case read-only until reopened.
+5. ~~Completed reviews are not locked.~~ Decided 30 Sep: a completed review is read-only until reopened.
 6. **On-claim rows:** code is locked, but evidence can still be changed and findings accepted/rejected; confirm.
-7. **Nothing persists;** a reload resets the demo.
+7. **Nothing persists;** a reload resets the demo. Planned in [DATA-SPEC.md](DATA-SPEC.md) §5.
 8. **Incorrect-extraction flags** (mark text that OCR got wrong) were deferred.
 9. **Checkpoints for the left and right slots** of the bar are to be defined. The superseded MDM pill bar (Problems, Data, Risk, Level, DOS, AI review) is a candidate source.
 10. **Record/claim scope:** ED facility only today; office E/M, other visit families and inpatient are not modelled.
@@ -292,3 +292,10 @@ CLAIRE's pipeline (Document Intelligence → extraction agent) supplies the AI f
 | 30 Sep 2026 | Header: payer line and "decision due" badge removed; claim number moved into the checkpoint bar |
 | 30 Sep 2026 | Complete review (with closing comment) in the checkpoint bar; "In progress" status sits beside the button, not in the header |
 | 30 Sep 2026 | One spec file (this one) and a README tour with screenshots |
+| 30 Sep 2026 | Completed reviews are read-only (banner, no edit controls, every change refused with a notice) until **Reopen to edit** |
+| 30 Sep 2026 | React Router: home screen **Worklist** (`/`: search, views, locked cases another reviewer has open, today's completions), **Dashboard** (`/dashboard`: throughput, decisions by week, time per case, CLAIRE acceptance, team, due soon) and the workbench at `/cases/:caseId`. Mock data in `src/data/worklist.ts` |
+| 30 Sep 2026 | Worklist and dashboard merged into one **Home** screen with no top nav: cards for CLAIRE's suggestions (accepted, modified, rejected, to review, counted per code; the demo case live), three example cases with the same counts per case, and today's work. Dashboard charts and the due-soon list removed; `/dashboard` redirects home |
+| 30 Sep 2026 | Home: brand is just “CLAIRE”; subtitle counts completed / in progress / to do; cards add **Added by you**; table shows document and claim numbers (payer and due date removed); no upheld/overturned wording; **Time spent** chart per case (the open case counts up while it is open), and **Time spent by day** for the last 14 days (today from the worklist and the open session; earlier days synthetic); **To review** card first |
+| 30 Sep 2026 | Mock data has one reviewer, the signed-in user; no cases are locked. Locking stays in the code and the API spec, and shows again once a second reviewer exists |
+| 30 Sep 2026 | Checkpoint bar left slot: findings still to review (per code), with progress; click goes to the next |
+| 30 Sep 2026 | Cases move to a folder per case (record as Markdown, images, claim and findings as JSON), loaded through one API module; the reviewer's work is saved as a delta beside CLAIRE's original: [DATA-SPEC.md](DATA-SPEC.md) |

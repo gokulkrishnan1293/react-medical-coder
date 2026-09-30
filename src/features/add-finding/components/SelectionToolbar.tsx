@@ -3,6 +3,7 @@ import { scrollerRef } from '@/lib/dom';
 import { clamp } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { useAddFindingStore, type ComposeType, type TextSelection } from '../store';
+import { useReadOnly } from '@/features/findings';
 import { applyRebind, cancelRebind, rebindLabel } from '../rebind';
 
 const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['svc', 'Service'], ['mar', 'MAR'], ['doc', 'Doc'], ['note', 'Note']];
@@ -13,6 +14,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   const set = useAddFindingStore((s) => s.set);
   const rebind = useAddFindingStore((s) => s.rebind);
   const adding = useAddFindingStore((s) => s.rebindMode === 'add');
+  const readOnly = useReadOnly();
   const r = sel.range.getBoundingClientRect();
   if (!r.width && !r.height) return null;
   const W = sel.overlap ? 250 : rebind ? 330 : 390;
@@ -21,6 +23,13 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   const base = 'fixed z-70 rounded-[9px] bg-ink text-paper shadow-float';
   const anim = { initial: { opacity: 0, y: 4 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.12 } };
 
+  if (readOnly) {
+    return (
+      <motion.div data-add-finding {...anim} className={base + ' px-3 py-2 text-xs'} style={{ left, top, width: 270 }} onMouseDown={(e) => e.preventDefault()}>
+        Review completed. Reopen it to add findings.
+      </motion.div>
+    );
+  }
   if (sel.overlap) {
     return (
       <motion.div data-add-finding {...anim} className={base + ' px-3 py-2 text-xs'} style={{ left, top, width: W }} onMouseDown={(e) => e.preventDefault()}>

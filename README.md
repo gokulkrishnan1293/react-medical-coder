@@ -93,7 +93,7 @@ React 19 · TypeScript · Vite · Tailwind CSS v4 · Motion · zustand · React 
 
 ```
 src/
-├─ app/                 App shell (layout + floating layers)
+├─ app/                 Router (home, case), workbench shell (layout + floating layers)
 ├─ components/ui/       Shared building blocks: Button, Icon, Kbd, Modal, HoverTip, SegmentedTabs, StatusChip, Table
 ├─ features/            One folder per business function; import through each folder's index.ts
 │  ├─ case-header/      Header, checkpoint bar, claim-vs-record field checks
@@ -109,8 +109,9 @@ src/
 │  ├─ notepad/          Floating / docked / minimised notepad
 │  ├─ full-notes/       Findings table, claim tables, interventions tab
 │  ├─ command-palette/  ⌘K / Ctrl+K
+│  ├─ worklist/         Home screen: CLAIRE's suggestions accepted / modified / rejected / to review, your cases with search, today
 │  ├─ shortcuts/        Global keyboard shortcuts
-│  └─ tour/             Guided tour of every feature over the live screen (Tour button, ?, or ?tour in the URL)
+│  └─ tour/            Guided tour of every feature over the live screen (Tour button, ?, or ?tour in the URL)
 ├─ data/                Synthetic ED case, record, page images and line layout, claim, findings, MDM and intervention rules
 ├─ hooks/               useMediaQuery, useScrollTick
 ├─ lib/                 Document positions, platform keys, shared refs, helpers

@@ -1,14 +1,15 @@
 import { motion } from 'motion/react';
 import { notesTargetRef } from '@/lib/dom';
 import { Icon } from '@/components/ui';
-import { useFindings } from '@/features/findings';
+import { groupPlaces, useFindings, useOrderedFindings } from '@/features/findings';
 import { useNotepadStore } from '../store';
 
 /** Minimized notepad: a pill with the finding count and what is left to review. */
 export function NotesBubble() {
   const findings = useFindings();
   const reopen = useNotepadStore((s) => s.reopen);
-  const pending = findings.filter((f) => f.status === 'ai').length;
+  // per code, as the checkpoint bar counts: accepting a code covers all its places
+  const pending = groupPlaces(useOrderedFindings()).filter(({ places }) => places.some((p) => p.status === 'ai')).length;
   return (
     <motion.button
       ref={(el) => { notesTargetRef.current = el; }}

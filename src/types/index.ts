@@ -173,3 +173,57 @@ export interface MdmSummary {
   overall: MdmLevel;
   code: string;
 }
+
+/** Someone who reviews cases. */
+export interface Reviewer {
+  id: string;
+  name: string;
+  initials: string;
+}
+
+export type WorkStatus = 'new' | 'inProgress' | 'completed';
+/** Upheld: the downcode stands. Overturned: the record supports what was billed. */
+export type Outcome = 'upheld' | 'overturned';
+
+/** One case in the worklist. */
+export interface WorkItem {
+  id: string;
+  stage: CaseInfo['stage'];
+  patient: string;
+  /** Number of the medical record document sent for review. */
+  documentId: string;
+  claimId: string;
+  payer: string;
+  billed: string;
+  paid: string;
+  /** ISO dates. */
+  received: string;
+  due: string;
+  status: WorkStatus;
+  /** Reviewer the case is assigned to, or null when unassigned. */
+  assignee: string | null;
+  /** A reviewer has the case open right now; nobody else can open it. */
+  openBy?: { reviewer: string; since: string };
+  completedAt?: string;
+  completedBy?: string;
+  outcome?: Outcome;
+  /** Minutes spent reviewing so far (all of it, once completed). */
+  minutes?: number;
+  /** What happened to CLAIRE's suggestions on this case, counted per code. */
+  claire?: ClaireTally;
+  /** The case's record and findings are loaded in this prototype. */
+  available?: boolean;
+}
+
+/** What the reviewer did with CLAIRE's suggestions, counted per code (all places of a code are one suggestion). */
+export interface ClaireTally {
+  /** Kept as CLAIRE suggested. */
+  accepted: number;
+  /** Kept, but with the code changed or the evidence moved. */
+  modified: number;
+  rejected: number;
+  /** Still an AI suggestion nobody has reviewed. */
+  pending: number;
+  /** Findings the reviewer added that CLAIRE did not suggest. */
+  added: number;
+}

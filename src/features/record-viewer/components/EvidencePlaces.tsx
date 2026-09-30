@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { Finding } from '@/types';
 import { cn } from '@/lib/utils';
 import { Icon, IconButton } from '@/components/ui';
-import { STATUS_LABEL, claimLocked, placesOf, reasonOf, useFindings, useFindingsStore } from '@/features/findings';
+import { STATUS_LABEL, claimLocked, placesOf, reasonOf, useFindings, useFindingsStore, useReadOnly } from '@/features/findings';
 import { startRebind } from '@/features/add-finding';
 import { useUiStore } from '@/stores/uiStore';
 import { jumpTo } from '../navigation';
@@ -26,7 +26,8 @@ export function EvidencePlaces({ f }: { f: Finding }) {
   const setUi = useUiStore((s) => s.set);
   const pages = [...new Set(places.filter((p) => p.status !== 'rejected').map((p) => p.page))];
   // on the claim the evidence stays as found: no moving it and no new places, only comments
-  const locked = claimLocked(f);
+  const readOnly = useReadOnly();
+  const locked = claimLocked(f) || readOnly;
   const canTag = f.status !== 'rejected' && !locked;
   const goPage = (n: number) => {
     const at = places.find((p) => p.page === n && p.status !== 'rejected');
@@ -86,6 +87,7 @@ export function EvidencePlaces({ f }: { f: Finding }) {
                     “{p.text}”
                   </span>
                   {p.note && p.note !== why && <span className="mt-0.5 block text-[11px] leading-snug text-ink-3">{p.note}</span>}
+                  {!current && p.comment && <span className="mt-1 block border-l-2 border-line pl-1.5 text-[11px] leading-snug text-ink-2 italic">{p.comment}</span>}
                 </button>
                 {current && p.status !== 'rejected' && !locked && (
                   <button
@@ -97,7 +99,7 @@ export function EvidencePlaces({ f }: { f: Finding }) {
                     <Icon.pencil size={12} />Change
                   </button>
                 )}
-                {!current && p.source === 'ai' && p.status !== 'rejected' && (
+                {!current && !readOnly && p.source === 'ai' && p.status !== 'rejected' && (
                   <IconButton
                     size="sm"
                     tone="no"
@@ -109,7 +111,7 @@ export function EvidencePlaces({ f }: { f: Finding }) {
                     <Icon.close size={13} />
                   </IconButton>
                 )}
-                {!current && p.status === 'rejected' && p.source === 'ai' && (
+                {!current && !readOnly && p.status === 'rejected' && p.source === 'ai' && (
                   <IconButton size="sm" title="Restore this place" aria-label={`Restore page ${p.page} place`} onClick={() => setPlaceStatus(p.id, 'ai')}><Icon.undo size={13} /></IconButton>
                 )}
               </div>

@@ -3,6 +3,7 @@ import { Icon } from '@/components/ui';
 import { clamp, cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { useAddFindingStore, type ComposeType } from '@/features/add-finding';
+import { useFindingsStore } from '@/features/findings';
 import { setZoom, stepZoom } from '@/features/zoom';
 import { setSourceMode, VIEW_LABEL } from '@/features/source-view';
 import type { SourceMode } from '@/stores/uiStore';
@@ -34,7 +35,7 @@ export function DocMenu() {
   const { side, at } = menu;
 
   const entries: Entry[] = [];
-  if (side === 'record' && sel && !sel.overlap) {
+  if (side === 'record' && sel && !sel.overlap && !useFindingsStore.getState().readOnly) {
     ADD.forEach(([k, l]) => entries.push({ label: l, icon: <span className="text-[13px] leading-none">+</span>, run: () => setAdd({ compose: k }) }));
     entries.push({ label: 'Copy', icon: <Icon.copy size={14} />, run: () => void navigator.clipboard?.writeText(sel.text) }, 'sep');
   }

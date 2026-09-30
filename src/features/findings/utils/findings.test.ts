@@ -3,7 +3,7 @@ import { INITIAL_FINDINGS } from '@/data';
 import type { Finding } from '@/types';
 import { mdmOf } from '@/data';
 import { summarize } from './mdm';
-import { routeOf, sortByReading, tagOf } from './finding';
+import { routeOf, sortByReading, tagOf, tallyReview } from './finding';
 import { segments } from './segments';
 
 const byId = (id: string) => INITIAL_FINDINGS.find((f) => f.id === id)!;
@@ -78,5 +78,26 @@ describe('finding helpers', () => {
     const out = segments('Diagnoses: Hyperkalemia today', [byId('d4')]);
     expect(out).toHaveLength(3);
     expect(out[0]).toBe('Diagnoses: ');
+  });
+});
+
+describe('tallyReview', () => {
+  const set = (fs: Finding[], id: string, patch: Partial<Finding>) => fs.map((f) => (f.id === id ? { ...f, ...patch } : f));
+
+  it('counts per code: a code with any place still pending is to review', () => {
+    const t = tallyReview(sortByReading(INITIAL_FINDINGS));
+    expect(t.pending).toBeGreaterThan(0);
+    expect(t.rejected + t.modified + t.added).toBe(0);
+  });
+
+  it('sorts decisions into accepted, modified and rejected, and keeps my own findings apart', () => {
+    let fs = INITIAL_FINDINGS.map((f) => (f.status === 'ai' ? { ...f, status: 'confirmed' as const } : f));
+    fs = set(fs, 'd4', { status: 'rejected' });
+    fs = set(fs, 'd4b', { status: 'rejected' });
+    fs = set(fs, 'd3', { editedFrom: 'N17.0' });
+    fs = [...fs, { ...byId('d1'), id: 'mine', source: 'coder', status: 'added', code: 'R10.9', desc: 'Abdominal pain' }];
+    const t = tallyReview(sortByReading(fs));
+    expect(t).toMatchObject({ pending: 0, rejected: 1, modified: 1, added: 1 });
+    expect(t.accepted).toBeGreaterThan(10);
   });
 });

@@ -60,3 +60,18 @@ describe('editCode across places', () => {
     expect(get('d4b').code).toBe('E87.5');
   });
 });
+
+describe('read-only', () => {
+  it('refuses every change while the review is completed', () => {
+    const s = () => useFindingsStore.getState();
+    useFindingsStore.setState({ readOnly: true });
+    s().setStatus('d3', 'confirmed');
+    s().setComment('d3', 'late');
+    expect([get('d3').status, get('d3').comment]).toEqual(['ai', undefined]);
+    expect(s().toast?.undoable).toBe(false);
+    useFindingsStore.setState({ readOnly: false });
+    s().setStatus('d3', 'confirmed');
+    expect(get('d3').status).toBe('confirmed');
+    s().undo();
+  });
+});

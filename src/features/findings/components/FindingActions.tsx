@@ -7,10 +7,12 @@ import { isLive } from '../utils/finding';
 export function FindingActions({ f, stop = false }: { f: Finding; stop?: boolean }) {
   const setStatus = useFindingsStore((s) => s.setStatus);
   const remove = useFindingsStore((s) => s.remove);
+  const readOnly = useFindingsStore((s) => s.readOnly);
   const act = (status: Finding['status']) => (e: React.MouseEvent) => {
     if (stop) e.stopPropagation();
     setStatus(f.id, status);
   };
+  if (readOnly) return null;
   return (
     <>
       {f.status === 'ai' && (

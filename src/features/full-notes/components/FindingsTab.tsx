@@ -3,7 +3,7 @@ import type { Finding, FindingStatus, FindingType } from '@/types';
 import { cn } from '@/lib/utils';
 import { HoverTip, StatusChip, StatusDot } from '@/components/ui';
 import { Table, Td, Th } from '@/components/ui/Table';
-import { CommentField, FindingActions, MarDetail, RouteTag, STATUS_LABEL, TYPE_LABEL, TypeBadge, claimLocked, groupPlaces, reasonOf, titleOf, useOrderedFindings } from '@/features/findings';
+import { CommentField, FindingActions, MarDetail, RouteTag, STATUS_LABEL, TYPE_LABEL, TypeBadge, claimLocked, groupPlaces, reasonOf, titleOf, useOrderedFindings, useReadOnly } from '@/features/findings';
 import { CodeCell } from './CodeCell';
 import { Icon } from '@/components/ui';
 import { startRebind } from '@/features/add-finding';
@@ -21,6 +21,7 @@ const count = 'font-mono text-[11px] text-ink-3';
  */
 export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
   const all = groupPlaces(useOrderedFindings());
+  const readOnly = useReadOnly();
   const [type, setType] = useState<FindingType | 'all'>('all');
   const [status, setStatus] = useState<FindingStatus | 'all'>('all');
   const byType = all.filter(({ lead }) => type === 'all' || lead.type === type);
@@ -79,7 +80,7 @@ export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
               <Td className="group/ev max-w-[260px] font-mono text-[11.5px] text-ink-2">
                 {f.mar ? <MarDetail mar={f.mar} /> : <>“{f.text}”</>}
                 {places.length > 1 && <div className="mt-0.5 font-sans text-[11px] text-ink-3">+{places.length - 1} more {places.length === 2 ? 'place' : 'places'}: hover a page</div>}
-                {f.status !== 'rejected' && !claimLocked(f) && (
+                {!readOnly && f.status !== 'rejected' && !claimLocked(f) && (
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); startRebind(f.id); }}
@@ -91,7 +92,21 @@ export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
               </Td>
               <Td><Confidence f={f} /></Td>
               <Td><RouteTag f={f} /></Td>
-              <Td onClick={(e) => e.stopPropagation()}><CommentField f={f} rows={1} /></Td>
+              <Td onClick={(e) => e.stopPropagation()}>
+                <CommentField f={f} rows={1} />
+                {/* comments made on the code's other places, e.g. from their evidence cards */}
+                {places.filter((p) => p.id !== f.id && p.comment).map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => onJump(p.id)}
+                    title="Go to this place to edit its comment"
+                    className="mt-1 block w-full rounded-md bg-chrome px-2 py-1 text-left text-[11.5px] leading-snug text-ink-2 hover:bg-chrome-2"
+                  >
+                    <span className="font-mono text-ink-3">p. {p.page} · </span>{p.comment}
+                  </button>
+                ))}
+              </Td>
               <Td className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}><FindingActions f={f} /></Td>
             </tr>
           ))}

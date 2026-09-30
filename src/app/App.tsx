@@ -13,6 +13,7 @@ import { SourcePane, SourceStage, ViewSwitch } from '@/features/source-view';
 import { DocMenu } from '@/features/doc-menu';
 import { UndoToast, useFindings } from '@/features/findings';
 import { useKeyboardShortcuts } from '@/features/shortcuts';
+import { ReadOnlyBanner, useReviewTimer } from '@/features/review';
 import { Tour, startTourIfNew } from '@/features/tour';
 
 /** Layout shell: header, patient strip, record + notepad, and floating layers. */
@@ -30,6 +31,7 @@ export function App() {
   const snap = useNotepadStore((s) => s.snap);
 
   useKeyboardShortcuts(narrow);
+  useReviewTimer();
   useEffect(() => { if (narrow) tuckForNarrow(); }, [narrow]);
   useEffect(startTourIfNew, []);
   useEffect(() => {
@@ -41,9 +43,10 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={cn('grid h-full grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)]', view.spot && 'spot', view.clean && 'clean')}>
+      <div className={cn('grid h-full grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_auto_minmax(0,1fr)]', view.spot && 'spot', view.clean && 'clean')}>
         <CaseHeader />
         <PatientStrip />
+        <ReadOnlyBanner />
         <div className="flex min-h-0">
           {source === 'compare' && <SourcePane />}
           <RecordViewer margin={source === 'stage' && <SourceStage />} tools={<ViewSwitch />} />

@@ -6,7 +6,7 @@ import { scrollerRef, evidenceEl } from '@/lib/dom';
 import { clamp, cn } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { Button, HoverTip, Icon, IconButton, Kbd, StatusChip } from '@/components/ui';
-import { CommentField, ELEMENT_LABEL, LEVELS, MarDetail, RouteTag, STATUS_LABEL, TypeBadge, canHavePlaces, claimLocked, codeLabel, placesOf, reasonOf, titleOf, useFindings, useFindingsStore } from '@/features/findings';
+import { CommentField, ELEMENT_LABEL, LEVELS, MarDetail, RouteTag, STATUS_LABEL, TypeBadge, canHavePlaces, claimLocked, codeLabel, placesOf, reasonOf, titleOf, useFindings, useFindingsStore, useReadOnly } from '@/features/findings';
 import { closeCard, keepCardOpen, scheduleCardClose } from '../navigation';
 import { CodePicker, codeKindOf, startRebind } from '@/features/add-finding';
 import { EvidencePlaces } from './EvidencePlaces';
@@ -29,6 +29,7 @@ export function EvidenceCard({ f }: { f: Finding }) {
   const why = reasonOf(f, places);
   const all = group > 1 ? ` all ${group}` : '';
   const locked = claimLocked(f);
+  const readOnly = useReadOnly();
   const el = evidenceEl(f.id);
   const sc = scrollerRef.current;
   if (!el || !sc) return null;
@@ -94,7 +95,7 @@ export function EvidenceCard({ f }: { f: Finding }) {
             <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-ink-3">Page {f.page}<RevisedEvidence f={f} /></div>
           </>
         )}
-        {locked && (
+        {locked && !readOnly && (
           <p className="mt-2.5 flex items-start gap-1.5 text-[11.5px] leading-snug text-ink-3">
             <Icon.lock size={12} className="mt-px flex-none" />
             On the claim, so the code and evidence stay as billed. If the evidence is wrong, say so in a comment.
@@ -105,26 +106,29 @@ export function EvidenceCard({ f }: { f: Finding }) {
 
       {/* actions stay in view when the card scrolls */}
       <div className="flex flex-none flex-wrap items-center gap-1.5 border-t border-line bg-chrome px-4 py-2.5">
-        {f.status === 'ai' && (
+        {readOnly && (
+          <span className="flex items-center gap-1.5 py-1 text-[12px] text-ink-2"><Icon.lock size={13} />Review completed: read-only. Reopen it to make changes.</span>
+        )}
+        {!readOnly && f.status === 'ai' && (
           <>
             <Button variant="ok" onClick={() => setStatus(f.id, 'confirmed')} title={all && `Accept ${codeLabel(f)} at all ${group} places`}><Icon.check size={14} />Accept{all} <Kbd>A</Kbd></Button>
             <Button onClick={() => setStatus(f.id, 'rejected')} title={all && `Reject ${codeLabel(f)} at all ${group} places`}><Icon.close size={14} />Reject{all} <Kbd>R</Kbd></Button>
           </>
         )}
-        {f.source === 'ai' && f.status === 'confirmed' && (
+        {!readOnly && f.source === 'ai' && f.status === 'confirmed' && (
           <>
             <Button onClick={() => setStatus(f.id, 'ai')}><Icon.undo size={14} />Unaccept{all}</Button>
             <Button onClick={() => setStatus(f.id, 'rejected')}><Icon.close size={14} />Reject{all} <Kbd>R</Kbd></Button>
           </>
         )}
-        {f.source === 'ai' && f.status === 'rejected' && (
+        {!readOnly && f.source === 'ai' && f.status === 'rejected' && (
           <Button onClick={() => setStatus(f.id, 'ai')}><Icon.undo size={14} />Restore{all}</Button>
         )}
-        {f.source === 'coder' && (
+        {!readOnly && f.source === 'coder' && (
           <Button onClick={() => remove(f.id)}><Icon.trash size={14} />Remove <Kbd>R</Kbd></Button>
         )}
         {/* with a places list, changing evidence sits on the place itself */}
-        {f.status !== 'rejected' && !canHavePlaces(f) && !locked && (
+        {!readOnly && f.status !== 'rejected' && !canHavePlaces(f) && !locked && (
           <Button onClick={() => startRebind(f.id)} className="ml-auto" title="Select different words in the record for this finding"><Icon.pencil size={14} />Change evidence</Button>
         )}
       </div>
@@ -141,7 +145,8 @@ function CodeLine({ f }: { f: Finding }) {
   const editCode = useFindingsStore((s) => s.editCode);
   const kind = codeKindOf(f);
   const locked = claimLocked(f);
-  const editable = !!kind && !locked && f.status !== 'rejected';
+  const readOnly = useReadOnly();
+  const editable = !!kind && !locked && !readOnly && f.status !== 'rejected';
 
   if (editing && kind) return <CodePicker f={f} kind={kind} onDone={() => setEditing(false)} className="w-[150px] py-1 text-[15px]" />;
   return (

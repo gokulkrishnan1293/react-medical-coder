@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Finding } from '@/types';
 import { HoverTip, Icon } from '@/components/ui';
 import { cn } from '@/lib/utils';
-import { claimLocked, codeLabel, mdmTag } from '@/features/findings';
+import { claimLocked, codeLabel, mdmTag, useReadOnly } from '@/features/findings';
 import { CodePicker, codeKindOf } from '@/features/add-finding';
 
 /**
@@ -12,7 +12,8 @@ import { CodePicker, codeKindOf } from '@/features/add-finding';
 export function CodeCell({ f }: { f: Finding }) {
   const kind = codeKindOf(f);
   const locked = claimLocked(f);
-  const editable = !!kind && !locked && f.status !== 'rejected';
+  const readOnly = useReadOnly();
+  const editable = !!kind && !locked && !readOnly && f.status !== 'rejected';
   const [open, setOpen] = useState(false);
 
   return (

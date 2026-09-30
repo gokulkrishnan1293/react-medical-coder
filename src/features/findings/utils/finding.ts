@@ -1,4 +1,4 @@
-import type { Finding, Route } from '@/types';
+import type { ClaireTally, Finding, Route } from '@/types';
 import { BLOCKS, CLAIM_CODES, DOC_KINDS, mdmOf } from '@/data';
 import { ELEMENT_SHORT, LEVELS_SHORT } from './labels';
 
@@ -87,4 +87,22 @@ export function reasonOf(f: Finding, places: Finding[]) {
   if (f.type === 'note') return undefined;
   if (!canHavePlaces(f)) return f.source === 'ai' ? f.note : undefined;
   return places.filter((p) => p.source === 'ai' && p.note).sort((a, b) => (b.conf ?? 0) - (a.conf ?? 0))[0]?.note;
+}
+
+/**
+ * What happened to CLAIRE's suggestions, per code: still to review if any place is pending, rejected if every
+ * place is, modified if the code was changed or any place's evidence moved, otherwise accepted. The
+ * reviewer's own findings are counted apart, as added.
+ */
+export function tallyReview(ordered: Finding[]): ClaireTally {
+  const t: ClaireTally = { accepted: 0, modified: 0, rejected: 0, pending: 0, added: 0 };
+  for (const { places } of groupPlaces(ordered)) {
+    const ai = places.filter((p) => p.source === 'ai');
+    if (!ai.length) { t.added += 1; continue; }
+    if (ai.some((p) => p.status === 'ai')) t.pending += 1;
+    else if (ai.every((p) => p.status === 'rejected')) t.rejected += 1;
+    else if (ai.some((p) => p.editedFrom || p.movedFrom)) t.modified += 1;
+    else t.accepted += 1;
+  }
+  return t;
 }

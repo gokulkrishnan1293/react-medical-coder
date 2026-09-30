@@ -1,6 +1,6 @@
-export { useFindingsStore } from './store/findingsStore';
-export { useFindings, useOrderedFindings, useSummary } from './hooks';
-export { isLive, mdmTag, tagOf, codeLabel, routeOf, titleOf, orderKey, sortByReading, canHavePlaces, placesOf, claimLocked, groupPlaces, reasonOf } from './utils/finding';
+export { useFindingsStore, READ_ONLY_MSG } from './store/findingsStore';
+export { useFindings, useOrderedFindings, useReadOnly, useSummary } from './hooks';
+export { isLive, mdmTag, tagOf, codeLabel, routeOf, titleOf, orderKey, sortByReading, canHavePlaces, placesOf, claimLocked, groupPlaces, reasonOf, tallyReview } from './utils/finding';
 export { summarize } from './utils/mdm';
 export { segments, type Segment } from './utils/segments';
 export * from './utils/labels';

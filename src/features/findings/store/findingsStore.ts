@@ -11,6 +11,8 @@ interface Toast {
 
 interface FindingsState {
   findings: Finding[];
+  /** A completed review is read-only until it is reopened: every change is refused. */
+  readOnly: boolean;
   history: Finding[][];
   toast: Toast | null;
   /** Replace findings, remember the previous set for undo, and toast the change. */
@@ -35,22 +37,23 @@ interface FindingsState {
 }
 
 const HISTORY_LIMIT = 40;
+export const READ_ONLY_MSG = 'This review is completed. Reopen it to make changes.';
 const VERB: Record<FindingStatus, string> = { confirmed: 'Accepted', rejected: 'Rejected', ai: 'Moved back to suggestions', added: 'Restored' };
 
 export const useFindingsStore = create<FindingsState>((set, get) => ({
   findings: INITIAL_FINDINGS,
+  readOnly: false,
   history: [],
   toast: null,
   commit: (next, msg) =>
-    set((s) => ({
-      findings: next,
-      history: [...s.history, s.findings].slice(-HISTORY_LIMIT),
-      toast: { id: Date.now(), msg, undoable: true },
-    })),
+    set((s) => (s.readOnly
+      ? { toast: { id: Date.now(), msg: READ_ONLY_MSG, undoable: false } }
+      : { findings: next, history: [...s.history, s.findings].slice(-HISTORY_LIMIT), toast: { id: Date.now(), msg, undoable: true } })),
   undo: () => {
-    const { history } = get();
+    const { history, readOnly } = get();
     const prev = history[history.length - 1];
     if (!prev) return;
+    if (readOnly) return set({ toast: { id: Date.now(), msg: READ_ONLY_MSG, undoable: false } });
     set({ findings: prev, history: history.slice(0, -1), toast: { id: Date.now(), msg: 'Undone', undoable: false } });
   },
   setStatus: (id, status) => {

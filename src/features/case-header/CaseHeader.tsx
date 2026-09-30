@@ -6,6 +6,7 @@ import { useNotepadStore } from '@/features/notepad';
 import { useUiStore } from '@/stores/uiStore';
 import { modLabel } from '@/lib/platform';
 import { startTour } from '@/features/tour';
+import { Link } from 'react-router';
 
 function Toggle({ pressed, onClick, title, children, className }: { pressed?: boolean; onClick: () => void; title: string; children: React.ReactNode; className?: string }) {
   return (
@@ -37,6 +38,9 @@ export function CaseHeader() {
   return (
     <header className="flex flex-wrap items-center gap-x-[22px] gap-y-2.5 border-b border-line bg-chrome px-4 py-2.5 max-[760px]:gap-x-3 max-[760px]:gap-y-2 max-[760px]:py-2">
       <div data-tour="case" className="flex flex-wrap items-center gap-x-[22px] gap-y-2.5 max-[760px]:gap-x-3">
+      <Link to="/" title="Back to the worklist" aria-label="Back to the worklist" className="-mr-2 grid size-[30px] place-items-center rounded-[7px] text-ink-2 hover:bg-chrome-2 hover:text-ink">
+        <Icon.left size={16} />
+      </Link>
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline gap-2.5">
           <span className="rounded bg-accent-soft px-1.5 py-1 font-mono text-[11px] leading-none font-semibold tracking-[0.03em] text-accent">{CASE.id}</span>
