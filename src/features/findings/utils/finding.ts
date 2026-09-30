@@ -50,3 +50,41 @@ export function orderKey(f: Finding): number {
 }
 
 export const sortByReading = (fs: Finding[]) => [...fs].sort((a, b) => orderKey(a) - orderKey(b));
+
+/** Codes that can be documented in more than one place. A MAR row is one administration, with its own units, so it never repeats. */
+export const canHavePlaces = (f: Finding) => !!f.code && f.type !== 'mar' && f.type !== 'note';
+
+/** Every place the record documents this finding's code: findings of the same type and code, in reading order. */
+export const placesOf = (f: Finding, findings: Finding[]) =>
+  canHavePlaces(f) ? sortByReading(findings.filter((x) => x.type === f.type && x.code === f.code)) : [f];
+
+/**
+ * On the claim, a finding is what was billed: the reviewer can accept or reject it and comment,
+ * but not change its code or evidence. A comment is where they say the evidence is wrong.
+ */
+export const claimLocked = (f: Finding) => routeOf(f) === 'onClaim';
+
+/**
+ * Findings as review rows: the places documenting one code share a row, led by the first place still standing.
+ * Findings that cannot have places (MAR rows, notes) are rows of their own.
+ */
+export function groupPlaces(ordered: Finding[]): { lead: Finding; places: Finding[] }[] {
+  const rows = new Map<string, Finding[]>();
+  for (const f of ordered) {
+    const key = canHavePlaces(f) ? `${f.type}:${f.code}` : f.id;
+    const row = rows.get(key);
+    if (row) row.push(f);
+    else rows.set(key, [f]);
+  }
+  return [...rows.values()].map((places) => ({ lead: places.find((p) => p.status !== 'rejected') ?? places[0], places }));
+}
+
+/**
+ * CLAIRE's reason for a code: from its most confident place that gives one. Notes about a single place
+ * (e.g. "assessment restates DKA") belong with that place instead.
+ */
+export function reasonOf(f: Finding, places: Finding[]) {
+  if (f.type === 'note') return undefined;
+  if (!canHavePlaces(f)) return f.source === 'ai' ? f.note : undefined;
+  return places.filter((p) => p.source === 'ai' && p.note).sort((a, b) => (b.conf ?? 0) - (a.conf ?? 0))[0]?.note;
+}

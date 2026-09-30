@@ -1,4 +1,3 @@
-import { CLAIM } from '@/data';
 import { cn } from '@/lib/utils';
 import { StatusChip } from '@/components/ui';
 import { STATUS_LABEL, TypeBadge } from '@/features/findings';
@@ -15,9 +14,6 @@ export function ClaimTables({ onJump }: { onJump: (id: string) => void }) {
   const h3 = 'mt-[22px] mb-2 text-sm font-semibold first:mt-0';
   return (
     <div>
-      <p className="mb-3 text-[12.5px] text-ink-2">
-        Claim <span className="font-mono font-semibold text-ink">{CLAIM.id}</span> · {CLAIM.form} · type of bill {CLAIM.billType} · source {CLAIM.source}
-      </p>
       <h3 className={h3}>Service lines</h3>
       <Table>
         <thead>

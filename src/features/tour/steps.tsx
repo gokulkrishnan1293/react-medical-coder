@@ -102,7 +102,7 @@ export const STEPS: TourStep[] = [
     id: 'evidence',
     section: 'Review',
     title: 'Check a finding',
-    body: "Hover a box to see its finding; click to pin it. The card shows the code, CLAIRE's confidence and reasoning, the quoted evidence, and the MDM element it supports. Accept or reject it, leave a comment, or move the evidence to other words. Try it on this one.",
+    body: "Hover a box to see its finding; click to pin it. The card shows whether the code is on the claim, CLAIRE's confidence and reasoning, and the MDM element it supports. Evidence lists the pages and every place the record documents this code. Accept or reject the code once and it covers every place; drop a single wrong place, or tag another one yourself. Try it on this one.",
     targets: at('[aria-label="Finding details"]', '#ev-d2'),
     setup: () => jumpTo('d2'),
     keys: [[['J', 'K'], 'Next / previous finding'], [['A'], 'Accept'], [['R'], 'Reject'], [[modLabel('Z')], 'Undo']],

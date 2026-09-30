@@ -1,7 +1,7 @@
 import type { Finding } from '@/types';
 import { cn } from '@/lib/utils';
 import { StatusDot } from '@/components/ui';
-import { FindingActions, MarDetail, RouteTag, STATUS_LABEL, TypeBadge, codeLabel, mdmTag, titleOf } from '@/features/findings';
+import { FindingActions, MarDetail, RouteTag, STATUS_LABEL, TypeBadge, codeLabel, mdmTag, placesOf, titleOf, useFindings } from '@/features/findings';
 
 interface Props {
   f: Finding;
@@ -15,9 +15,10 @@ interface Props {
 
 const chip = 'rounded bg-chrome-2 px-[5px] py-[3px] font-mono text-[10px] leading-none font-semibold tracking-[0.02em] text-ink-2';
 
-/** One finding in the notepad: badges, code and title, quoted evidence, actions. */
+/** One finding in the notepad: badges, code and title, quoted evidence, how many places document it, actions. */
 export function FindingCard({ f, active, hot, flash, onEnter, onLeave, onClick }: Props) {
   const rejected = f.status === 'rejected';
+  const places = placesOf(f, useFindings());
   return (
     <div
       data-row={f.id}
@@ -59,6 +60,9 @@ export function FindingCard({ f, active, hot, flash, onEnter, onLeave, onClick }
         <RouteTag f={f} />
         {f.code && mdmTag(f) && <span className={chip}>{mdmTag(f)}</span>}
         {f.replaces && <span className={chip}>replaces {f.replaces}</span>}
+        {places.length > 1 && (
+          <span className={chip} title={`Documented on ${places.map((p) => `p. ${p.page}`).join(', ')}`}>{places.length} places</span>
+        )}
       </div>
       {f.comment && <div className="mt-1.5 border-l-2 border-line pl-2 text-[11.5px] leading-snug text-ink-2 italic">{f.comment}</div>}
     </div>

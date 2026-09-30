@@ -26,6 +26,13 @@ describe('summarize (demo ED case)', () => {
     expect(summarize(accept(INITIAL_FINDINGS, 's4')).data).toBe(3);
   });
 
+  it('counts a test tagged in two places once', () => {
+    const cmp = { ...byId('s1'), status: 'added' as const };
+    const again = { ...cmp, id: 'again', page: 5 };
+    const base = INITIAL_FINDINGS.filter((f) => f.id !== 's1');
+    expect(summarize([...base, cmp, again]).c1).toBe(summarize([...base, cmp]).c1);
+  });
+
   it('AI suggestions only count when asked', () => {
     expect(summarize(INITIAL_FINDINGS, true).code).toBe('99285');
   });

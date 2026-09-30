@@ -12,6 +12,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   useScrollTick(scrollerRef);
   const set = useAddFindingStore((s) => s.set);
   const rebind = useAddFindingStore((s) => s.rebind);
+  const adding = useAddFindingStore((s) => s.rebindMode === 'add');
   const r = sel.range.getBoundingClientRect();
   if (!r.width && !r.height) return null;
   const W = sel.overlap ? 250 : rebind ? 330 : 390;
@@ -31,7 +32,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
     return (
       <motion.div data-add-finding {...anim} role="toolbar" aria-label="Change evidence" className={base + ' flex items-center gap-0.5 p-1 whitespace-nowrap'} style={{ left, top }} onMouseDown={(e) => e.preventDefault()}>
         <button onClick={applyRebind} className="rounded-md bg-accent px-2.5 py-1.5 text-[12.5px] font-medium text-accent-ink hover:brightness-110">
-          Use as evidence for <span className="font-mono">{rebindLabel()}</span>
+          {adding ? 'Tag as another place for' : 'Use as evidence for'} <span className="font-mono">{rebindLabel()}</span>
         </button>
         <button onClick={cancelRebind} className="rounded-md px-2 py-1.5 text-[12.5px] font-medium hover:bg-paper/15">Cancel</button>
       </motion.div>

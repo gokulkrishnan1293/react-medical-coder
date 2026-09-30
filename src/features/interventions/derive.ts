@@ -28,6 +28,7 @@ export interface DerivedIntervention {
 }
 
 const byStatus = (a: Finding, b: Finding) => Number(isLive(b)) - Number(isLive(a));
+const uniqueByCode = (fs: Finding[]) => fs.filter((f, i) => fs.findIndex((x) => x.code === f.code) === i);
 
 export function meets(cond: Condition, f: Finding): boolean {
   switch (cond.kind) {
@@ -57,7 +58,8 @@ export function deriveInterventions(findings: Finding[], lines: ClaimLine[], rul
       : evidence.length ? 'pending'
       : conditions.some((c) => c.lines.length) ? 'billedOnly'
       : 'none';
-    const reasons = rule.because ? dx.filter((f) => !!f.code && rule.because!.codes.includes(f.code)).sort(byStatus) : [];
+    // a diagnosis documented in several places is one reason: keep its best-reviewed finding
+    const reasons = rule.because ? uniqueByCode(dx.filter((f) => !!f.code && rule.because!.codes.includes(f.code)).sort(byStatus)) : [];
     return { rule, state, conditions, reasons, evidence };
   });
 }

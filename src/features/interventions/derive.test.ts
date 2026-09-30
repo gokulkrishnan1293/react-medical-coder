@@ -32,4 +32,13 @@ describe('deriveInterventions', () => {
     const fs = INITIAL_FINDINGS.map((f) => (f.id === 'i1' ? { ...f, status: 'rejected' as const } : f));
     expect(derive(fs).monitor.state).toBe('none');
   });
+
+  it('derives specimen collection from lab tests, IV access from IV MAR entries, and finds no imaging', () => {
+    const d = derive(INITIAL_FINDINGS);
+    expect(d.specimen.state).toBe('met');
+    expect(d.specimen.evidence.map((f) => f.code)).toContain('80053');
+    expect(d.ivAccess.state).toBe('met');
+    expect(d.ivAccess.conditions.find((c) => c.cond.kind === 'route')!.findings.map((f) => f.id)).toContain('m1');
+    expect(d.imaging.state).toBe('none');
+  });
 });

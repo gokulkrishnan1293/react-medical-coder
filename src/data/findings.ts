@@ -33,6 +33,21 @@ export const INITIAL_FINDINGS: Finding[] = [
   ai('d4', 5, 'Hyperkalemia', { type: 'dx', code: 'E87.5', desc: 'Hyperkalemia', status: 'ai', conf: 0.89 }),
   ai('d5', 5, 'Dehydration', { type: 'dx', code: 'E86.0', desc: 'Dehydration', status: 'confirmed', conf: 0.93 }),
 
+  // The same diagnoses documented again elsewhere: each place is its own finding, sharing the code
+  ai('d1b', 2, 'nausea, vomiting', {
+    type: 'dx', code: 'R11.2', desc: 'Nausea with vomiting, unspecified', status: 'ai', conf: 0.84,
+  }),
+  ai('d2b', 5, 'Diabetic ketoacidosis, moderate', {
+    type: 'dx', code: 'E11.10', desc: 'Type 2 diabetes mellitus with ketoacidosis without coma', replaces: 'E11.65',
+    note: 'Assessment restates DKA and its severity.', status: 'ai', conf: 0.92,
+  }),
+  ai('d3b', 5, 'acute kidney injury', {
+    type: 'dx', code: 'N17.9', desc: 'Acute kidney failure, unspecified', status: 'ai', conf: 0.88,
+  }),
+  ai('d4b', 3, 'Consistent with hyperkalemia', {
+    type: 'dx', code: 'E87.5', desc: 'Hyperkalemia', note: 'ECG read: peaked T waves.', status: 'ai', conf: 0.86,
+  }),
+
   // Services
   ai('s1', 3, 'comprehensive metabolic panel', {
     type: 'svc', code: '80053', desc: 'Comprehensive metabolic panel', status: 'confirmed', conf: 0.95,

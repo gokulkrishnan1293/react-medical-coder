@@ -14,9 +14,11 @@ export interface TextSelection {
 interface AddFindingState {
   sel: TextSelection | null;
   compose: ComposeType | null;
-  /** Finding whose evidence the coder is moving: the next selection becomes its evidence. */
+  /** Finding the coder is picking evidence for: the next selection becomes its evidence. */
   rebind: string | null;
-  set: (patch: Partial<Pick<AddFindingState, 'sel' | 'compose' | 'rebind'>>) => void;
+  /** move: the selection replaces the finding's evidence · add: it becomes another place the same code is documented. */
+  rebindMode: 'move' | 'add';
+  set: (patch: Partial<Pick<AddFindingState, 'sel' | 'compose' | 'rebind' | 'rebindMode'>>) => void;
   cancel: () => void;
 }
 
@@ -24,6 +26,7 @@ export const useAddFindingStore = create<AddFindingState>((set) => ({
   sel: null,
   compose: null,
   rebind: null,
+  rebindMode: 'move',
   set: (patch) => set(patch),
   cancel: () => {
     window.getSelection()?.removeAllRanges();

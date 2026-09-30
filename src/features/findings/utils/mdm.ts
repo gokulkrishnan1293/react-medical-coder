@@ -7,12 +7,19 @@ import { isLive } from './finding';
  * Problems from diagnoses, Data from tests and documented review, Risk from drugs and documented decisions.
  * Only accepted and coder-added findings count,
  * unless includeAi is set (used to show "AI has more").
- * The visit level is the second-highest element level (2 of 3 rule).
+ * A code found in several places counts once. The visit level is the second-highest element level (2 of 3 rule).
  */
 export function summarize(findings: Finding[], includeAi = false): MdmSummary {
+  // a code documented in several places earns its credit once, e.g. a lab tagged on two pages is one unique test
+  const seen = new Set<string>();
   const live = findings.flatMap((f) => {
     const m = (isLive(f) || (includeAi && f.status === 'ai')) && mdmOf(f);
-    return m ? [m] : [];
+    if (!m) return [];
+    if (f.code && f.type !== 'mar') {
+      if (seen.has(f.code)) return [];
+      seen.add(f.code);
+    }
+    return [m];
   });
   const max = (el: string) =>
     live.filter((m) => m.el === el).reduce<number>((acc, m) => Math.max(acc, m.level ?? 0), 0) as MdmLevel;

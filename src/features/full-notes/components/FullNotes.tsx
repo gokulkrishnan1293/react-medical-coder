@@ -4,7 +4,6 @@ import { jumpTo } from '@/features/record-viewer';
 import { useUiStore, type FullNotesTab } from '@/stores/uiStore';
 import { FindingsTab } from './FindingsTab';
 import { ClaimTables } from '@/features/claim';
-import { ScoreCard, useSummary } from '@/features/findings';
 import { InterventionsTab } from '@/features/interventions';
 
 const TABS: { key: FullNotesTab; label: string }[] = [
@@ -16,7 +15,6 @@ const TABS: { key: FullNotesTab; label: string }[] = [
 /** Full view of the review: every finding, the claim against the record, and the interventions derived from both. */
 export function FullNotes({ tab }: { tab: FullNotesTab }) {
   const set = useUiStore((st) => st.set);
-  const s = useSummary();
   const close = () => set({ full: null });
   const onJump = (id: string) => { close(); setTimeout(() => jumpTo(id), 60); };
   return (
@@ -31,7 +29,7 @@ export function FullNotes({ tab }: { tab: FullNotesTab }) {
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pt-4 pb-7 max-[760px]:px-4">
         {tab === 'findings' && <FindingsTab onJump={onJump} />}
-        {tab === 'claim' && <><div className="mb-4 max-w-[620px]"><ScoreCard s={s} /></div><ClaimTables onJump={onJump} /></>}
+        {tab === 'claim' && <ClaimTables onJump={onJump} />}
         {tab === 'interventions' && <InterventionsTab onJump={onJump} />}
       </div>
     </Modal>

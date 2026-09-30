@@ -79,6 +79,31 @@ export const INTERVENTION_RULES: InterventionRule[] = [
     anyOf: [{ kind: 'text', pattern: /reassess/i, label: 'Record says “reassessed”' }],
   },
   {
+    id: 'specimen',
+    label: 'Specimen collection and prep (lab)',
+    anyOf: [
+      { kind: 'code', codes: ['80048', '80053', '82010', '82803', '85025', '36415', '36600'], label: 'Lab test or draw code on the record' },
+      { kind: 'text', pattern: /venipuncture|blood (drawn|collected)|specimen/i, label: 'Record says “specimen” or “blood drawn”' },
+    ],
+  },
+  {
+    id: 'imaging',
+    label: 'Radiology prep',
+    anyOf: [
+      { kind: 'code', codes: ['70450', '71045', '71046', '74176', '74177', '76705'], label: 'Imaging code: CT, x-ray or ultrasound' },
+      { kind: 'text', pattern: /x-ray|radiograph|\bCT\b|ultrasound|contrast/i, label: 'Record mentions imaging' },
+    ],
+  },
+  {
+    id: 'ivAccess',
+    label: 'IV access and IV medication administered',
+    anyOf: [
+      { kind: 'code', codes: ['36000', '36410'], label: 'IV placement code 36000 / 36410' },
+      { kind: 'text', pattern: /IV access|IV (line|placed)|antecubital/i, label: 'Record says “IV access”' },
+      { kind: 'route', pattern: /^IV/i, label: 'A MAR entry was given IV' },
+    ],
+  },
+  {
     id: 'ecg',
     label: 'ECG',
     anyOf: [{ kind: 'code', codes: ['93000', '93005', '93010'], label: 'ECG code 93000–93010' }],

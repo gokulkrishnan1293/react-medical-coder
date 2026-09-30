@@ -50,6 +50,10 @@ export interface Finding {
   conf?: number;
   /** The code before the coder changed it. */
   editedFrom?: string;
+  /** Description of that original code. */
+  editedFromDesc?: string;
+  /** Where the evidence pointed before the coder moved it. */
+  movedFrom?: Pick<Finding, 'page' | 'block' | 'text'>;
   /** Billed code this finding replaces, e.g. E11.10 replaces E11.65. */
   replaces?: string;
   note?: string;
