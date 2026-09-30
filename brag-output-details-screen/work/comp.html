@@ -1,0 +1,200 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#17222d;font-family:'Public Sans',sans-serif}
+#view{position:absolute;inset:0;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1440px;height:810px;transform-origin:0 0;overflow:hidden}
+.bg{position:absolute;left:0;top:0;width:1440px;height:810px}
+#reveal{position:absolute;left:0;top:0;width:1440px;height:810px}
+#tbar{position:absolute;left:0;top:0;width:1440px;height:810px}
+#scrim{position:absolute;inset:0}
+.card{position:absolute;border-radius:12px;overflow:hidden;box-shadow:0 14px 36px rgba(12,22,32,.22),0 2px 6px rgba(12,22,32,.12)}
+.card img{display:block;width:100%;height:100%}
+#band{position:absolute;left:0;right:0;bottom:0;height:330px;background:linear-gradient(to bottom,rgba(12,22,32,0),rgba(12,22,32,.84) 62%)}
+#cap{position:absolute;left:120px;right:120px;bottom:84px;color:#fff}
+#kick{font-size:24px;font-weight:700;letter-spacing:.14em;color:#6fd0d9;margin-bottom:12px}
+#line{font-weight:700;font-size:60px;letter-spacing:-.02em;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.25)}
+.kbd{display:inline-block;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:42px;padding:0 14px;border:2px solid rgba(255,255,255,.7);border-bottom-width:5px;border-radius:10px;transform:translateY(-6px)}
+#cursor{position:absolute;left:0;top:0;width:44px;height:44px;transform-origin:4px 4px}
+#dip{position:absolute;inset:0;background:#17222d}
+#outro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.mark{display:flex;align-items:center;gap:22px;font-weight:700;font-size:44px;letter-spacing:.01em}
+.mark i{font-style:normal;display:grid;place-items:center;width:78px;height:78px;border-radius:18px;background:#0a6b74;color:#fff;font-size:42px}
+.big{margin-top:46px;font-size:112px;font-weight:700;letter-spacing:-.035em}
+.sub{margin-top:26px;font-size:40px;color:#a5b1bc;font-weight:500}
+.sub .kbd{color:#fff;font-size:32px;padding:0 13px;border-color:#4db6c0;border-radius:9px;transform:translateY(-3px);margin:0 4px}
+.o{opacity:0}
+</style></head><body>
+<div id="view">
+  <div id="stage">
+    <img class="bg" id="bgA"><img class="bg" id="bgB">
+    <img id="reveal" src="bg-7.png"><img id="tbar" src="bg-7.png">
+    <svg id="scrim" width="1440" height="810" viewBox="0 0 1440 810">
+      <defs><mask id="m"><rect width="1440" height="810" fill="white"/><g id="holes"></g></mask></defs>
+      <rect width="1440" height="810" fill="rgba(12,22,32,.42)" mask="url(#m)"/>
+      <g id="rings"></g>
+    </svg>
+    <div class="card" id="cardA"><img></div>
+    <div class="card" id="cardB"><img></div>
+  </div>
+  <div id="band"></div>
+  <div id="cap"><div id="kick"></div><div id="line"></div></div>
+  <svg id="cursor" viewBox="0 0 44 44"><path d="M4 3 L4 33 L12 26 L17.5 38.5 L23 36 L17.5 24 L28 24 Z" fill="#17222d" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  <div id="dip"></div>
+  <div id="outro">
+    <div class="mark o" id="o1"><i>C</i>CLAIRE Review</div>
+    <div class="big o" id="o2">Stay in the record.</div>
+    <div class="sub o" id="o3">Press <span class="kbd">?</span> in any case for the full tour.</div>
+  </div>
+</div>
+<script>
+const META = window.META;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ez=t=>{t=clamp(t,0,1);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const eo=t=>{t=clamp(t,0,1);return 1-Math.pow(1-t,3)};
+const prog=(t,a,b)=>clamp((t-a)/(b-a),0,1);
+const B=n=>1.07+0.5225*n;   // music beat grid (114.8 BPM)
+
+const SEG=[
+ {s:0, t:0},{s:2,t:B(10)},{s:4,t:B(17)},{s:5,t:B(24)},{s:6,t:B(32)},{s:7,t:B(44)},{s:9,t:B(51)},
+ {s:14,t:B(58)},{s:15,t:B(65)},{s:16,t:B(71)},{s:19,t:B(78)},{s:20,t:B(85)},{s:21,t:B(92)},{s:22,t:B(99)}];
+let OUT=B(105), END=OUT+4.6; const TR=0.6;
+let ACCEPT=B(38), DRAG0=B(45.5), DRAG1=B(47.2), TYPE0=B(93.5);
+const K=(k,s)=>`<span class="kbd">${k}</span>`;
+const CAPS=[
+ [0.35,3.05,'CLAIRE REVIEW','One screen for every downcode review.'],
+ [3.2,6.1,'THE IDEA','Stay in the record. The rest comes to you.'],
+ [B(10)+.3,B(17)-.2,'THE CASE','Every claim field, checked against the record.'],
+ [B(17)+.3,B(24)-.2,'THE RECORD','Each finding is boxed where its evidence is.'],
+ [B(24)+.3,B(32)-.2,'THE IDEA','The notepad follows the pages you’re reading.'],
+ [B(32)+.3,ACCEPT-.1,'REVIEW','Open a finding: confidence, reasoning, evidence.'],
+ [ACCEPT+.15,B(44)-.2,'REVIEW','Accept it once. It covers every place.'],
+ [B(44)+.3,B(51)-.2,'REVIEW','Select words to add what CLAIRE missed.'],
+ [B(51)+.3,B(58)-.2,'EXTRACTION','Flag what the extraction got wrong.'],
+ [B(58)+.3,B(65)-.2,'THE ORIGINAL','Check the scan side by side.'],
+ [B(65)+.3,B(71)-.2,'THE ORIGINAL','Or lay it over the text, line by line.'],
+ [B(71)+.3,B(78)-.2,'FOCUS','Spotlight the evidence. Or read it clean.'],
+ [B(78)+.3,B(85)-.2,'FULL NOTES','Every claim line against the record.'],
+ [B(85)+.3,B(92)-.2,'FULL NOTES','How each intervention was reached.'],
+ [B(92)+.3,B(99)-.2,'GETTING AROUND','Every action in one place. '+K('Ctrl')+' '+K('K')],
+ [B(99)+.3,OUT-.1,'FINISH','Then complete the review.'],
+];
+
+// narration drives the timing (timing.json, from the voiceover line lengths)
+const TM=window.TIMING;
+if(TM){ SEG.forEach((g,i)=>g.t=TM.seg[i]); OUT=TM.out; END=TM.end; ACCEPT=TM.accept; DRAG0=TM.drag0; DRAG1=TM.drag1; TYPE0=TM.type0;
+  CAPS.forEach((c,i)=>{c[0]=TM.caps[i][0]; c[1]=TM.caps[i][1];}); }
+
+function camFor(s){
+  const m=META[s]; const rs=[...m.boxes,m.card];
+  let x0=Math.min(...rs.map(r=>r.x)),y0=Math.min(...rs.map(r=>r.y)),x1=Math.max(...rs.map(r=>r.x+r.w)),y1=Math.max(...rs.map(r=>r.y+r.h));
+  const P=m.boxes.length?40:140; x0-=P;y0-=P;x1+=P;y1+=P;
+  const sc=clamp(Math.min(1920/(x1-x0),780/(y1-y0)),4/3,2.0);
+  let X=(x0+x1)/2-960/sc, Y=(y0+y1)/2-400/sc;
+  return {s:sc,x:clamp(X,0,1440-1920/sc),y:clamp(Y,0,810-1080/sc)};
+}
+const FULL={s:4/3,x:0,y:0};
+const mixCam=(a,b,t)=>({s:Math.exp(lerp(Math.log(a.s),Math.log(b.s),t)),x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t)});
+const rr=(b,r=8)=>{const {x,y,w,h}=b;r=Math.min(r,w/2,h/2);return `M${x+r} ${y}H${x+w-r}A${r} ${r} 0 0 1 ${x+w} ${y+r}V${y+h-r}A${r} ${r} 0 0 1 ${x+w-r} ${y+h}H${x+r}A${r} ${r} 0 0 1 ${x} ${y+h-r}V${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}Z`};
+const zero=b=>({x:b.x+b.w/2,y:b.y+b.h/2,w:0,h:0});
+function mixBoxes(A,Bx,t){ const n=Math.max(A.length,Bx.length), out=[];
+  for(let i=0;i<n;i++){ let a=A[i],b=Bx[i]; if(!a&&!b)continue; if(!a)a=zero(b); if(!b)b=zero(a);
+    out.push({x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),w:lerp(a.w,b.w,t),h:lerp(a.h,b.h,t)}); } return out; }
+const nextBtn=s=>META[s].btns.find(b=>b.t==='Next'||b.t==='Start the tour');
+const NOCARD=new Set([19,20]);
+const TAB={x:1078,y:84};
+
+// cursor path in page coords: [time, x, y]
+const REST={x:760,y:640};
+const CUR=[[1.8,1300,760]];
+const CLICKS=[], KEYS=[];
+function go(t0,t1,x,y){CUR.push([t0,null,null]);CUR.push([t1,x,y]);}
+SEG.forEach((g,i)=>{ const nx=SEG[i+1]; if(!nx)return; const T=nx.t;
+  if(g.s===6){ const a=META[6].extra.accept; go(ACCEPT-.7,ACCEPT-.1,a.x,a.y); CLICKS.push(ACCEPT-.06); }
+  if(g.s===7){ const w=META[7].extra.sel; go(DRAG0-.6,DRAG0,w.x+2,w.y+w.h*.6); CUR.push([DRAG1,w.x+w.w-2,w.y+w.h*.6]); CLICKS.push(DRAG0-.04); }
+  if(g.s===20){ KEYS.push(T-.25,T-.12); return; }
+  const b=g.s===19?TAB:nextBtn(g.s); go(T-.72,T-.12,b.x+6,b.y+4); CUR.push([T+.25,b.x+6,b.y+4]); CLICKS.push(T-.08);
+});
+for(let i=1;i<CUR.length;i++) if(CUR[i][1]===null){CUR[i][1]=CUR[i-1][1];CUR[i][2]=CUR[i-1][2];}
+CUR.sort((a,b)=>a[0]-b[0]); CUR[0][0]=Math.max(1.8,SEG[1].t-1.9);
+function cursorAt(t){ if(t<CUR[0][0])return null;
+  for(let i=CUR.length-1;i>=0;i--) if(t>=CUR[i][0]){const a=CUR[i],b=CUR[i+1]; if(!b)return [a[1],a[2]];
+    const lin=(a[0]===DRAG0); const k=lin?prog(t,a[0],b[0]):ez((t-a[0])/(b[0]-a[0])); return [lerp(a[1],b[1],k),lerp(a[2],b[2],k)];} }
+// keystroke ticks while typing in the palette
+const TYPED=META[21].extra.typed.length, TSTEP=0.13;
+for(let k=0;k<TYPED;k++) KEYS.push(TYPE0+k*TSTEP);
+
+const $=id=>document.getElementById(id);
+function setCard(el,s,op,dy){ if(s==null||op<=0||NOCARD.has(s)){el.style.opacity=0;return}
+  const c=META[s].card, img=el.firstElementChild, src=`card-${s}.png`; if(!img.src.endsWith(src))img.src=src;
+  Object.assign(el.style,{left:c.x+'px',top:(c.y+dy)+'px',width:c.w+'px',height:c.h+'px',opacity:op});}
+function bgName(s,t){
+  if(s===6) return t>=ACCEPT?'6b':'6';
+  if(s===7) return '7a';
+  if(s===21){ const k=Math.floor((t-TYPE0)/TSTEP)+1; return k<1?'21':'21-'+Math.min(k,TYPED); }
+  return String(s);
+}
+function setBg(el,n,op){const src=`bg-${n}.png`; if(!el.src.endsWith(src))el.src=src; el.style.opacity=op;}
+
+window.render=function(t){
+  let i=0; while(i+1<SEG.length&&t>=SEG[i+1].t)i++;
+  const g=SEG[i], prev=i?SEG[i-1]:null, k=prev?ez(prog(t,g.t,g.t+TR)):1;
+  let cam;
+  const HOOK=mixCam(FULL,camFor(0),0.45);
+  if(i===0) cam=mixCam(FULL,camFor(0),ez(prog(t,0.8,4.5))*0.45);
+  else cam=mixCam(i===1?HOOK:camFor(prev.s),camFor(g.s),k);
+  // slow push while each chapter holds
+  { const nt=SEG[i+1]?SEG[i+1].t:OUT, f=1+0.04*ez(prog(t,i===0?0.8:g.t+TR,nt)); const cx=cam.x+960/cam.s, cy=cam.y+540/cam.s; cam={s:cam.s*f,x:cx-960/(cam.s*f),y:cy-540/(cam.s*f)}; }
+  if(t>OUT) cam=mixCam(cam,FULL,ez(prog(t,OUT,OUT+0.7)));
+  $('stage').style.transform=`scale(${cam.s}) translate(${-cam.x}px,${-cam.y}px)`;
+  // screen: previous step's last state, then a quick cut to this step
+  const bf=prev?prog(t,g.t,g.t+0.07):1;
+  setBg($('bgA'),prev?bgName(prev.s,g.t-0.001):bgName(g.s,t),1); setBg($('bgB'),bgName(g.s,t),bf);
+  // live drag-select: the selection follows the cursor, then the Add toolbar appears
+  const rv=$('reveal'), tb=$('tbar');
+  if(g.s===7&&bf>=1){ const w=META[7].extra.sel, tr=META[7].extra.toolbar;
+    const x=lerp(w.x,w.x+w.w,prog(t,DRAG0,DRAG1));
+    rv.style.opacity=t>DRAG0?1:0; rv.style.clipPath=`inset(${w.y-3}px ${1440-x}px ${810-(w.y+w.h+3)}px ${w.x-6}px)`;
+    tb.style.opacity=eo(prog(t,DRAG1+.08,DRAG1+.28)); tb.style.clipPath=`inset(${tr.y-6}px ${1440-(tr.x+tr.w+6)}px ${810-(tr.y+tr.h+6)}px ${tr.x-6}px)`;
+  } else { rv.style.opacity=0; tb.style.opacity=0; }
+  // scrim + outline
+  let so=i===0?ez(prog(t,0.5,0.9)):1; if(t>OUT)so*=1-ez(prog(t,OUT,OUT+0.3));
+  $('scrim').style.opacity=so;
+  let tgt=META[g.s].boxes; if(g.s===7){ const q=eo(prog(t,DRAG1+.05,DRAG1+.35)); tgt=[tgt[0],...(q>0?[mixBoxes([zero(tgt[1])],[tgt[1]],q)[0]]:[])]; }
+  const bx=mixBoxes(prev?META[prev.s].boxes:[],tgt,k).filter(b=>b.w>1);
+  $('holes').innerHTML=bx.map(b=>`<path d="${rr(b)}" fill="black"/>`).join('');
+  $('rings').innerHTML=bx.map(b=>`<path d="${rr(b)}" fill="none" stroke="#0a6b74" stroke-width="2"/>`).join('');
+  // cards
+  setCard($('cardA'),prev?prev.s:null,prev?1-prog(t,g.t,g.t+0.15):0,0);
+  const inStart=i===0?0.85:g.t+0.32, ci=eo(prog(t,inStart,inStart+0.28));
+  let inOp=ci; if(t>OUT)inOp*=1-prog(t,OUT,OUT+0.15);
+  setCard($('cardB'),g.s,inOp,(1-ci)*10);
+  // caption
+  const c=CAPS.find(c=>t>=c[0]-0.05&&t<c[1]+0.22);
+  if(c){ const a=eo(prog(t,c[0],c[0]+0.3)), z=1-prog(t,c[1],c[1]+0.2);
+    if($('line').dataset.v!==c[3]){$('line').innerHTML=c[3];$('line').dataset.v=c[3];$('kick').textContent=c[2];}
+    $('cap').style.opacity=a*z; $('cap').style.transform=`translateY(${(1-a)*18}px)`; }
+  else $('cap').style.opacity=0;
+  $('band').style.opacity=(t<OUT?1:1-prog(t,OUT,OUT+0.3))*clamp(t/0.3,0,1);
+  // cursor
+  const p=cursorAt(t), cu=$('cursor');
+  if(p&&t<OUT){ const vx=(p[0]-cam.x)*cam.s, vy=(p[1]-cam.y)*cam.s;
+    const down=(t>=DRAG0-.04&&t<=DRAG1)?1:CLICKS.reduce((m,ct)=>Math.max(m,1-Math.abs(t-ct)/0.09),0);
+    cu.style.opacity=clamp((t-CUR[0][0])/0.2,0,1)*(1-prog(t,OUT-.3,OUT));
+    cu.style.transform=`translate(${vx-4}px,${vy-4}px) scale(${1-0.14*clamp(down,0,1)})`; }
+  else cu.style.opacity=0;
+  // outro
+  $('dip').style.opacity=ez(prog(t,OUT+0.3,OUT+0.75));
+  window._dec=Promise.all([...document.images].map(im=>im.decode().catch(()=>{})));
+  [[OUT+0.8,'o1'],[OUT+1.05,'o2'],[OUT+1.45,'o3']].forEach(([s,id])=>{const a=eo(prog(t,s,s+0.45)); const e=$(id); e.style.opacity=a*(1-prog(t,END-0.35,END)); e.style.transform=`translateY(${(1-a)*22}px)`;});
+};
+const IMGS=[...Object.keys(META).flatMap(s=>[`bg-${s}.png`,`card-${s}.png`]),'bg-6b.png','bg-7a.png',...META[21].extra.typed.map(k=>`bg-21-${k}.png`)];
+window.ready=async()=>{ await document.fonts.ready; await Promise.all(IMGS.map(src=>new Promise(r=>{const im=new Image();im.onload=r;im.onerror=r;im.src=src;}))); };
+// sound cues: [time, kind]
+window.CUES=[...CLICKS.map(t=>[t,'click']),...KEYS.map(t=>[t,'key'])].sort((a,b)=>a[0]-b[0]);
+window.END=END;
+</script>
+</body></html>

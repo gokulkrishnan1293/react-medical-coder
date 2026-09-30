@@ -1,0 +1,1 @@
+A walkthrough of CLAIRE's case workbench, where coders review ED downcode reconsiderations without leaving the medical record. Findings are boxed where the evidence is, the notepad follows the page you're reading, and the original scan, full notes and the command palette all open over the record. Accept a finding once and it covers every place.
