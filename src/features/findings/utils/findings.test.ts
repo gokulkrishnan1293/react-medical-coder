@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { INITIAL_FINDINGS } from '@/data';
 import type { Finding } from '@/types';
+import { mdmOf } from '@/data';
 import { summarize } from './mdm';
 import { routeOf, sortByReading, tagOf } from './finding';
 import { segments } from './segments';
@@ -30,6 +31,22 @@ describe('summarize (demo ED case)', () => {
   });
 });
 
+describe('mdmOf (MDM derived from findings)', () => {
+  it('takes Problems from diagnoses, Data from tests, Risk from drugs and decisions', () => {
+    expect(mdmOf(byId('d2'))).toMatchObject({ el: 'problems', level: 3 });
+    expect(mdmOf(byId('s1'))).toMatchObject({ el: 'data', cat: 1 });
+    expect(mdmOf(byId('s4'))).toMatchObject({ el: 'data', cat: 2 });
+    expect(mdmOf(byId('m2'))).toMatchObject({ el: 'risk', level: 2 });
+    expect(mdmOf(byId('r1'))).toMatchObject({ el: 'risk', level: 3 });
+    expect(mdmOf(byId('r3'))).toMatchObject({ el: 'data', cat: 3 });
+  });
+
+  it('gives no credit for IV fluids or services that are not tests', () => {
+    expect(mdmOf(byId('m1'))).toBeNull();
+    expect(mdmOf(byId('s5'))).toBeNull();
+  });
+});
+
 describe('finding helpers', () => {
   it('routes findings', () => {
     expect(routeOf(byId('d5'))).toBe('onClaim');
@@ -41,8 +58,9 @@ describe('finding helpers', () => {
 
   it('builds box tags', () => {
     expect(tagOf(byId('d2'))).toBe('E11.10 · PROB·H');
-    expect(tagOf(byId('m2'))).toBe('J2405 · MAR');
-    expect(tagOf(byId('i1'))).toBe('INTV');
+    expect(tagOf(byId('m2'))).toBe('J2405 · RISK·M · MAR');
+    expect(tagOf(byId('r1'))).toBe('RISK·H');
+    expect(tagOf(byId('i1'))).toBe('SVC');
   });
 
   it('sorts in reading order', () => {

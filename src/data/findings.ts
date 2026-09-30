@@ -20,12 +20,10 @@ export const INITIAL_FINDINGS: Finding[] = [
   // Diagnoses
   ai('d1', 1, 'nausea, repeated vomiting', {
     type: 'dx', code: 'R11.2', desc: 'Nausea with vomiting, unspecified',
-    mdm: { el: 'problems', level: 2, label: 'Acute illness with systemic symptoms' },
     status: 'confirmed', conf: 0.9,
   }),
   ai('d2', 5, 'Diabetic ketoacidosis without coma, type 2 diabetes', {
     type: 'dx', code: 'E11.10', desc: 'Type 2 diabetes mellitus with ketoacidosis without coma',
-    mdm: { el: 'problems', level: 3, label: 'Acute illness that poses a threat to bodily function' },
     replaces: 'E11.65', note: 'Record documents DKA (anion gap 23, pH 7.21, beta-hydroxybutyrate 5.9). Claim lists E11.65.',
     status: 'ai', conf: 0.94,
   }),
@@ -37,20 +35,16 @@ export const INITIAL_FINDINGS: Finding[] = [
 
   // Services
   ai('s1', 3, 'comprehensive metabolic panel', {
-    type: 'svc', code: '80053', desc: 'Comprehensive metabolic panel',
-    mdm: { el: 'data', cat: 1, label: 'Ordering of unique test (CMP)' }, status: 'confirmed', conf: 0.95,
+    type: 'svc', code: '80053', desc: 'Comprehensive metabolic panel', status: 'confirmed', conf: 0.95,
   }),
   ai('s2', 3, 'beta-hydroxybutyrate', {
-    type: 'svc', code: '82010', desc: 'Ketone bodies, quantitative (beta-hydroxybutyrate)',
-    mdm: { el: 'data', cat: 1, label: 'Ordering of unique test (beta-hydroxybutyrate)' }, status: 'confirmed', conf: 0.92,
+    type: 'svc', code: '82010', desc: 'Ketone bodies, quantitative (beta-hydroxybutyrate)', status: 'confirmed', conf: 0.92,
   }),
   ai('s3', 3, 'venous blood gas', {
-    type: 'svc', code: '82803', desc: 'Blood gases',
-    mdm: { el: 'data', cat: 1, label: 'Ordering of unique test (VBG)' }, status: 'confirmed', conf: 0.9,
+    type: 'svc', code: '82803', desc: 'Blood gases', status: 'confirmed', conf: 0.9,
   }),
   ai('s4', 3, '12-lead ECG independently interpreted by me', {
-    type: 'svc', code: '93005', desc: 'Electrocardiogram, tracing only',
-    mdm: { el: 'data', cat: 2, label: 'Independent interpretation of a test' }, status: 'ai', conf: 0.9,
+    type: 'svc', code: '93005', desc: 'Electrocardiogram, tracing only', status: 'ai', conf: 0.9,
   }),
   ai('s5', 4, 'Ondansetron given by IV push over 2 minutes', {
     type: 'svc', code: '96374', desc: 'IV push, single or initial drug', status: 'confirmed', conf: 0.93,
@@ -86,24 +80,18 @@ export const INITIAL_FINDINGS: Finding[] = [
     mar: { time: '04:20', drug: 'Potassium chloride', dose: '20 mEq', route: 'IV piggyback', units: 10 }, status: 'ai', conf: 0.88,
   }),
 
-  // Interventions
-  ai('i1', 5, 'Placed on continuous cardiac monitoring', { type: 'intervention', desc: 'Continuous cardiac monitoring', status: 'confirmed', conf: 0.95 }),
-  ai('i2', 5, 'Hourly point-of-care glucose and neuro checks', { type: 'intervention', desc: 'Serial point-of-care glucose checks', status: 'ai', conf: 0.9 }),
-  ai('i3', 5, 'Insulin infusion titrated per DKA protocol', { type: 'intervention', desc: 'Titrated IV infusion', status: 'ai', conf: 0.88 }),
-  ai('i4', 5, 'Reassessed at 04:30 and 06:30', { type: 'intervention', desc: 'Serial reassessments', status: 'ai', conf: 0.84 }),
-  ai('i5', 3, 'Serial basic metabolic panels ordered every 2 hours', { type: 'intervention', desc: 'Serial lab monitoring', status: 'ai', conf: 0.82 }),
+  // Services performed that are not billed on their own line. They count toward the ED level as interventions.
+  ai('i1', 5, 'Placed on continuous cardiac monitoring', { type: 'svc', desc: 'Continuous cardiac monitoring', status: 'confirmed', conf: 0.95 }),
+  ai('i2', 5, 'Hourly point-of-care glucose and neuro checks', { type: 'svc', desc: 'Serial point-of-care glucose and neuro checks', status: 'ai', conf: 0.9 }),
+  ai('i3', 5, 'Insulin infusion titrated per DKA protocol', { type: 'svc', desc: 'Titrated IV infusion', status: 'ai', conf: 0.88 }),
+  ai('i4', 5, 'Reassessed at 04:30 and 06:30', { type: 'svc', desc: 'Serial reassessments', status: 'ai', conf: 0.84 }),
+  ai('i5', 3, 'Serial basic metabolic panels ordered every 2 hours', { type: 'svc', desc: 'Serial lab monitoring', status: 'ai', conf: 0.82 }),
 
-  // MDM elements
+  // Documentation: what the record states that has no code. Counts toward MDM.
   ai('r1', 5, 'Decision made to admit to the observation step-down unit', {
-    type: 'mdm', desc: 'Decision regarding hospitalization',
-    mdm: { el: 'risk', level: 3, label: 'Decision regarding hospitalization' }, status: 'ai', conf: 0.92,
-  }),
-  ai('r2', 5, 'continued insulin infusion and electrolyte replacement', {
-    type: 'mdm', desc: 'Prescription drug management',
-    mdm: { el: 'risk', level: 2, label: 'Prescription drug management' }, status: 'confirmed', conf: 0.9,
+    type: 'doc', docKind: 'hospitalization', desc: 'Decision regarding hospitalization', status: 'ai', conf: 0.92,
   }),
   ai('r3', 5, 'Discussed management with Dr. Evans', {
-    type: 'mdm', desc: 'Discussion of management with external physician',
-    mdm: { el: 'data', cat: 3, label: 'Discussion of management with external physician' }, status: 'ai', conf: 0.86,
+    type: 'doc', docKind: 'externalDiscussion', desc: 'Discussion of management with external physician', status: 'ai', conf: 0.86,
   }),
 ];

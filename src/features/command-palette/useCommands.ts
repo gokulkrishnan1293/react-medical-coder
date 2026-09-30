@@ -4,6 +4,7 @@ import { goPage } from '@/features/record-viewer';
 import { useNotepadStore } from '@/features/notepad';
 import { nextAiSuggestion, openFullNotes, stepFinding } from '@/features/shortcuts';
 import { useUiStore } from '@/stores/uiStore';
+import { modLabel } from '@/lib/platform';
 import { setZoom, stepZoom } from '@/features/zoom';
 import { cycleSourceMode, setSourceMode } from '@/features/source-view';
 
@@ -35,11 +36,12 @@ export function getCommands(): Command[] {
     { label: ui.syncScroll ? 'Unlink original from record scrolling' : 'Scroll original with the record', run: () => ui.set({ syncScroll: !ui.syncScroll }) },
     { label: 'Open full notes', key: 'F', run: () => openFullNotes('findings') },
     { label: 'Open claim view', run: () => openFullNotes('claim') },
+    { label: 'Open interventions and how they were derived', run: () => openFullNotes('interventions') },
     { label: 'Show claim in notepad', run: () => { np.set({ panel: 'claim' }); if (np.mode !== 'float' && np.mode !== 'dock') np.reopen(); } },
     { label: 'Show findings in notepad', run: () => { np.set({ panel: 'findings' }); if (np.mode !== 'float' && np.mode !== 'dock') np.reopen(); } },
     { label: 'Dock notepad to the right', key: 'D', run: np.dock },
     { label: 'Float notepad', run: np.float },
     { label: 'Minimize notepad', key: 'N', run: np.minimize },
-    { label: 'Undo last change', key: '⌘Z', run: useFindingsStore.getState().undo },
+    { label: 'Undo last change', key: modLabel('Z'), run: useFindingsStore.getState().undo },
   ];
 }

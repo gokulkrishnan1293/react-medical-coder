@@ -47,6 +47,7 @@ export const hoveredSide = () => hovered;
 
 /**
  * Pointer zoom for one column: ⌘/Ctrl + wheel and trackpad pinch zoom around the cursor.
+ * Either modifier is accepted on every platform: a Mac trackpad pinch arrives as Ctrl + wheel.
  * Also remembers the column as the target for keyboard zoom while the pointer is over it.
  */
 export function useZoomGestures(side: ZoomSide, ref: RefObject<HTMLElement | null>) {

@@ -57,7 +57,7 @@ export function FindingCard({ f, active, hot, flash, onEnter, onLeave, onClick }
       )}
       <div className="mt-1.5 flex flex-wrap items-center gap-[5px]">
         <RouteTag f={f} />
-        {f.code && f.mdm && <span className={chip}>{mdmTag(f)}</span>}
+        {f.code && mdmTag(f) && <span className={chip}>{mdmTag(f)}</span>}
         {f.replaces && <span className={chip}>replaces {f.replaces}</span>}
       </div>
       {f.comment && <div className="mt-1.5 border-l-2 border-line pl-2 text-[11.5px] leading-snug text-ink-2 italic">{f.comment}</div>}

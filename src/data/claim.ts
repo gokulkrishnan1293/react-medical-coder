@@ -7,6 +7,10 @@ export const CLAIM: Claim = {
   source: 'ERDM',
   form: 'UB-04 (837I)',
   billType: '0131',
+  patient: { name: 'DEMO, JORDAN', dob: '11/19/1978' },
+  dos: '05/02/2026',
+  // not among the diagnoses the record supports: shows as a mismatch in the demo
+  reasonDx: 'R10.9',
   dx: [
     { pointer: 'A', code: 'E11.65', desc: 'Type 2 diabetes mellitus with hyperglycemia', principal: true },
     { pointer: 'B', code: 'E86.0', desc: 'Dehydration' },

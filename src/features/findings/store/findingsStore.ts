@@ -18,6 +18,12 @@ interface FindingsState {
   undo: () => void;
   setStatus: (id: string, status: FindingStatus) => void;
   add: (f: Finding) => void;
+  /** Delete a finding the coder added by mistake. AI suggestions are rejected instead, so they stay on file. */
+  remove: (id: string) => void;
+  /** Point a finding at different words in the record. */
+  setEvidence: (id: string, at: Pick<Finding, 'page' | 'block' | 'text'>) => void;
+  /** Change a finding's code, remembering the original. */
+  editCode: (id: string, code: string, desc: string) => void;
   setComment: (id: string, comment: string) => void;
   clearToast: () => void;
 }
@@ -48,6 +54,28 @@ export const useFindingsStore = create<FindingsState>((set, get) => ({
     commit(findings.map((x) => (x.id === id ? { ...x, status } : x)), `${VERB[status]} ${codeLabel(f)}`);
   },
   add: (f) => get().commit([...get().findings, f], `Added ${codeLabel(f)} to notes`),
+  remove: (id) => {
+    const { findings, commit } = get();
+    const f = findings.find((x) => x.id === id);
+    if (!f || f.source !== 'coder') return;
+    commit(findings.filter((x) => x.id !== id), `Removed ${codeLabel(f)}`);
+  },
+  setEvidence: (id, at) => {
+    const { findings, commit } = get();
+    const f = findings.find((x) => x.id === id);
+    if (!f || (f.block === at.block && f.text === at.text)) return;
+    commit(findings.map((x) => (x.id === id ? { ...x, ...at } : x)), `Evidence changed for ${codeLabel(f)}`);
+  },
+  editCode: (id, code, desc) => {
+    const { findings, commit } = get();
+    const f = findings.find((x) => x.id === id);
+    if (!f || f.code === code) return;
+    const was = f.editedFrom ?? f.code;
+    commit(
+      findings.map((x) => (x.id === id ? { ...x, code, desc, editedFrom: was === code ? undefined : was } : x)),
+      `Changed ${codeLabel(f)} to ${code}`,
+    );
+  },
   setComment: (id, comment) => {
     const { findings, commit } = get();
     const f = findings.find((x) => x.id === id);

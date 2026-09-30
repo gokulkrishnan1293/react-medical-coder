@@ -1,9 +1,10 @@
-import { CASE, CLAIM, ENCOUNTER } from '@/data';
+import { CASE } from '@/data';
 import { cn } from '@/lib/utils';
 import { Icon, Kbd } from '@/components/ui';
 import { useFindings } from '@/features/findings';
 import { useNotepadStore } from '@/features/notepad';
 import { useUiStore } from '@/stores/uiStore';
+import { modLabel } from '@/lib/platform';
 
 function Toggle({ pressed, onClick, title, children, className }: { pressed?: boolean; onClick: () => void; title: string; children: React.ReactNode; className?: string }) {
   return (
@@ -24,7 +25,7 @@ function Toggle({ pressed, onClick, title, children, className }: { pressed?: bo
 
 const label = 'max-[1100px]:hidden';
 
-/** Case identity, the downcode under review, deadline, and view controls. */
+/** Case identity, the downcode under review, and view controls. */
 export function CaseHeader() {
   const count = useFindings().length;
   const view = useUiStore((s) => s.view);
@@ -40,7 +41,6 @@ export function CaseHeader() {
           <span className="text-[15px] font-bold tracking-tight">{CASE.stage}</span>
           <span className="text-xs text-ink-3">received {CASE.received}</span>
         </div>
-        <div className="mt-[3px] text-xs text-ink-2">{CASE.payer} · {ENCOUNTER.setting} · Claim <span className="font-mono">{CLAIM.id}</span></div>
       </div>
       <div className="grid grid-cols-[auto_auto] items-baseline gap-x-2 max-[760px]:hidden" title={`${CASE.carc}: ${CASE.carcText}`}>
         <span className="text-[10.5px] tracking-[0.07em] text-ink-3 uppercase">Billed → paid</span>
@@ -49,10 +49,6 @@ export function CaseHeader() {
         </span>
         <span className="col-span-2 text-[11.5px] text-ink-2">{CASE.carc}</span>
       </div>
-      <div className="inline-flex items-center gap-1.5 rounded-md bg-add-fill px-[9px] py-[5px] text-xs text-add">
-        <Icon.cal size={14} />
-        <span>Decision due <b className="font-semibold">{CASE.due}</b> · {CASE.daysLeft} days</span>
-      </div>
       <div className="ml-auto flex flex-wrap gap-1 max-[760px]:ml-0 max-[760px]:w-full max-[760px]:justify-between">
         <Toggle pressed={view.spot} onClick={toggleSpot} title="Spotlight (S): dim everything except marked evidence"><Icon.spot size={15} /><span className={label}>Spotlight</span></Toggle>
         <Toggle pressed={view.clean} onClick={toggleClean} title="Clean read (C): hide all marks"><Icon.eye size={15} /><span className={label}>Clean read</span></Toggle>
@@ -60,7 +56,7 @@ export function CaseHeader() {
           <Icon.notes size={15} /><span className={label}>Notepad</span>
           <span className="rounded-full bg-ink px-1.5 py-[3px] font-mono text-[10.5px] leading-none font-semibold text-paper">{count}</span>
         </Toggle>
-        <Toggle onClick={() => set({ palette: true })} title="Command palette" className="border-line"><Icon.search size={15} /><Kbd>⌘K</Kbd></Toggle>
+        <Toggle onClick={() => set({ palette: true })} title="Command palette" className="border-line"><Icon.search size={15} /><Kbd>{modLabel('K')}</Kbd></Toggle>
       </div>
     </header>
   );

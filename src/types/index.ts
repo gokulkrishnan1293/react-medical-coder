@@ -1,7 +1,13 @@
 /* Shared domain types for the review workbench. */
 
-/** dx: ICD-10-CM · svc: CPT/HCPCS service · mar: medication administration (HCPCS drug code) · intervention: ED intervention */
-export type FindingType = 'dx' | 'svc' | 'mar' | 'intervention' | 'mdm' | 'time' | 'note';
+/**
+ * dx: ICD-10-CM · svc: service performed, CPT/HCPCS when separately billable · mar: medication administration (HCPCS drug code)
+ * · doc: something the record states that has no code, e.g. a decision to admit · note: the reviewer's own note.
+ * MDM and ED interventions are not finding types: they are derived from these.
+ */
+export type FindingType = 'dx' | 'svc' | 'mar' | 'doc' | 'time' | 'note';
+/** Kinds of code-less documentation that count toward MDM. */
+export type DocKind = 'hospitalization' | 'externalDiscussion' | 'independentInterpretation' | 'externalNotes' | 'independentHistorian' | 'sdoh' | 'other';
 export type FindingStatus = 'ai' | 'confirmed' | 'added' | 'rejected';
 export type FindingSource = 'ai' | 'coder';
 export type MdmElement = 'problems' | 'data' | 'risk';
@@ -9,6 +15,7 @@ export type MdmElement = 'problems' | 'data' | 'risk';
 export type MdmLevel = 0 | 1 | 2 | 3;
 export type DataCategory = 1 | 2 | 3;
 
+/** MDM credit a finding gives. Derived from the finding, never stored on it. */
 export interface MdmTag {
   el: MdmElement;
   level?: MdmLevel;
@@ -35,11 +42,14 @@ export interface Finding {
   type: FindingType;
   code?: string;
   desc?: string;
-  mdm?: MdmTag;
+  /** For documentation findings: what the statement is. */
+  docKind?: DocKind;
   mar?: MarEntry;
   status: FindingStatus;
   source: FindingSource;
   conf?: number;
+  /** The code before the coder changed it. */
+  editedFrom?: string;
   /** Billed code this finding replaces, e.g. E11.10 replaces E11.65. */
   replaces?: string;
   note?: string;
@@ -85,6 +95,8 @@ export interface Encounter {
   arrival: string;
   departure: string;
   disposition: string;
+  /** Reason for visit as the record states it (chief complaint). */
+  reason: string;
 }
 
 export interface CaseInfo {
@@ -132,6 +144,12 @@ export interface Claim {
   source: 'ERDM';
   form: string;
   billType: string;
+  /** Patient as billed. */
+  patient: { name: string; dob: string };
+  /** Date of service as billed. */
+  dos: string;
+  /** Patient's reason for visit diagnosis (UB-04 FL 70). */
+  reasonDx: string;
   lines: ClaimLine[];
   dx: ClaimDx[];
 }

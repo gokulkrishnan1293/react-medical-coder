@@ -1,17 +1,23 @@
 import { useState } from 'react';
-import type { FindingStatus, FindingType } from '@/types';
+import type { Finding, FindingStatus, FindingType } from '@/types';
 import { cn } from '@/lib/utils';
 import { StatusChip, StatusDot } from '@/components/ui';
 import { Table, Td, Th } from '@/components/ui/Table';
-import { CommentField, FindingActions, MarDetail, RouteTag, STATUS_LABEL, TYPE_LABEL, TypeBadge, codeLabel, mdmTag, titleOf, useOrderedFindings } from '@/features/findings';
+import { CommentField, FindingActions, MarDetail, RouteTag, STATUS_LABEL, TYPE_LABEL, TypeBadge, titleOf, useOrderedFindings } from '@/features/findings';
+import { CodeCell } from './CodeCell';
+import { Icon } from '@/components/ui';
+import { startRebind } from '@/features/add-finding';
 
-const TYPES: FindingType[] = ['dx', 'svc', 'mar', 'intervention', 'mdm', 'note'];
+const TYPES: FindingType[] = ['dx', 'svc', 'mar', 'doc', 'note'];
 const STATUSES: FindingStatus[] = ['ai', 'confirmed', 'added', 'rejected'];
 
 const chip = (on: boolean) => cn('inline-flex items-center gap-1.5 rounded-full border bg-paper px-[11px] py-[5px] text-xs', on ? 'border-ink font-semibold' : 'border-line');
 const count = 'font-mono text-[11px] text-ink-3';
 
-/** Full view of every finding: filter by type and status, see evidence and details, comment. */
+/**
+ * Full view of every finding: filter by type and status, see evidence, AI confidence and details, comment.
+ * Codes not on the claim can be changed in place; codes on the claim are locked.
+ */
 export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
   const ordered = useOrderedFindings();
   const [type, setType] = useState<FindingType | 'all'>('all');
@@ -32,17 +38,32 @@ export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
         ))}
       </div>
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
-        <span className="mr-1 w-12 text-[10.5px] font-semibold tracking-[0.08em] text-ink-3 uppercase">Status</span>
-        <button className={chip(status === 'all')} onClick={() => setStatus('all')}>All <span className={count}>{byType.length}</span></button>
-        {STATUSES.map((s) => (
-          <button key={s} className={chip(status === s)} onClick={() => setStatus(s)}>
-            <StatusDot status={s} />{STATUS_LABEL[s]} <span className={count}>{byType.filter((f) => f.status === s).length}</span>
-          </button>
-        ))}
+        <label htmlFor="status-filter" className="mr-1 w-12 text-[10.5px] font-semibold tracking-[0.08em] text-ink-3 uppercase">Status</label>
+        <div className="relative inline-flex items-center">
+          {status !== 'all' && <StatusDot status={status} className="pointer-events-none absolute left-[11px]" />}
+          <select
+            id="status-filter"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as FindingStatus | 'all')}
+            className={cn(
+              'appearance-none rounded-full border bg-paper py-[5px] pr-8 text-xs outline-none focus-visible:border-accent',
+              status === 'all' ? 'border-line pl-[11px]' : 'border-ink pl-[26px] font-semibold',
+            )}
+          >
+            <option value="all">All statuses ({byType.length})</option>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>{STATUS_LABEL[s]} ({byType.filter((f) => f.status === s).length})</option>
+            ))}
+          </select>
+          <Icon.down size={12} className="pointer-events-none absolute right-[11px] text-ink-3" />
+        </div>
+        {status !== 'all' && (
+          <button onClick={() => setStatus('all')} className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline">Clear</button>
+        )}
       </div>
       <Table>
         <thead>
-          <tr><Th>Type</Th><Th>Status</Th><Th>Pg</Th><Th>Code</Th><Th>Description</Th><Th>Evidence in record</Th><Th>Goes to</Th><Th className="w-[220px]">Comment</Th><Th aria-label="Actions" /></tr>
+          <tr><Th>Type</Th><Th>Status</Th><Th>Page</Th><Th>Code</Th><Th>Description</Th><Th>Evidence in record</Th><Th>AI confidence</Th><Th>Goes to</Th><Th className="w-[220px]">Comment</Th><Th aria-label="Actions" /></tr>
         </thead>
         <tbody>
           {rows.map((f) => (
@@ -50,18 +71,24 @@ export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
               <Td><TypeBadge type={f.type} /></Td>
               <Td><StatusChip status={f.status} label={STATUS_LABEL[f.status]} /></Td>
               <Td className="font-mono tabular-nums">{f.page}</Td>
-              <Td className="font-mono font-semibold whitespace-nowrap">
-                {codeLabel(f)}
-                {f.code && f.mdm && <div className="mt-0.5 text-[10.5px] font-medium text-ink-3">{mdmTag(f)}</div>}
-                {f.replaces && <div className="mt-0.5 text-[10.5px] font-medium text-ink-3">replaces {f.replaces}</div>}
-              </Td>
+              <Td><CodeCell f={f} /></Td>
               <Td>
                 {titleOf(f)}
                 {f.note && f.type !== 'note' && <div className="mt-0.5 text-[11.5px] text-ink-3">{f.note}</div>}
               </Td>
-              <Td className="max-w-[260px] font-mono text-[11.5px] text-ink-2">
+              <Td className="group/ev max-w-[260px] font-mono text-[11.5px] text-ink-2">
                 {f.mar ? <MarDetail mar={f.mar} /> : <>“{f.text}”</>}
+                {f.status !== 'rejected' && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); startRebind(f.id); }}
+                    className="mt-1 flex items-center gap-1 font-sans text-[11px] font-medium text-ink-3 opacity-0 group-hover/ev:opacity-100 hover:text-accent focus-visible:opacity-100"
+                  >
+                    <Icon.pencil size={11} />Change evidence
+                  </button>
+                )}
               </Td>
+              <Td><Confidence f={f} /></Td>
               <Td><RouteTag f={f} /></Td>
               <Td onClick={(e) => e.stopPropagation()}><CommentField f={f} rows={1} /></Td>
               <Td className="whitespace-nowrap" onClick={(e) => e.stopPropagation()}><FindingActions f={f} /></Td>
@@ -70,5 +97,19 @@ export function FindingsTab({ onJump }: { onJump: (id: string) => void }) {
         </tbody>
       </Table>
     </>
+  );
+}
+
+/** How sure the AI was of a suggestion. Coder-added findings have none. */
+function Confidence({ f }: { f: Finding }) {
+  if (f.source !== 'ai' || f.conf === undefined) return <span className="text-ink-3">—</span>;
+  const pct = Math.round(f.conf * 100);
+  return (
+    <div className="flex items-center gap-1.5" title={f.editedFrom ? `AI was ${pct}% sure of ${f.editedFrom}` : undefined}>
+      <span className="h-1 w-10 overflow-hidden rounded-full bg-chrome-2">
+        <span className={cn('block h-full rounded-full', pct >= 90 ? 'bg-ok' : pct >= 80 ? 'bg-ai' : 'bg-add')} style={{ width: pct + '%' }} />
+      </span>
+      <span className="font-mono text-[11.5px] tabular-nums">{pct}%</span>
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import { useNarrow } from '@/hooks/useMediaQuery';
 import { useUiStore } from '@/stores/uiStore';
 import { CaseHeader, PatientStrip } from '@/features/case-header';
 import { RecordViewer, EvidenceCard } from '@/features/record-viewer';
-import { ComposePanel, SelectionToolbar, useAddFindingStore } from '@/features/add-finding';
+import { ComposePanel, RebindBanner, SelectionToolbar, useAddFindingStore } from '@/features/add-finding';
 import { DockHint, DockedNotepad, FloatingNotepad, NotesBubble, keepOnScreen, tuckForNarrow, useNotepadStore } from '@/features/notepad';
 import { FullNotes } from '@/features/full-notes';
 import { CommandPalette } from '@/features/command-palette';
@@ -24,7 +24,7 @@ export function App() {
   const source = useUiStore((s) => s.source);
   const menu = useUiStore((s) => s.menu);
   const findings = useFindings();
-  const { sel, compose } = useAddFindingStore();
+  const { sel, compose, rebind } = useAddFindingStore();
   const npMode = useNotepadStore((s) => s.mode);
   const snap = useNotepadStore((s) => s.snap);
 
@@ -60,6 +60,7 @@ export function App() {
           {full && <FullNotes key="full" tab={full} />}
           {palette && <CommandPalette key="palette" />}
         </AnimatePresence>
+        <AnimatePresence>{rebind && <RebindBanner key="rebind" />}</AnimatePresence>
         {menu && <DocMenu />}
         <UndoToast />
       </div>

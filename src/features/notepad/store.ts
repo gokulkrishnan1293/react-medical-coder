@@ -18,7 +18,7 @@ interface NotepadState extends Rect {
   snap: boolean;
   hover: boolean;
   /** Half-view tab. */
-  panel: 'findings' | 'claim';
+  panel: 'findings' | 'claim' | 'interventions';
   /** Findings list: pages in view, or everything. */
   scope: 'view' | 'all';
   /** Pages the "In view" list is frozen on, or null to follow the scroll. */

@@ -1,17 +1,21 @@
 import { motion } from 'motion/react';
 import type { Finding } from '@/types';
+import { mdmOf } from '@/data';
 import { scrollerRef, evidenceEl } from '@/lib/dom';
 import { clamp, cn } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { Button, Icon, IconButton, Kbd, StatusChip } from '@/components/ui';
 import { CommentField, ELEMENT_LABEL, LEVELS, MarDetail, RouteTag, STATUS_LABEL, TypeBadge, codeLabel, titleOf, useFindingsStore } from '@/features/findings';
 import { closeCard, keepCardOpen, scheduleCardClose } from '../navigation';
+import { startRebind } from '@/features/add-finding';
 import { useUiStore } from '@/stores/uiStore';
 
 /** Evidence details shown on hover or click of a box: status, code, quote, and review actions. */
 export function EvidenceCard({ f }: { f: Finding }) {
+  const mdm = mdmOf(f);
   useScrollTick(scrollerRef);
   const setStatus = useFindingsStore((s) => s.setStatus);
+  const remove = useFindingsStore((s) => s.remove);
   const pinned = useUiStore((s) => s.card?.pinned);
   const el = evidenceEl(f.id);
   const sc = scrollerRef.current;
@@ -44,11 +48,11 @@ export function EvidenceCard({ f }: { f: Finding }) {
       </div>
       <div className="font-mono text-[17px] font-semibold tracking-tight">{codeLabel(f)}</div>
       <div className="mt-0.5 text-[13px] leading-snug font-medium text-balance">{titleOf(f)}</div>
-      {f.mdm && (f.code || f.type === 'mdm') && (
+      {mdm && (
         <div className="mt-[7px] flex flex-wrap items-center gap-1.5 text-xs text-ink-2">
           <span className="rounded bg-chrome-2 px-[5px] py-[3px] font-mono text-[10px] leading-none font-semibold">MDM</span>
-          {ELEMENT_LABEL[f.mdm.el]} · {f.mdm.el === 'data' ? `Category ${f.mdm.cat}` : LEVELS[f.mdm.level ?? 0]}
-          {f.code ? ` · ${f.mdm.label}` : ''}
+          {ELEMENT_LABEL[mdm.el]} · {mdm.el === 'data' ? `Category ${mdm.cat}` : LEVELS[mdm.level ?? 0]}
+          {f.code ? ` · ${mdm.label}` : ''}
         </div>
       )}
       {f.mar && <div className="mt-1.5"><MarDetail mar={f.mar} /></div>}
@@ -63,14 +67,20 @@ export function EvidenceCard({ f }: { f: Finding }) {
             <Button onClick={() => setStatus(f.id, 'rejected')}><Icon.close size={14} />Reject <Kbd>R</Kbd></Button>
           </>
         )}
-        {(f.status === 'confirmed' || f.status === 'added') && (
+        {f.source === 'ai' && f.status === 'confirmed' && (
           <>
-            {f.source === 'ai' && <Button onClick={() => setStatus(f.id, 'ai')}><Icon.undo size={14} />Unaccept</Button>}
+            <Button onClick={() => setStatus(f.id, 'ai')}><Icon.undo size={14} />Unaccept</Button>
             <Button onClick={() => setStatus(f.id, 'rejected')}><Icon.close size={14} />Reject <Kbd>R</Kbd></Button>
           </>
         )}
-        {f.status === 'rejected' && (
-          <Button onClick={() => setStatus(f.id, f.source === 'ai' ? 'ai' : 'added')}><Icon.undo size={14} />Restore</Button>
+        {f.source === 'ai' && f.status === 'rejected' && (
+          <Button onClick={() => setStatus(f.id, 'ai')}><Icon.undo size={14} />Restore</Button>
+        )}
+        {f.source === 'coder' && (
+          <Button onClick={() => remove(f.id)}><Icon.trash size={14} />Remove <Kbd>R</Kbd></Button>
+        )}
+        {f.status !== 'rejected' && (
+          <Button onClick={() => startRebind(f.id)} title="Select different words in the record for this finding"><Icon.pencil size={14} />Change evidence</Button>
         )}
       </div>
     </motion.div>

@@ -17,7 +17,7 @@ interface Item {
 }
 type Entry = Item | 'sep';
 
-const ADD: [ComposeType, string][] = [['dx', 'Add diagnosis'], ['svc', 'Add service'], ['mar', 'Add MAR entry'], ['note', 'Add note']];
+const ADD: [ComposeType, string][] = [['dx', 'Add diagnosis'], ['svc', 'Add service'], ['mar', 'Add MAR entry'], ['doc', 'Add documentation'], ['note', 'Add note']];
 
 /** Right-click menu on the record and the original: add from a selection, zoom, and jump across. */
 export function DocMenu() {

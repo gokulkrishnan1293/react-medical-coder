@@ -11,7 +11,7 @@ const ROUTE_STYLE = {
   excluded: 'text-rej bg-rej-fill',
 } as const;
 
-/** Small label saying where a finding lands: on claim, not on claim, note, excluded. */
+/** Small label saying where a finding lands: on claim, new (not on the claim), supporting, note, excluded. */
 export function RouteTag({ f }: { f: Finding }) {
   const r = routeOf(f);
   return <span className={cn('rounded px-1.5 py-[3px] text-[10.5px] leading-none whitespace-nowrap', ROUTE_STYLE[r])}>{ROUTE_LABEL[r]}</span>;

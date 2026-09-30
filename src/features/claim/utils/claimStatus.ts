@@ -1,5 +1,5 @@
 import type { ClaimDx, ClaimLine, Finding, MdmSummary } from '@/types';
-import { CASE } from '@/data';
+import { CASE, mdmOf } from '@/data';
 import { isLive } from '@/features/findings/utils/finding';
 
 export type ClaimState = 'supported' | 'partial' | 'short' | 'replaced' | 'pending' | 'notFound';
@@ -32,7 +32,7 @@ function replacement(code: string, findings: Finding[]): ClaimCheck | null {
 /** How well the record supports one claim line. */
 export function checkLine(l: ClaimLine, findings: Finding[], s: MdmSummary): ClaimCheck {
   if (l.code === CASE.billed) {
-    const mdm = findings.filter((f) => f.mdm && isLive(f));
+    const mdm = findings.filter((f) => isLive(f) && mdmOf(f));
     return s.code === CASE.billed
       ? { state: 'supported', label: `Supports ${s.code}`, detail: 'Accepted evidence supports the billed level.', evidence: mdm }
       : { state: 'short', label: `Supports ${s.code}`, detail: `Accepted evidence supports ${s.code}, paid as ${l.paidCode}.`, evidence: mdm };

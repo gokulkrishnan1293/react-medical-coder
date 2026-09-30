@@ -34,6 +34,7 @@ export const Icon = {
   cal: make(<><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></>),
   notes: make(<><path d="M6 3h9l4 4v14H6z" /><path d="M9 11h7M9 15h7M9 7h3" /></>),
   search: make(<><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></>),
+  down: make(<path d="M6 9l6 6 6-6" />),
   left: make(<path d="M15 6l-6 6 6 6" />),
   right: make(<path d="M9 6l6 6-6 6" />),
   stage: make(<><rect x="9" y="4" width="12" height="16" rx="1.5" /><path d="M3 7h3M3 12h3M3 17h3" /></>),
@@ -43,5 +44,9 @@ export const Icon = {
   link: make(<><path d="M10 14a4 4 0 005.66 0l3-3a4 4 0 00-5.66-5.66L11.5 6.8" /><path d="M14 10a4 4 0 00-5.66 0l-3 3a4 4 0 005.66 5.66l1.5-1.46" /></>),
   unlink: make(<><path d="M15.5 13.5l3-3a4 4 0 00-5.66-5.66L11.5 6.2" /><path d="M8.5 10.5l-3 3a4 4 0 005.66 5.66l1.34-1.36" /><path d="M4 4l16 16" /></>),
   copy: make(<><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15V6a2 2 0 012-2h9" /></>),
+  trash: make(<><path d="M4 7h16M10 11v6M14 11v6" /><path d="M6 7l1 13h10l1-13M9 7V4h6v3" /></>),
+  flow: make(<><rect x="3" y="4" width="6" height="5" rx="1" /><rect x="3" y="15" width="6" height="5" rx="1" /><rect x="15" y="9.5" width="6" height="5" rx="1" /><path d="M9 6.5h2.5a1 1 0 011 1V16.5a1 1 0 01-1 1H9M12.5 12H15" /></>),
+  pencil: make(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>),
+  lock: make(<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>),
   alert: make(<><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18v.5" /></>),
 };

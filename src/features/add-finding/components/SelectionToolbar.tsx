@@ -3,16 +3,18 @@ import { scrollerRef } from '@/lib/dom';
 import { clamp } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { useAddFindingStore, type ComposeType, type TextSelection } from '../store';
+import { applyRebind, cancelRebind, rebindLabel } from '../rebind';
 
-const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['svc', 'Service'], ['mar', 'MAR'], ['note', 'Note']];
+const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['svc', 'Service'], ['mar', 'MAR'], ['doc', 'Doc'], ['note', 'Note']];
 
 /** Floating "Add …" bar above selected record text. */
 export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   useScrollTick(scrollerRef);
   const set = useAddFindingStore((s) => s.set);
+  const rebind = useAddFindingStore((s) => s.rebind);
   const r = sel.range.getBoundingClientRect();
   if (!r.width && !r.height) return null;
-  const W = sel.overlap ? 250 : 340;
+  const W = sel.overlap ? 250 : rebind ? 330 : 390;
   const left = clamp(r.left + r.width / 2 - W / 2, 8, window.innerWidth - W - 8);
   const top = r.top > 120 ? r.top - 46 : r.bottom + 8;
   const base = 'fixed z-70 rounded-[9px] bg-ink text-paper shadow-float';
@@ -22,6 +24,16 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
     return (
       <motion.div data-add-finding {...anim} className={base + ' px-3 py-2 text-xs'} style={{ left, top, width: W }} onMouseDown={(e) => e.preventDefault()}>
         Part of this is already marked. Hover the box to edit it.
+      </motion.div>
+    );
+  }
+  if (rebind) {
+    return (
+      <motion.div data-add-finding {...anim} role="toolbar" aria-label="Change evidence" className={base + ' flex items-center gap-0.5 p-1 whitespace-nowrap'} style={{ left, top }} onMouseDown={(e) => e.preventDefault()}>
+        <button onClick={applyRebind} className="rounded-md bg-accent px-2.5 py-1.5 text-[12.5px] font-medium text-accent-ink hover:brightness-110">
+          Use as evidence for <span className="font-mono">{rebindLabel()}</span>
+        </button>
+        <button onClick={cancelRebind} className="rounded-md px-2 py-1.5 text-[12.5px] font-medium hover:bg-paper/15">Cancel</button>
       </motion.div>
     );
   }

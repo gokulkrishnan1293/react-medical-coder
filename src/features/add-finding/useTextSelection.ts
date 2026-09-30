@@ -57,8 +57,10 @@ export function useTextSelection() {
       }
       const i = b.t.indexOf(text);
       if (i < 0 || !text) return;
+      const { rebind } = useAddFindingStore.getState();
       const overlap = useFindingsStore.getState().findings.some((f) => {
-        if (f.block !== b.id) return false;
+        // a finding being moved may overlap its own old evidence
+        if (f.block !== b.id || f.id === rebind) return false;
         const j = b.t.indexOf(f.text);
         return j >= 0 && i < j + f.text.length && j < i + text.length;
       });

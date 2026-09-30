@@ -5,3 +5,4 @@ export { StatusChip } from './StatusChip';
 export { Button, IconButton } from './Button';
 export { SegmentedTabs } from './SegmentedTabs';
 export { Modal } from './Modal';
+export { HoverTip } from './HoverTip';

@@ -4,7 +4,7 @@ import { Icon, Kbd, Modal } from '@/components/ui';
 import { useUiStore } from '@/stores/uiStore';
 import { getCommands, type Command } from './useCommands';
 
-/** ⌘K: type to filter commands and pages, arrows to choose, Enter to run. */
+/** ⌘K / Ctrl+K: type to filter commands and pages, arrows to choose, Enter to run. */
 export function CommandPalette() {
   const close = () => useUiStore.getState().set({ palette: false });
   const [q, setQ] = useState('');

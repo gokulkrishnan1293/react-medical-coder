@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type FullNotesTab = 'findings' | 'claim';
+export type FullNotesTab = 'findings' | 'claim' | 'interventions';
 /**
  * How the original page images show: stacked in the margin while reading, as a column beside the
  * record, or laid over the extracted text on the same page with a slider between them.
@@ -36,6 +36,8 @@ interface UiState {
   scrolling: boolean;
   full: FullNotesTab | null;
   palette: boolean;
+  /** Intervention whose path Full notes shows. */
+  pathFor: string | null;
   zoom: Record<ZoomSide, Zoom>;
   /** The zoom that fits a page to each column's width, kept current as columns resize. */
   fit: Record<ZoomSide, number>;
@@ -65,6 +67,7 @@ export const useUiStore = create<UiState>((set) => ({
   scrolling: false,
   full: null,
   palette: false,
+  pathFor: null,
   zoom: { record: 1, source: 'fit' },
   fit: { record: 1, source: 1 },
   source: 'stage',

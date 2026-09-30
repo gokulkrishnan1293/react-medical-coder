@@ -34,4 +34,5 @@ export const ENCOUNTER: Encounter = {
   arrival: '02:14',
   departure: '08:05',
   disposition: 'Admitted to observation',
+  reason: '"I can\'t keep anything down." Vomiting and abdominal pain for 2 days.',
 };

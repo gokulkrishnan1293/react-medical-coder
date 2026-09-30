@@ -1,17 +1,19 @@
 import { useEffect } from 'react';
 import { useFindingsStore } from '@/features/findings';
-import { useAddFindingStore } from '@/features/add-finding';
+import { cancelRebind, useAddFindingStore } from '@/features/add-finding';
 import { useNotepadStore } from '@/features/notepad';
 import { useUiStore } from '@/stores/uiStore';
+import { isModKey } from '@/lib/platform';
 import { hoveredSide, setZoom, stepZoom } from '@/features/zoom';
 import { cycleSourceMode, setDivider, setSourceMode } from '@/features/source-view';
 import { openFullNotes, stepFinding } from './actions';
 
 /**
- * Global keys: J/K next/previous finding, A accept, R reject, N notepad, D dock/float,
- * F full notes, S spotlight, C clean read, O cycle original view, Esc close, ⌘K palette, ⌘Z undo.
+ * Global keys: J/K next/previous finding, A accept, R reject (removes a coder-added finding, as do Delete and Backspace), N notepad, D dock/float,
+ * F full notes, S spotlight, C clean read, O cycle original view, Esc close, ⌘K / Ctrl+K palette, ⌘Z / Ctrl+Z undo.
+ * The modifier follows the platform: ⌘ on Mac, Ctrl on Windows and Linux.
  * Overlay view: ← → move the slider, hold Space to see the whole scan.
- * + / − / 0 (with or without ⌘) zoom the column under the pointer: the record, or the original.
+ * + / − / 0 (with or without ⌘ / Ctrl) zoom the column under the pointer: the record, or the original.
  */
 export function useKeyboardShortcuts(narrow: boolean) {
   useEffect(() => {
@@ -29,12 +31,13 @@ export function useKeyboardShortcuts(narrow: boolean) {
         if (dir) { e.preventDefault(); stepZoom(hoveredSide(), dir); return; }
         if (k === '0') { e.preventDefault(); setZoom(hoveredSide(), 1); return; }
       }
-      if ((e.metaKey || e.ctrlKey) && k === 'k') { e.preventDefault(); ui.set({ palette: !ui.palette }); return; }
-      if ((e.metaKey || e.ctrlKey) && k === 'z' && !typing) { e.preventDefault(); findings.undo(); return; }
+      if (isModKey(e) && k === 'k') { e.preventDefault(); ui.set({ palette: !ui.palette }); return; }
+      if (isModKey(e) && k === 'z' && !e.shiftKey && !typing) { e.preventDefault(); findings.undo(); return; }
       if (e.key === 'Escape') {
         if (ui.menu) ui.set({ menu: null });
         else if (ui.palette) ui.set({ palette: false });
         else if (add.compose) add.cancel();
+        else if (add.rebind) cancelRebind();
         else if (ui.full) ui.set({ full: null });
         else if (ui.card) ui.set({ card: null });
         else if (add.sel) add.cancel();
@@ -62,7 +65,16 @@ export function useKeyboardShortcuts(narrow: boolean) {
           if (f && f.status === 'ai') findings.setStatus(f.id, 'confirmed');
           break;
         }
-        case 'r': if (target) findings.setStatus(target, 'rejected'); break;
+        case 'r':
+        case 'delete':
+        case 'backspace': {
+          // coder-added findings are removed outright; AI suggestions are rejected so they stay on file
+          const f = target && findings.findings.find((x) => x.id === target);
+          if (!f) break;
+          if (f.source === 'coder') { findings.remove(f.id); ui.set({ card: null, activeId: null }); }
+          else if (k === 'r') findings.setStatus(f.id, 'rejected');
+          break;
+        }
         case 'n': np.toggle(); break;
         case 'd': if (!narrow) (np.mode === 'dock' ? np.float() : np.dock()); break;
         case 'f': if (ui.full) ui.set({ full: null }); else openFullNotes(); break;

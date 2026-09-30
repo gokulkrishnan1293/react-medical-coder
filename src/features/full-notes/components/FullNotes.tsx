@@ -5,13 +5,15 @@ import { useUiStore, type FullNotesTab } from '@/stores/uiStore';
 import { FindingsTab } from './FindingsTab';
 import { ClaimTables } from '@/features/claim';
 import { ScoreCard, useSummary } from '@/features/findings';
+import { InterventionsTab } from '@/features/interventions';
 
 const TABS: { key: FullNotesTab; label: string }[] = [
   { key: 'findings', label: 'Findings' },
   { key: 'claim', label: 'Claim' },
+  { key: 'interventions', label: 'Interventions' },
 ];
 
-/** Full view of the review: every finding, and the claim against the record. */
+/** Full view of the review: every finding, the claim against the record, and the interventions derived from both. */
 export function FullNotes({ tab }: { tab: FullNotesTab }) {
   const set = useUiStore((st) => st.set);
   const s = useSummary();
@@ -28,7 +30,9 @@ export function FullNotes({ tab }: { tab: FullNotesTab }) {
         <IconButton onClick={close} aria-label="Close full notes"><Icon.close size={18} /></IconButton>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pt-4 pb-7 max-[760px]:px-4">
-        {tab === 'findings' ? <FindingsTab onJump={onJump} /> : <><div className="mb-4 max-w-[620px]"><ScoreCard s={s} /></div><ClaimTables onJump={onJump} /></>}
+        {tab === 'findings' && <FindingsTab onJump={onJump} />}
+        {tab === 'claim' && <><div className="mb-4 max-w-[620px]"><ScoreCard s={s} /></div><ClaimTables onJump={onJump} /></>}
+        {tab === 'interventions' && <InterventionsTab onJump={onJump} />}
       </div>
     </Modal>
   );
