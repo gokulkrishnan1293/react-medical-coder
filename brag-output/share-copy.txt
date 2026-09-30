@@ -1,0 +1,1 @@
+New in CLAIRE: a guided tour of the Home screen. It dims the dashboard, outlines one part at a time and explains it in plain words: where your day stands, what happened to CLAIRE's suggestions, where your time went, how to find a case. It takes about a minute, starts on your first visit and comes back any time you press ?.

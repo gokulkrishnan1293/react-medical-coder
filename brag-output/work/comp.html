@@ -1,0 +1,148 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{--paper:#fffffd;--ink:#17222d;--ink2:#485664;--ink3:#7c8997;--accent:#0a6b74;--scrim:rgba(12,22,32,.42)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#dfe4ea;font-family:'Public Sans',sans-serif}
+#view{position:absolute;inset:0;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1440px;height:810px;transform-origin:0 0}
+#pagebg{position:absolute;left:-600px;top:-300px;width:2640px;height:1800px;background:#dfe4ea}
+.bg{position:absolute;inset:0;width:1440px;height:810px}
+#scrim{position:absolute;inset:0}
+.card{position:absolute;border-radius:12px;overflow:hidden;box-shadow:0 14px 36px rgba(12,22,32,.22),0 2px 6px rgba(12,22,32,.12)}
+.card img{display:block;width:100%;height:100%}
+#band{position:absolute;left:0;right:0;bottom:0;height:300px;background:linear-gradient(to bottom,rgba(12,22,32,0),rgba(12,22,32,.78))}
+#cap{position:absolute;left:120px;bottom:92px;color:#fff;font-weight:700;font-size:62px;letter-spacing:-.02em;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.25)}
+#cap .kbd{display:inline-block;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:44px;padding:0 16px;border:2px solid rgba(255,255,255,.7);border-bottom-width:5px;border-radius:10px;transform:translateY(-6px)}
+#cursor{position:absolute;left:0;top:0;width:44px;height:44px;transform-origin:4px 4px}
+#dip{position:absolute;inset:0;background:var(--ink)}
+#outro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.mark{display:flex;align-items:center;gap:22px;font-weight:700;font-size:44px;letter-spacing:.01em}
+.mark i{font-style:normal;display:grid;place-items:center;width:78px;height:78px;border-radius:18px;background:var(--accent);color:#fff;font-size:42px}
+.big{margin-top:46px;font-size:112px;font-weight:700;letter-spacing:-.035em}
+.sub{margin-top:26px;font-size:40px;color:#a5b1bc;font-weight:500}
+.sub b{color:#fff;font-weight:600}
+.sub .kbd{display:inline-block;font-family:'IBM Plex Mono',monospace;color:#fff;font-size:32px;padding:0 13px;border:2px solid #4db6c0;border-bottom-width:5px;border-radius:9px;transform:translateY(-3px);margin:0 4px}
+.o{opacity:0}
+</style></head><body>
+<div id="view">
+  <div id="stage">
+    <div id="pagebg"></div>
+    <img class="bg" id="bgA"><img class="bg" id="bgB">
+    <svg id="scrim" width="2640" height="1800" viewBox="-600 -300 2640 1800" style="inset:auto;left:-600px;top:-300px">
+      <defs><mask id="m"><rect x="-600" y="-300" width="2640" height="1800" fill="white"/><path id="hole" fill="black"/></mask></defs>
+      <rect x="-600" y="-300" width="2640" height="1800" fill="rgba(12,22,32,.42)" mask="url(#m)"/>
+      <path id="ring" fill="none" stroke="#0a6b74" stroke-width="2"/>
+    </svg>
+    <div class="card" id="cardA"><img></div>
+    <div class="card" id="cardB"><img></div>
+  </div>
+  <div id="band"></div>
+  <div id="cap"></div>
+  <svg id="cursor" viewBox="0 0 44 44"><path d="M4 3 L4 33 L12 26 L17.5 38.5 L23 36 L17.5 24 L28 24 Z" fill="#17222d" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  <div id="dip"></div>
+  <div id="outro">
+    <div class="mark o" id="o1"><i>C</i>CLAIRE</div>
+    <div class="big o" id="o2">The Home tour.</div>
+    <div class="sub o" id="o3">Starts on your first visit. Press <span class="kbd">?</span> anytime.</div>
+  </div>
+</div>
+<script>
+const META = window.META;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ez=t=>{t=clamp(t,0,1);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2};
+const eo=t=>{t=clamp(t,0,1);return 1-Math.pow(1-t,3)};
+const prog=(t,a,b)=>clamp((t-a)/(b-a),0,1);
+
+// step changes land on music beats
+const SEG=[{s:0,t:0},{s:1,t:2.65},{s:3,t:5.28},{s:4,t:8.44},{s:5,t:10.54},{s:7,t:12.65},{s:8,t:15.28},{s:10,t:17.38}];
+const FINISH=19.0, END=22.6;
+const CAPS=[[0.25,2.45,'Every number on Home, explained.'],[2.95,5.05,'Where your day stands.'],[5.6,8.2,'What happened to CLAIRE’s suggestions.'],
+ [8.75,10.35,'Where your time went.'],[10.85,12.45,'Pick up where you left off.'],[12.95,15.05,'Find any case. Press <span class="kbd">/</span>'],
+ [15.6,17.15,'Open. Continue. View.'],[17.7,18.95,'About a minute.']];
+const TR=0.6;
+
+// camera: fit target + card into the frame above the caption band
+function camFor(s){
+  const m=META[s]; const rs=[...m.boxes,m.card];
+  let x0=Math.min(...rs.map(r=>r.x)),y0=Math.min(...rs.map(r=>r.y)),x1=Math.max(...rs.map(r=>r.x+r.w)),y1=Math.max(...rs.map(r=>r.y+r.h));
+  const P=m.boxes.length?44:120; x0-=P;y0-=P;x1+=P;y1+=P;
+  const sc=clamp(Math.min(1920/(x1-x0),790/(y1-y0)),1.1,2.1);
+  let cx=(x0+x1)/2, cy=(y0+y1)/2;
+  let X=cx-960/sc, Y=cy-410/sc;
+  X=clamp(X,Math.min(0,720-960/sc),Math.max(1440-1920/sc,720-960/sc)); Y=clamp(Y,Math.min(0,405-540/sc),1400-1080/sc);
+  return {s:sc,x:X,y:Y};
+}
+const FULL={s:4/3,x:0,y:0};
+const mixCam=(a,b,t)=>({s:Math.exp(lerp(Math.log(a.s),Math.log(b.s),t)),x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t)});
+const rr=(b,r=8)=>{const {x,y,w,h}=b;r=Math.min(r,w/2,h/2);return `M${x+r} ${y}H${x+w-r}A${r} ${r} 0 0 1 ${x+w} ${y+r}V${y+h-r}A${r} ${r} 0 0 1 ${x+w-r} ${y+h}H${x+r}A${r} ${r} 0 0 1 ${x} ${y+h-r}V${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}Z`};
+const boxOf=s=>META[s].boxes[0]||null;
+const mixBox=(a,b,t)=>{ if(!a&&!b)return null;
+  if(!a)a={x:b.x+b.w/2,y:b.y+b.h/2,w:0,h:0}; if(!b)b={x:a.x+a.w/2,y:a.y+a.h/2,w:0,h:0};
+  return {x:lerp(a.x,b.x,t),y:lerp(a.y,b.y,t),w:lerp(a.w,b.w,t),h:lerp(a.h,b.h,t)} };
+const btn=(s,name)=>META[s].btns.find(b=>b.t===name);
+
+// cursor keyframes in page (css) coords: [time, x, y]
+const CUR=[[1.55,1500,900]];
+SEG.forEach((g,i)=>{const nx=SEG[i+1]; const T=nx?nx.t:FINISH; const b=btn(g.s,i===0?'Start the tour':(g.s===10?'Finish':'Next'));
+  CUR.push([T-0.72,null,null]); CUR.push([T-0.12,b.x+6,b.y+4]); CUR.push([T+0.25,b.x+6,b.y+4]);});
+// resolve holds: a null point holds the previous position
+for(let i=1;i<CUR.length;i++) if(CUR[i][1]===null){CUR[i][1]=CUR[i-1][1];CUR[i][2]=CUR[i-1][2];}
+const CLICKS=SEG.slice(1).map(g=>g.t-0.08).concat([FINISH-0.08]);
+function cursorAt(t){ if(t<CUR[0][0])return null;
+  for(let i=CUR.length-1;i>=0;i--) if(t>=CUR[i][0]){const a=CUR[i],b=CUR[i+1]; if(!b)return [a[1],a[2]];
+    const k=ez((t-a[0])/(b[0]-a[0])); return [lerp(a[1],b[1],k),lerp(a[2],b[2],k)];} }
+
+const $=id=>document.getElementById(id);
+function setCard(el,s,op,dy){ if(s==null||op<=0){el.style.opacity=0;return}
+  const c=META[s].card; const img=el.firstElementChild; const src=`card-${s}.png`; if(!img.src.endsWith(src))img.src=src;
+  Object.assign(el.style,{left:c.x+'px',top:(c.y+dy)+'px',width:c.w+'px',height:c.h+'px',opacity:op});}
+function setBg(el,s,op){const src=`bg-${s}.png`; if(!el.src.endsWith(src))el.src=src; el.style.opacity=op;}
+
+window.render=function(t){
+  // which segment
+  let i=0; while(i+1<SEG.length&&t>=SEG[i+1].t)i++;
+  const g=SEG[i], prev=i?SEG[i-1]:null, k=prev?ez(prog(t,g.t,g.t+TR)):1;
+  // camera
+  let cam;
+  if(i===0) cam=mixCam(FULL,camFor(0),ez(prog(t,0.7,2.6))*0.6);
+  else { const from=i===1?mixCam(FULL,camFor(0),0.6):camFor(prev.s); cam=mixCam(from,camFor(g.s),k); }
+  if(t>FINISH) cam=mixCam(cam,FULL,ez(prog(t,FINISH,FINISH+0.7)));
+  $('stage').style.transform=`scale(${cam.s}) translate(${-cam.x}px,${-cam.y}px)`;
+  // background (tab switch crossfades)
+  const bgFor=s=>s<7?3:8; const bgPrev=bgFor(prev?prev.s:g.s), bf=prev&&bgPrev!==bgFor(g.s)?ez(prog(t,g.t,g.t+0.08)):1;
+  setBg($('bgA'),bgPrev,1); setBg($('bgB'),bgFor(g.s),bf);
+  // scrim + outline
+  let so=i===0?ez(prog(t,0.45,0.85)):1; if(t>FINISH)so*=1-ez(prog(t,FINISH,FINISH+0.3));
+  $('scrim').style.opacity=so;
+  const b=mixBox(prev?boxOf(prev.s):null,boxOf(g.s),k);
+  const d=b&&b.w>1?rr(b):''; $('hole').setAttribute('d',d); $('ring').setAttribute('d',d);
+  // cards: old out, new in (same rise as the app's own card)
+  let outOp=prev?1-prog(t,g.t,g.t+0.15):0;
+  setCard($('cardA'),prev?prev.s:null,outOp,0);
+  const inStart=i===0?0.8:g.t+0.32, ci=eo(prog(t,inStart,inStart+0.28));
+  let inOp=ci; if(t>FINISH)inOp*=1-prog(t,FINISH,FINISH+0.15);
+  setCard($('cardB'),g.s,inOp,(1-ci)*10);
+  // caption
+  const c=CAPS.find(c=>t>=c[0]-0.05&&t<c[1]+0.25); const cap=$('cap');
+  if(c){ const a=eo(prog(t,c[0],c[0]+0.3)), z=1-prog(t,c[1],c[1]+0.2); cap.innerHTML=c[2]; cap.style.opacity=a*z; cap.style.transform=`translateY(${(1-a)*18}px)`; }
+  else cap.style.opacity=0;
+  $('band').style.opacity=(t<FINISH?1:1-prog(t,FINISH,FINISH+0.3))*clamp(t/0.3,0,1);
+  // cursor (drawn in video space so it keeps its size)
+  const p=cursorAt(t), cu=$('cursor');
+  if(p&&t<FINISH+0.35){ const vx=(p[0]-cam.x)*cam.s, vy=(p[1]-cam.y)*cam.s;
+    const pr=CLICKS.reduce((m,ct)=>Math.max(m,1-Math.abs(t-ct)/0.09),0);
+    cu.style.opacity=clamp((t-CUR[0][0])/0.2,0,1)*(1-prog(t,FINISH+0.1,FINISH+0.35));
+    cu.style.transform=`translate(${vx-4}px,${vy-4}px) scale(${1-0.14*clamp(pr,0,1)})`; }
+  else cu.style.opacity=0;
+  // dip to ink + outro
+  $('dip').style.opacity=ez(prog(t,FINISH+0.3,FINISH+0.75));
+  const oa=[[FINISH+0.8,'o1'],[FINISH+1.05,'o2'],[FINISH+1.4,'o3']];
+  oa.forEach(([s,id])=>{const a=eo(prog(t,s,s+0.45)); const e=$(id); e.style.opacity=a*(1-prog(t,END-0.35,END)); e.style.transform=`translateY(${(1-a)*22}px)`;});
+};
+window.ready=async()=>{ await document.fonts.ready; await Promise.all([...Array(11).keys()].flatMap(s=>['bg','card'].map(p=>new Promise(r=>{const im=new Image();im.onload=r;im.onerror=r;im.src=`${p}-${s}.png`;})))); };
+window.CLICK_TIMES=CLICKS; window.END=END;
+</script>
+</body></html>
