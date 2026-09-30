@@ -1,0 +1,10 @@
+work/*
+!work/comp.html
+!work/*.mjs
+!work/*.py
+!work/meta.json
+!work/timeline.json
+!work/vo/
+work/vo/*
+!work/vo/lines.json
+!work/vo/durs.json
