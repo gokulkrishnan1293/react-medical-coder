@@ -44,12 +44,13 @@ export function CaseHeader() {
           <span className="text-xs text-ink-3">received {CASE.received}</span>
         </div>
       </div>
-      <div className="grid grid-cols-[auto_auto] items-baseline gap-x-2 max-[760px]:hidden" title={`${CASE.carc}: ${CASE.carcText}`}>
-        <span className="text-[10.5px] tracking-[0.07em] text-ink-3 uppercase">Billed → paid</span>
-        <span className="font-mono text-sm font-semibold">
-          <s className="text-rej decoration-[1.5px]">{CASE.billed}</s> → {CASE.paid}
-        </span>
-        <span className="col-span-2 text-[11.5px] text-ink-2">{CASE.carc}</span>
+      <div className="grid grid-cols-[auto_auto_auto] items-baseline gap-x-2 gap-y-0.5 max-[760px]:hidden">
+        <s className="font-mono text-sm font-semibold text-rej decoration-[1.5px]">{CASE.billed}</s>
+        <span className="text-sm text-ink-3" aria-hidden="true">→</span>
+        <span className="font-mono text-sm font-semibold">{CASE.paid}</span>
+        <span className="text-center text-[8.5px] leading-none tracking-[0.08em] text-ink-3 uppercase">Billed</span>
+        <span />
+        <span className="text-center text-[8.5px] leading-none tracking-[0.08em] text-ink-3 uppercase">Paid</span>
       </div>
       </div>
       <div data-tour="lenses" className="ml-auto flex flex-wrap gap-1 max-[760px]:ml-0 max-[760px]:w-full max-[760px]:justify-between">

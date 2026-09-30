@@ -43,8 +43,10 @@ interface UiState {
   fit: Record<ZoomSide, number>;
   source: SourceMode;
   syncScroll: boolean;
-  /** Overlay view: how far across the page the scan reaches, 0 to 1. */
+  /** Overlay view: where the divider sits across the page, 0 (left edge) to 1 (right edge). */
   divider: number;
+  /** Overlay view: the side of the divider the scan covers, the side it was pulled in from. */
+  scanSide: 'left' | 'right';
   /** Overlay view: the whole page shows the scan while a key is held. */
   peek: boolean;
   /** Spot on the original to point out briefly, e.g. after "Show in original". */
@@ -73,6 +75,7 @@ export const useUiStore = create<UiState>((set) => ({
   source: 'stage',
   syncScroll: true,
   divider: 0.5,
+  scanSide: 'left',
   peek: false,
   sourceMark: null,
   menu: null,

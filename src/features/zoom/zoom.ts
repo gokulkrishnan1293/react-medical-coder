@@ -21,24 +21,32 @@ export function useZoom(side: ZoomSide) {
   return useUiStore((s) => resolve(s.zoom[side], s.fit[side]));
 }
 
+interface Pointer { x: number; y: number }
+
 /**
  * Zoom one column. The spot under the pointer (when given) or in the middle of the viewport
- * stays where it is on screen.
+ * stays where it is on screen. The original also keeps its place across, since a zoomed scan pans sideways.
  */
-export function setZoom(side: ZoomSide, z: Zoom, clientY?: number) {
+export function setZoom(side: ZoomSide, z: Zoom, pointer?: Pointer) {
   const root = columnEl(side);
-  const at = root && (clientY === undefined ? readAnchor(root) : spotAt(root, clientY));
+  const at = root && (pointer ? spotAt(root, pointer.y) : readAnchor(root));
+  const px = root && (pointer ? pointer.x - root.getBoundingClientRect().left : root.clientWidth / 2);
+  const fx = root && px !== null ? (root.scrollLeft + px) / root.scrollWidth : 0;
   ui().set({ zoom: { ...ui().zoom, [side]: z === 'fit' ? z : clamp(Math.round(z * 100) / 100, ZOOM_MIN, ZOOM_MAX) } });
   if (!root || !at) return;
-  requestAnimationFrame(() => (clientY === undefined ? writeAnchor(root, at) : writeSpotAt(root, at, clientY)));
+  requestAnimationFrame(() => {
+    if (pointer) writeSpotAt(root, at, pointer.y);
+    else writeAnchor(root, at);
+    if (side === 'source' && px !== null) root.scrollLeft = fx * root.scrollWidth - px;
+  });
 }
 
-export function stepZoom(side: ZoomSide, dir: 1 | -1, clientY?: number) {
+export function stepZoom(side: ZoomSide, dir: 1 | -1, pointer?: Pointer) {
   const cur = currentZoom(side);
   const next = dir > 0
     ? STEPS.find((s) => s > cur + 0.005) ?? ZOOM_MAX
     : [...STEPS].reverse().find((s) => s < cur - 0.005) ?? ZOOM_MIN;
-  setZoom(side, next, clientY);
+  setZoom(side, next, pointer);
 }
 
 /* The column the pointer is over; keyboard zoom acts on it. */
@@ -61,8 +69,9 @@ export function useZoomGestures(side: ZoomSide, ref: RefObject<HTMLElement | nul
       e.preventDefault();
       const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
       // a mouse wheel notch is a big jump: take one zoom step. A trackpad pinch sends small deltas: follow it smoothly.
-      if (Math.abs(dy) >= 40) stepZoom(side, dy < 0 ? 1 : -1, e.clientY);
-      else setZoom(side, currentZoom(side) * Math.exp(-dy * 0.01), e.clientY);
+      const at = { x: e.clientX, y: e.clientY };
+      if (Math.abs(dy) >= 40) stepZoom(side, dy < 0 ? 1 : -1, at);
+      else setZoom(side, currentZoom(side) * Math.exp(-dy * 0.01), at);
     };
     el.addEventListener('pointerenter', enter);
     el.addEventListener('pointerleave', leave);

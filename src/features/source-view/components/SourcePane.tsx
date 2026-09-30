@@ -10,14 +10,16 @@ import { PAGE_COLUMN, ZoomControls, useFitWidth, useZoom, useZoomGestures } from
 import { openDocMenu } from '@/features/doc-menu';
 import { setSourceMode } from '../actions';
 import { alignSource, syncRecordFromSource, syncSourceFromRecord } from '../sync';
+import { usePan } from '../usePan';
 
-/** The original page images in a column beside the record, zoomed on their own and scroll-locked to it. */
+/** The original page images in a column beside the record, zoomed on their own, scroll-locked to it, and panned by dragging. */
 export function SourcePane() {
   const zoom = useZoom('source');
   const syncScroll = useUiStore((s) => s.syncScroll);
   const mark = useUiStore((s) => s.sourceMark);
   useFitWidth('source', sourceRef);
   useZoomGestures('source', sourceRef);
+  const panning = usePan(sourceRef);
 
   useLayoutEffect(() => { if (syncScroll) alignSource(); }, [syncScroll]);
   useEffect(() => {
@@ -33,7 +35,7 @@ export function SourcePane() {
         ref={sourceRef}
         onScroll={syncRecordFromSource}
         onContextMenu={(e) => openDocMenu(e, 'source')}
-        className="min-h-0 flex-1 overflow-auto px-4 pt-12 pb-[140px]"
+        className={cn('min-h-0 flex-1 overflow-auto px-4 pt-12 pb-[140px]', panning ? 'cursor-grabbing' : 'cursor-grab')}
       >
         <div style={{ width: PAGE_COLUMN * zoom }} className="mx-auto flex flex-col gap-7">
           {PAGES.map((p) => (

@@ -109,8 +109,6 @@ export interface CaseInfo {
   /** Visit level billed and the level it was paid at. */
   billed: string;
   paid: string;
-  carc: string;
-  carcText: string;
   /** Visit codes for Straightforward, Low, Moderate, High MDM. */
   levelCodes: [string, string, string, string];
 }

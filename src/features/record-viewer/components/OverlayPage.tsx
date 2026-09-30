@@ -4,6 +4,7 @@ import { BLOCKS, PAGE_H, PAGE_IMAGES, PAGE_LAYOUT, PAGE_W, SCAN_FONT, type Layou
 import { cn } from '@/lib/utils';
 import { segments, tagOf } from '@/features/findings';
 import { useUiStore } from '@/stores/uiStore';
+import { shownDivider } from '@/features/source-view';
 import { hoverEvidence, leaveEvidence, pinEvidence } from '../navigation';
 
 /** Where the baseline sits in a Courier line box at line-height 1, in em. */
@@ -13,10 +14,11 @@ interface Props { page: Page; byBlock: Record<string, Finding[]> }
 
 /**
  * A record page drawn on the scan's own line boxes, with the scan laid over it up to the divider.
- * Left of the divider is the original; right of it is the extracted text, word for word in the same place.
+ * The original covers the side it was pulled in from; the other side is the extracted text, word for word in the same place.
  */
 export function OverlayPage({ page, byBlock }: Props) {
-  const divider = useUiStore((s) => (s.peek ? 1 : s.divider));
+  const divider = useUiStore(shownDivider);
+  const fromRight = useUiStore((s) => s.scanSide === 'right');
   const hoverId = useUiStore((s) => s.hoverId);
   const activeId = useUiStore((s) => s.activeId);
   const flashId = useUiStore((s) => s.flashId);
@@ -37,7 +39,7 @@ export function OverlayPage({ page, byBlock }: Props) {
         aria-hidden
         draggable={false}
         className="pointer-events-none absolute inset-0 size-full rounded-[2px] select-none"
-        style={{ clipPath: `inset(0 ${(1 - divider) * 100}% 0 0)` }}
+        style={{ clipPath: fromRight ? `inset(0 0 0 ${divider * 100}%)` : `inset(0 ${(1 - divider) * 100}% 0 0)` }}
       />
       <div aria-hidden className="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-accent" style={{ left: divider * 100 + '%' }} />
     </section>

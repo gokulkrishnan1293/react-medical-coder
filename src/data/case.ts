@@ -11,8 +11,6 @@ export const CASE: CaseInfo = {
   payer: 'Northstar Health Plan',
   billed: '99285',
   paid: '99284',
-  carc: 'CARC 150',
-  carcText: 'Payer deems the information submitted does not support this level of service.',
   levelCodes: ['99282', '99283', '99284', '99285'],
 };
 

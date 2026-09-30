@@ -5,19 +5,23 @@ import { cn } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { ui, useUiStore } from '@/stores/uiStore';
 import { useZoom } from '@/features/zoom';
-import { setDivider, setSourceMode } from '@/features/source-view';
+import { setDivider, setSourceMode, shownDivider } from '@/features/source-view';
 
 /** A drag shorter than this is a click. */
 const CLICK_PX = 4;
 /** Letting go this close to either page edge leaves the overlay. */
 const EDGE = 0.02;
 
+const tag = 'absolute top-1/2 -translate-y-1/2 rounded-full px-1.5 py-px text-[9.5px] font-semibold tracking-wide whitespace-nowrap uppercase';
+const original = 'bg-ink/75 text-paper';
+const extracted = 'bg-accent/90 text-accent-ink';
+
 const pageRect = () => pageEl(ui().currentPage)?.getBoundingClientRect();
 
 /**
  * Drag handles on the page itself for the overlay view. While reading, a grip sits on each side
- * of the page: pull either one across to lay the scan over the text (the left grip brings the scan
- * in from the left, the right grip starts from the whole scan). In the overlay, one handle rides the
+ * of the page: pull either one across to lay the scan over the text, coming in from that side, so the
+ * scan covers the page between that edge and the divider. In the overlay, one handle rides the
  * divider; take it back to either edge to return to reading. Everything stays level with the middle
  * of the viewport, so it is always within reach.
  */
@@ -25,7 +29,8 @@ export function PageSlider() {
   useScrollTick(scrollerRef);
   useZoom('record');
   const overlay = useUiStore((s) => s.source === 'overlay');
-  const divider = useUiStore((s) => (s.peek ? 1 : s.divider));
+  const divider = useUiStore(shownDivider);
+  const fromRight = useUiStore((s) => s.scanSide === 'right');
   const currentPage = useUiStore((s) => s.currentPage);
   // pages are measured from the DOM, so draw once more after they are in place
   const [, remeasure] = useReducer((n: number) => n + 1, 0);
@@ -38,7 +43,8 @@ export function PageSlider() {
   const br = box.getBoundingClientRect();
   const x = (f: number) => pr.left - br.left + f * pr.width;
 
-  const drag = (e: React.PointerEvent<HTMLButtonElement>) => {
+  /** From a grip, `side` is where the scan comes in; the divider handle keeps the side already chosen. */
+  const drag = (side?: 'left' | 'right') => (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
     e.preventDefault();
     // listen on the window: a grip is swapped for the divider handle as soon as the overlay opens
@@ -47,7 +53,7 @@ export function PageSlider() {
     const move = (ev: PointerEvent) => {
       if (!moved && Math.abs(ev.clientX - x0) < CLICK_PX) return;
       moved = true;
-      if (ui().source !== 'overlay') setSourceMode('overlay');
+      if (ui().source !== 'overlay') { if (side) ui().set({ scanSide: side }); setSourceMode('overlay'); }
       const r = pageRect();
       if (r) setDivider((ev.clientX - r.left) / r.width);
     };
@@ -57,7 +63,7 @@ export function PageSlider() {
       window.removeEventListener('pointercancel', up);
       const { source, divider: d } = ui();
       if (!moved) {
-        if (source !== 'overlay') { setDivider(0.5); setSourceMode('overlay'); }
+        if (source !== 'overlay') { if (side) ui().set({ scanSide: side }); setDivider(0.5); setSourceMode('overlay'); }
       } else if (d < EDGE || d > 1 - EDGE) {
         setSourceMode('stage');
         setDivider(0.5);
@@ -81,7 +87,7 @@ export function PageSlider() {
     <button
       key={side}
       type="button"
-      onPointerDown={drag}
+      onPointerDown={drag(side)}
       aria-label={`Overlay the original scan, from the ${side}`}
       title="Drag across the page to compare with the original scan. Click to open at half."
       className={cn(
@@ -99,22 +105,22 @@ export function PageSlider() {
     <div className="pointer-events-none absolute inset-0 z-5 max-[760px]:hidden">
       {overlay ? (
         <div className="absolute top-1/2 -translate-x-1/2 -translate-y-1/2" style={{ left: x(divider) }}>
-          <span className="absolute top-1/2 right-full mr-2 -translate-y-1/2 rounded-full bg-ink/75 px-1.5 py-px text-[9.5px] font-semibold tracking-wide whitespace-nowrap text-paper uppercase">Original</span>
+          <span className={cn(tag, 'right-full mr-2', fromRight ? extracted : original)}>{fromRight ? 'Extracted' : 'Original'}</span>
           <button
             type="button"
             role="slider"
-            aria-label="Overlay divider: original on the left, extracted text on the right"
+            aria-label={`Overlay divider: original on the ${fromRight ? 'right' : 'left'}, extracted text on the ${fromRight ? 'left' : 'right'}`}
             aria-valuemin={0}
             aria-valuemax={100}
             aria-valuenow={Math.round(divider * 100)}
             title="Drag, or use ← →. Hold Space to see the whole scan. Drag to either edge to close."
-            onPointerDown={drag}
+            onPointerDown={drag()}
             onKeyDown={onKey}
             className="pointer-events-auto grid size-8 cursor-ew-resize touch-none place-items-center rounded-full border-2 border-paper bg-accent text-accent-ink shadow-float"
           >
             <span className="flex -space-x-1"><Icon.left size={13} sw={2.4} /><Icon.right size={13} sw={2.4} /></span>
           </button>
-          <span className="absolute top-1/2 left-full ml-2 -translate-y-1/2 rounded-full bg-accent/90 px-1.5 py-px text-[9.5px] font-semibold tracking-wide whitespace-nowrap text-accent-ink uppercase">Extracted</span>
+          <span className={cn(tag, 'left-full ml-2', fromRight ? original : extracted)}>{fromRight ? 'Original' : 'Extracted'}</span>
         </div>
       ) : (
         [grip('left'), grip('right')]

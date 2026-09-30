@@ -41,7 +41,7 @@ export function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className={cn('grid h-full grid-rows-[auto_auto_minmax(0,1fr)]', view.spot && 'spot', view.clean && 'clean')}>
+      <div className={cn('grid h-full grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)]', view.spot && 'spot', view.clean && 'clean')}>
         <CaseHeader />
         <PatientStrip />
         <div className="flex min-h-0">
