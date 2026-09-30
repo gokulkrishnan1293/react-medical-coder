@@ -10,7 +10,7 @@ import { openDocMenu } from '@/features/doc-menu';
 import { useScrollSync } from '../useScrollSync';
 import { RecordPage } from './RecordPage';
 import { OverlayPage } from './OverlayPage';
-import { OverlayDivider } from './OverlayDivider';
+import { PageSlider } from './PageSlider';
 import { Minimap } from './Minimap';
 import '../record.css';
 
@@ -26,7 +26,8 @@ export function RecordViewer({ margin, tools }: Props) {
   const findings = useFindings();
   const currentPage = useUiStore((s) => s.currentPage);
   /* Overlay view draws each page on the scan's line boxes, with the scan laid over it. */
-  const overlay = useUiStore((s) => s.source === 'overlay');
+  const source = useUiStore((s) => s.source);
+  const overlay = source === 'overlay';
   const onMouseUp = useTextSelection();
   const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const zoom = useZoom('record');
@@ -68,7 +69,7 @@ export function RecordViewer({ margin, tools }: Props) {
         Page {currentPage} of {PAGES.length}
       </div>
       {margin}
-      {overlay && <OverlayDivider />}
+      {source !== 'compare' && <PageSlider />}
       <div className="absolute top-2.5 left-[30px] z-6 flex items-center gap-1 rounded-full border border-line bg-chrome p-0.5 shadow-page max-[760px]:hidden">
         <ZoomControls side="record" />
         {tools && <><span className="mx-1 h-4 w-px bg-line" />{tools}</>}
