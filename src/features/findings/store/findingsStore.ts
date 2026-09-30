@@ -18,6 +18,7 @@ interface FindingsState {
   undo: () => void;
   setStatus: (id: string, status: FindingStatus) => void;
   add: (f: Finding) => void;
+  setComment: (id: string, comment: string) => void;
   clearToast: () => void;
 }
 
@@ -47,5 +48,12 @@ export const useFindingsStore = create<FindingsState>((set, get) => ({
     commit(findings.map((x) => (x.id === id ? { ...x, status } : x)), `${VERB[status]} ${codeLabel(f)}`);
   },
   add: (f) => get().commit([...get().findings, f], `Added ${codeLabel(f)} to notes`),
+  setComment: (id, comment) => {
+    const { findings, commit } = get();
+    const f = findings.find((x) => x.id === id);
+    const next = comment.trim();
+    if (!f || (f.comment ?? '') === next) return;
+    commit(findings.map((x) => (x.id === id ? { ...x, comment: next || undefined } : x)), next ? `Comment saved on ${codeLabel(f)}` : 'Comment removed');
+  },
   clearToast: () => set({ toast: null }),
 }));

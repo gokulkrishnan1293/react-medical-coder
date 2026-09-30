@@ -3,6 +3,8 @@ import { CASE } from '@/data';
 import { cn } from '@/lib/utils';
 import { LEVELS } from '../utils/labels';
 
+const COMPACT = ['SF', 'Low', 'Mod', 'High'];
+
 /** MDM element levels and the visit code they support. */
 export function ScoreCard({ s, compact }: { s: MdmSummary; compact?: boolean }) {
   const cells = [['prob', 'Problems'], ['data', 'Data'], ['risk', 'Risk']] as const;
@@ -15,7 +17,7 @@ export function ScoreCard({ s, compact }: { s: MdmSummary; compact?: boolean }) 
       {cells.map(([key, label]) => (
         <div key={key} className={cn(box, 'border-line bg-paper')}>
           <span className={k}>{label}</span>
-          <span className={cn(v, s[key] >= 3 && 'text-ok')}>{LEVELS[s[key]]}</span>
+          <span className={cn(v, s[key] >= 3 && 'text-ok')}>{(compact ? COMPACT : LEVELS)[s[key]]}</span>
         </div>
       ))}
       <div className={cn(box, ok ? 'border-ok/45 bg-ok-fill' : 'border-add/45 bg-add-fill')}>

@@ -3,7 +3,8 @@ import { Icon, IconButton, Modal, SegmentedTabs } from '@/components/ui';
 import { jumpTo } from '@/features/record-viewer';
 import { useUiStore, type FullNotesTab } from '@/stores/uiStore';
 import { FindingsTab } from './FindingsTab';
-import { ClaimTab } from './ClaimTab';
+import { ClaimTables } from '@/features/claim';
+import { ScoreCard, useSummary } from '@/features/findings';
 
 const TABS: { key: FullNotesTab; label: string }[] = [
   { key: 'findings', label: 'Findings' },
@@ -12,7 +13,8 @@ const TABS: { key: FullNotesTab; label: string }[] = [
 
 /** Full view of the review: every finding, and the claim against the record. */
 export function FullNotes({ tab }: { tab: FullNotesTab }) {
-  const set = useUiStore((s) => s.set);
+  const set = useUiStore((st) => st.set);
+  const s = useSummary();
   const close = () => set({ full: null });
   const onJump = (id: string) => { close(); setTimeout(() => jumpTo(id), 60); };
   return (
@@ -26,7 +28,7 @@ export function FullNotes({ tab }: { tab: FullNotesTab }) {
         <IconButton onClick={close} aria-label="Close full notes"><Icon.close size={18} /></IconButton>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto px-[22px] pt-4 pb-7 max-[760px]:px-4">
-        {tab === 'findings' ? <FindingsTab onJump={onJump} /> : <ClaimTab onJump={onJump} />}
+        {tab === 'findings' ? <FindingsTab onJump={onJump} /> : <><div className="mb-4 max-w-[620px]"><ScoreCard s={s} /></div><ClaimTables onJump={onJump} /></>}
       </div>
     </Modal>
   );

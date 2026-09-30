@@ -6,7 +6,8 @@ import { routeOf } from '../utils/finding';
 const ROUTE_STYLE = {
   onClaim: 'text-accent bg-accent-soft',
   notOnClaim: 'text-add bg-add-fill',
-  info: 'text-ink-2 bg-chrome-2',
+  support: 'text-ink-2 bg-chrome-2',
+  note: 'text-ink-2 bg-chrome-2',
   excluded: 'text-rej bg-rej-fill',
 } as const;
 

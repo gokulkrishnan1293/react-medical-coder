@@ -8,3 +8,6 @@ export { RouteTag } from './components/RouteTag';
 export { FindingActions } from './components/FindingActions';
 export { ScoreCard } from './components/ScoreCard';
 export { UndoToast } from './components/UndoToast';
+export { TypeBadge } from './components/TypeBadge';
+export { CommentField } from './components/CommentField';
+export { MarDetail } from './components/MarDetail';

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type ComposeType = 'dx' | 'px' | 'mdm' | 'note';
+export type ComposeType = 'dx' | 'svc' | 'mar' | 'note';
 
 export interface TextSelection {
   block: string;

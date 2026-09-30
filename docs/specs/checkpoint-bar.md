@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Draft. Describes the prototype as built (commit `e8f3b47`) plus open decisions. |
+| **Status** | Superseded. The checkpoint bar was removed when the patient strip replaced it; kept for reference. |
 | **Component** | `src/features/checkpoints/`; scoring in `summarize()` (`src/features/findings/utils/mdm.ts`) |
 | **Screen** | Appeal review workbench, directly under the case header |
 

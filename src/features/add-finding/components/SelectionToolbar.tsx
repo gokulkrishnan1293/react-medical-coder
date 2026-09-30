@@ -4,7 +4,7 @@ import { clamp } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { useAddFindingStore, type ComposeType, type TextSelection } from '../store';
 
-const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['px', 'Procedure'], ['mdm', 'MDM element'], ['note', 'Note']];
+const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['svc', 'Service'], ['mar', 'MAR'], ['note', 'Note']];
 
 /** Floating "Add …" bar above selected record text. */
 export function SelectionToolbar({ sel }: { sel: TextSelection }) {
@@ -12,7 +12,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   const set = useAddFindingStore((s) => s.set);
   const r = sel.range.getBoundingClientRect();
   if (!r.width && !r.height) return null;
-  const W = sel.overlap ? 250 : 380;
+  const W = sel.overlap ? 250 : 340;
   const left = clamp(r.left + r.width / 2 - W / 2, 8, window.innerWidth - W - 8);
   const top = r.top > 120 ? r.top - 46 : r.bottom + 8;
   const base = 'fixed z-70 rounded-[9px] bg-ink text-paper shadow-float';

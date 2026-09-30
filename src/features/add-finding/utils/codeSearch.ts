@@ -1,9 +1,9 @@
-import type { CodeKind, MdmOption } from '@/types';
-import { CODES, MDM_OPTIONS } from '@/data';
+import type { CodeKind } from '@/types';
+import { CODES } from '@/data';
 
 /** Keyword search over the demo code dictionary, pre-filled from the selected words. */
 export function searchCodes(q: string, kind: CodeKind) {
-  const toks = q.toLowerCase().replace(/[^a-z0-9.\- ]/g, ' ').split(/\s+/).filter((t) => t.length > 2);
+  const toks = q.toLowerCase().replace(/[^a-z0-9.%\- ]/g, ' ').split(/\s+/).filter((t) => t.length > 2);
   const scored = CODES.filter((d) => d.kind === kind).map((d) => {
     const hay = `${d.code} ${d.desc} ${d.kw}`.toLowerCase();
     let s = 0;
@@ -15,13 +15,17 @@ export function searchCodes(q: string, kind: CodeKind) {
   return (hits.length ? hits : scored).slice(0, 6);
 }
 
-export type RankedMdm = MdmOption & { suggested: boolean };
+const UNIT_FAMILY: Record<string, string> = { mg: 'mg', ml: 'ml', cc: 'ml', meq: 'meq', units: 'units', unit: 'units' };
 
-/** MDM descriptors ranked by keyword match; the top match is marked suggested. */
-export function rankMdm(text: string): RankedMdm[] {
-  const t = text.toLowerCase();
-  return MDM_OPTIONS
-    .map((o, i) => ({ o, i, s: o.kw.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0) }))
-    .sort((a, b) => b.s - a.s || a.i - b.i)
-    .map(({ o, s }, i) => ({ ...o, suggested: i === 0 && s > 0 }));
+function amount(s: string) {
+  const m = s.toLowerCase().match(/([\d.]+)\s*(mg|ml|cc|meq|units?)\b/);
+  return m ? { n: parseFloat(m[1]), u: UNIT_FAMILY[m[2]] } : null;
+}
+
+/** Billing units for a dose against a drug code's unit, e.g. 20 mEq at "2 mEq" → 10. Falls back to 1. */
+export function billingUnits(dose: string, per?: string) {
+  const d = amount(dose);
+  const p = per ? amount(per) : null;
+  if (!d || !p || d.u !== p.u || !p.n) return 1;
+  return Math.max(1, Math.ceil(d.n / p.n));
 }

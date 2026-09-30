@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react';
-import { pageLabel } from '../pageLabel';
-import { SegmentedTabs, Icon, Kbd, Button } from '@/components/ui';
-import { ScoreCard, useOrderedFindings, useSummary } from '@/features/findings';
-import { jumpTo } from '@/features/record-viewer';
-import { cn, scrollBehavior } from '@/lib/utils';
-import { useUiStore } from '@/stores/uiStore';
 import type { Finding } from '@/types';
+import { PAGES } from '@/data';
+import { cn, scrollBehavior } from '@/lib/utils';
+import { Icon, SegmentedTabs } from '@/components/ui';
+import { useOrderedFindings } from '@/features/findings';
+import { jumpTo } from '@/features/record-viewer';
+import { useUiStore } from '@/stores/uiStore';
 import { useNotepadStore } from '../store';
-import { NoteRow } from './NoteRow';
+import { FindingCard } from './FindingCard';
+
+const pageLabel = (n: number) => PAGES.find((p) => p.n === n)?.label ?? '';
 
 function pageRange(ps: number[]) {
   if (!ps.length) return '';
@@ -16,11 +18,10 @@ function pageRange(ps: number[]) {
   return a === b ? `p. ${a}` : `p. ${a}–${b}`;
 }
 
-/** Notepad content: In view / All lists grouped by page, plus the MDM scorecard. */
-export function NotesBody() {
+/** Finding cards grouped by page; follows the scroll ("In view") or lists everything. */
+export function FindingsList() {
   const ordered = useOrderedFindings();
-  const s = useSummary();
-  const { tab, pinnedPages, set } = useNotepadStore();
+  const { scope, pinnedPages, set } = useNotepadStore();
   const visible = useUiStore((st) => st.visiblePages);
   const activeId = useUiStore((st) => st.activeId);
   const hoverId = useUiStore((st) => st.hoverId);
@@ -30,7 +31,7 @@ export function NotesBody() {
 
   const pages = pinnedPages ?? visible;
   const inView = ordered.filter((f) => pages.includes(f.page));
-  const list = tab === 'view' ? inView : ordered;
+  const list = scope === 'view' ? inView : ordered;
   const groups: { page: number; items: Finding[] }[] = [];
   list.forEach((f) => {
     let g = groups[groups.length - 1];
@@ -42,17 +43,17 @@ export function NotesBody() {
   useEffect(() => {
     if (!activeId) return;
     listRef.current?.querySelector(`[data-row="${activeId}"]`)?.scrollIntoView({ block: 'nearest', behavior: scrollBehavior() });
-  }, [activeId, tab]);
+  }, [activeId, scope]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-line px-2.5 py-[7px]">
+    <>
+      <div className="flex flex-wrap items-center gap-2 border-b border-line px-2.5 py-1.5">
         <SegmentedTabs
           tabs={[{ key: 'view', label: 'In view', count: inView.length }, { key: 'all', label: 'All', count: ordered.length }]}
-          value={tab}
-          onChange={(k) => set({ tab: k })}
+          value={scope}
+          onChange={(k) => set({ scope: k })}
         />
-        {tab === 'view' ? (
+        {scope === 'view' ? (
           <button
             onClick={() => set({ pinnedPages: pinnedPages ? null : [...visible] })}
             title={pinnedPages ? 'Unpin to follow the scroll again' : 'Pin these pages'}
@@ -65,39 +66,36 @@ export function NotesBody() {
           <span className="ml-auto px-1.5 text-[11.5px] text-ink-3">{pending} to review</span>
         )}
       </div>
-      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-1.5 pt-1 pb-2">
+      <div ref={listRef} className="min-h-0 flex-1 overflow-y-auto px-2 pb-2">
         {groups.length === 0 && (
           <div className="px-3.5 py-5 text-[12.5px] leading-[1.55] text-ink-2">
             <b className="mb-1 block text-ink">Nothing marked on {pageRange(pages)}.</b>
-            Select words on the record to add a diagnosis, procedure, MDM element or note.
+            Select words on the record to add a diagnosis, service, MAR entry or note.
           </div>
         )}
         {groups.map((g) => (
-          <div key={g.page}>
-            <div className="sticky top-0 z-1 bg-chrome px-1.5 pt-2 pb-1 text-[10.5px] font-semibold tracking-[0.08em] text-ink-3 uppercase">
+          <section key={g.page}>
+            <h3 className="sticky top-0 z-1 flex items-baseline gap-1.5 bg-chrome px-1 pt-2.5 pb-1.5 text-[10.5px] font-semibold tracking-[0.08em] text-ink-3 uppercase">
               Page {g.page} · {pageLabel(g.page)}
+              <span className="ml-auto font-mono tracking-normal normal-case">{g.items.length}</span>
+            </h3>
+            <div className="flex flex-col gap-1.5">
+              {g.items.map((f) => (
+                <FindingCard
+                  key={f.id}
+                  f={f}
+                  active={activeId === f.id}
+                  hot={hoverId === f.id}
+                  flash={flashId === f.id}
+                  onEnter={() => setUi({ hoverId: f.id })}
+                  onLeave={() => setUi({ hoverId: null })}
+                  onClick={() => jumpTo(f.id)}
+                />
+              ))}
             </div>
-            {g.items.map((f) => (
-              <NoteRow
-                key={f.id}
-                f={f}
-                active={activeId === f.id}
-                hot={hoverId === f.id}
-                flash={flashId === f.id}
-                onEnter={() => setUi({ hoverId: f.id })}
-                onLeave={() => setUi({ hoverId: null })}
-                onClick={() => jumpTo(f.id)}
-              />
-            ))}
-          </div>
+          </section>
         ))}
       </div>
-      <div className="flex flex-col gap-2 border-t border-line px-2.5 pt-[9px] pb-3">
-        <ScoreCard s={s} compact />
-        <Button className="w-full" onClick={() => setUi({ full: 'findings', card: null })}>
-          <Icon.expand size={14} />Full notes <Kbd>F</Kbd>
-        </Button>
-      </div>
-    </div>
+    </>
   );
 }

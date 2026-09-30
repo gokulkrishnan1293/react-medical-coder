@@ -45,7 +45,9 @@ export function useTextSelection() {
       const blkEl = (n.nodeType === 1 ? (n as Element) : n.parentElement)?.closest<HTMLElement>('.blk');
       if (!blkEl || !scrollerRef.current?.contains(blkEl)) return;
       const b = BLOCKS[blkEl.dataset.block!];
-      let text = raw;
+      if (b.k === 'marHead') return;
+      // a MAR row is always taken whole
+      let text = b.k === 'mar' ? b.t : raw;
       if (b.t.indexOf(text) < 0) {
         // selection ran past the block: clip it to the block end
         const r2 = document.createRange();

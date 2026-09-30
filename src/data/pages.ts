@@ -1,6 +1,6 @@
 import type { Block, BlockKind, RecordPage } from '@/types';
 
-/* Synthetic demo record. No real patient information. */
+/* Synthetic ED record. No real patient information. */
 
 type Raw = [BlockKind, string];
 
@@ -11,64 +11,78 @@ const page = (n: number, label: string, blocks: Raw[]): RecordPage => ({
 });
 
 export const PAGES: RecordPage[] = [
-  page(1, 'History', [
-    ['org', 'RIVERBEND INTERNAL MEDICINE ASSOCIATES'],
-    ['sub', '1200 Harbor Road, Suite 4 · Tel (555) 010-4420 · Fax (555) 010-4421'],
-    ['title', 'OFFICE VISIT — ESTABLISHED PATIENT'],
-    ['meta', 'Patient: DEMO, ALEX     MRN: TEST-004417     DOB: 06/02/1961     Sex: M'],
-    ['meta', 'Date of service: 03/14/2026     Provider: Mei Chen, MD     Dept: Internal Medicine'],
+  page(1, 'Triage & history', [
+    ['org', 'MERIDIAN REGIONAL MEDICAL CENTER'],
+    ['sub', 'Emergency Department · 400 Lakeview Parkway · Tel (555) 013-2200'],
+    ['title', 'EMERGENCY DEPARTMENT PHYSICIAN RECORD'],
+    ['meta', 'Patient: DEMO, JORDAN     MRN: ED-TEST-20931     DOB: 11/19/1978     Sex: F'],
+    ['meta', 'Date of service: 05/02/2026     Arrival: 02:14     Attending: Priya Raman, MD'],
+    ['h', 'TRIAGE'],
+    ['meta', 'ESI 2 · BP 96/58 · HR 124 · RR 26 · Temp 99.1 °F · SpO2 97% RA · POC glucose HI (>500)'],
     ['h', 'CHIEF COMPLAINT'],
-    ['p', '"My sugars are really high and I feel weak." Duration 5 days.'],
+    ['p', '"I can\'t keep anything down." Vomiting and abdominal pain for 2 days.'],
     ['h', 'HISTORY OF PRESENT ILLNESS'],
-    ['p', '64-year-old man with type 2 diabetes, hypertension and chronic kidney disease presents with 5 days of polyuria, polydipsia and fatigue. Reports home glucose readings 380–450 mg/dL over the past 4 days. Ran out of metformin 2 weeks ago and did not refill.'],
-    ['p', 'Also reports lightheadedness on standing since yesterday. Denies chest pain, dyspnea, abdominal pain, vomiting or confusion. Seen in Mercy General ED on 02/28/2026 after a mechanical fall; no fracture.'],
-    ['h', 'CURRENT MEDICATIONS'],
-    ['li', 'Metformin 1000 mg PO BID (not taking for 2 weeks)'],
-    ['li', 'Lisinopril 20 mg PO daily'],
-    ['li', 'Atorvastatin 40 mg PO daily'],
-    ['h', 'ALLERGIES'],
-    ['p', 'No known drug allergies.'],
+    ['p', '47-year-old woman with type 2 diabetes on metformin and glipizide presents with 2 days of nausea, repeated vomiting, diffuse abdominal pain, polyuria and increasing thirst. Unable to tolerate oral intake or medications for 36 hours. Husband reports she has been more drowsy since last evening.'],
+    ['p', 'No fever, chest pain, dysuria or diarrhea. No recent medication changes. Last A1c 9.4% three months ago.'],
+    ['h', 'PAST HISTORY'],
+    ['li', 'Type 2 diabetes mellitus (diagnosed 2016)'],
+    ['li', 'Hypertension'],
+    ['li', 'Medications: metformin 1000 mg BID, glipizide 10 mg daily, lisinopril 10 mg daily'],
+    ['li', 'Allergies: sulfa (rash)'],
   ]),
   page(2, 'Exam', [
-    ['h', 'VITAL SIGNS'],
-    ['meta', 'BP 108/66 seated · 92/58 standing     HR 98 seated · 118 standing'],
-    ['meta', 'Temp 98.4 °F     RR 18     SpO2 98% RA     Wt 81.2 kg (84.0 kg on 02/10/2026)'],
-    ['h', 'REVIEW OF SYSTEMS'],
-    ['p', 'Constitutional: fatigue, 3 kg weight loss over one month. Eyes: blurred vision when sugars are high. Cardiovascular: no chest pain, no palpitations. Respiratory: no cough or shortness of breath. GI: increased thirst, no nausea or vomiting. GU: urinary frequency and nocturia x4. Neuro: lightheaded on standing, no syncope. All other systems reviewed and negative.'],
     ['h', 'PHYSICAL EXAMINATION'],
-    ['p', 'General: tired-appearing, alert and oriented x3, no acute distress.'],
-    ['p', 'HEENT: dry mucous membranes, no oral lesions.'],
-    ['p', 'Patient is clinically dehydrated with a positive orthostatic drop in blood pressure and rise in heart rate.'],
-    ['p', 'Cardiovascular: tachycardic, regular rhythm, no murmur. Lungs: clear to auscultation bilaterally. Abdomen: soft, non-tender. Extremities: no edema. Neuro: nonfocal. Feet: monofilament sensation intact bilaterally.'],
+    ['p', 'General: ill-appearing, drowsy but arousable and oriented x3. Kussmaul respirations noted.'],
+    ['p', 'HEENT: dry mucous membranes, sunken eyes.'],
+    ['p', 'Cardiovascular: tachycardic, regular rhythm. Capillary refill 3 seconds.'],
+    ['p', 'Abdomen: soft, diffusely tender without guarding or rebound. No peritoneal signs.'],
+    ['p', 'Neuro: GCS 14 (E3 V5 M6), no focal deficits.'],
+    ['p', 'Skin: poor turgor, no rash.'],
+    ['h', 'REVIEW OF SYSTEMS'],
+    ['p', 'Positive for nausea, vomiting, abdominal pain, polyuria, polydipsia and fatigue. All other systems reviewed and negative.'],
   ]),
-  page(3, 'Results & data', [
-    ['h', 'IN-OFFICE RESULTS'],
-    ['p', 'Point-of-care glucose: 412 mg/dL.'],
-    ['p', 'HbA1c (point of care): 11.2% (8.1% on 10/06/2025).'],
-    ['p', '12-lead ECG performed in office: sinus tachycardia, rate 104, normal axis, no acute ST-T changes. No prior tracing for comparison.'],
-    ['h', 'EXTERNAL RECORDS'],
-    ['p', 'Reviewed Mercy General ED discharge summary dated 02/28/2026: creatinine 1.3 mg/dL, eGFR 55, head CT negative.'],
-    ['h', 'TESTS ORDERED'],
-    ['p', 'Ordered basic metabolic panel, stat, to assess renal function, potassium and anion gap.'],
-    ['p', 'BMP resulted 16:10: Na 131, K 4.9, Cl 97, CO2 22, BUN 34, Cr 1.5, eGFR 48, glucose 398. Anion gap 12. No evidence of DKA.'],
+  page(3, 'Results', [
+    ['h', 'LABORATORY RESULTS (collected 02:31)'],
+    ['meta', 'Glucose 612 mg/dL · Na 128 · K 5.6 · Cl 92 · CO2 13 · BUN 38 · Cr 1.9 (baseline 0.9)'],
+    ['meta', 'Anion gap 23 · Beta-hydroxybutyrate 5.9 mmol/L · VBG pH 7.21 · Lactate 2.1'],
+    ['meta', 'WBC 15.8 · Hgb 14.6 · Lipase 42 · Urinalysis: glucose 3+, ketones 3+'],
+    ['p', 'Ordered comprehensive metabolic panel, CBC, beta-hydroxybutyrate, venous blood gas, lipase and urinalysis on arrival.'],
+    ['p', 'Serial basic metabolic panels ordered every 2 hours to follow potassium and anion gap closure.'],
+    ['h', 'ECG'],
+    ['p', '12-lead ECG independently interpreted by me: sinus tachycardia at 122, peaked T waves in V2–V4, no ST elevation. Consistent with hyperkalemia; repeat after insulin.'],
+    ['h', 'POINT-OF-CARE GLUCOSE'],
+    ['meta', '02:20 HI · 03:30 548 · 04:30 471 · 05:30 402 · 06:30 344 · 07:30 288'],
   ]),
-  page(4, 'Assessment & plan', [
-    ['h', 'ASSESSMENT AND PLAN'],
-    ['p', '1. Type 2 diabetes mellitus with severe hyperglycemia. A1c 11.2%, up from 8.1%, off metformin for two weeks. No DKA (anion gap 12).'],
-    ['li', 'Start insulin glargine 10 units subcutaneously at bedtime; titrate by 2 units every 3 days to fasting glucose under 150.'],
-    ['li', 'Resume metformin at 500 mg BID given eGFR 48. Glucometer log; diabetes education referral placed.'],
-    ['p', '2. Type 2 diabetes with diabetic kidney disease, CKD stage 3a. eGFR 48 from baseline 55, likely prerenal component from volume depletion.'],
-    ['li', 'Hold lisinopril for 3 days. Repeat BMP in 3 days.'],
-    ['p', '3. Hypertension with CKD. Low blood pressure today with orthostasis; lisinopril held as above.'],
-    ['p', '4. Volume depletion with orthostasis. Oral rehydration 2–3 L/day; fall precautions reviewed.'],
-    ['p', 'Discussed direct hospital admission for IV fluids and insulin initiation; patient declined after risks and benefits were reviewed and prefers close outpatient follow-up.'],
-    ['p', 'Return precautions given for vomiting, confusion or glucose over 500. Nurse telephone check in 24 hours. Follow-up office visit in 3 days.'],
+  page(4, 'Medication administration', [
+    ['h', 'MEDICATION ADMINISTRATION RECORD'],
+    ['marHead', 'Time | Medication | Dose | Route | Given by'],
+    ['mar', '02:40 | Sodium chloride 0.9% bolus | 1000 mL | IV | K. Ortiz, RN'],
+    ['mar', '02:42 | Ondansetron | 4 mg | IV push | K. Ortiz, RN'],
+    ['mar', '03:35 | Sodium chloride 0.9% bolus | 1000 mL | IV | K. Ortiz, RN'],
+    ['mar', '03:50 | Insulin regular infusion | 8 units/hr | IV continuous | K. Ortiz, RN'],
+    ['mar', '04:20 | Potassium chloride | 20 mEq | IV piggyback | L. Park, RN'],
+    ['mar', '05:45 | Dextrose 5% / 0.45% NaCl | 150 mL/hr | IV continuous | L. Park, RN'],
+    ['h', 'NURSING NOTES'],
+    ['p', 'IV access established 02:35, 20 g right antecubital. Ondansetron given by IV push over 2 minutes.'],
+    ['p', 'Normal saline bolus infused 02:40–03:30 (50 minutes).'],
+    ['p', 'Insulin infusion started 03:50 and continued until transfer at 08:05; total 32 units given in the ED.'],
   ]),
-  page(5, 'Attestation', [
-    ['h', 'TIME AND ATTESTATION'],
-    ['p', 'Total time on the date of the encounter: 34 minutes, including review of external records, examination, counseling and documentation.'],
-    ['p', 'I personally performed the services described in this note.'],
-    ['p', 'Electronically signed by Mei Chen, MD on 03/14/2026 at 17:42.'],
+  page(5, 'ED course & disposition', [
+    ['h', 'ED COURSE AND MEDICAL DECISION MAKING'],
+    ['p', 'Diabetic ketoacidosis, moderate, with acute kidney injury and hyperkalemia. This illness poses a threat to bodily function.'],
+    ['p', 'Placed on continuous cardiac monitoring because of hyperkalemia with ECG changes.'],
+    ['p', 'Hourly point-of-care glucose and neuro checks per DKA protocol. Insulin infusion titrated per DKA protocol.'],
+    ['p', 'Reassessed at 04:30 and 06:30: mental status improved, vomiting resolved, anion gap 19 then 15.'],
+    ['p', 'Discussed management with Dr. Evans (hospitalist, Lakeview Medicine Group), who agrees with observation admission.'],
+    ['p', 'Decision made to admit to the observation step-down unit for continued insulin infusion and electrolyte replacement.'],
+    ['h', 'DIAGNOSES'],
+    ['li', 'Diabetic ketoacidosis without coma, type 2 diabetes'],
+    ['li', 'Acute kidney injury, prerenal'],
+    ['li', 'Hyperkalemia'],
+    ['li', 'Dehydration'],
+    ['h', 'DISPOSITION'],
+    ['p', 'Admitted to observation at 08:05 in stable condition.'],
+    ['p', 'Electronically signed by Priya Raman, MD on 05/02/2026 at 08:40.'],
   ]),
 ];
 
@@ -76,4 +90,7 @@ export const BLOCKS: Record<string, Block> = Object.fromEntries(
   PAGES.flatMap((p) => p.blocks.map((b) => [b.id, b] as const)),
 );
 
-export const PRINT_FOOTER = 'Printed from EHR 03/19/2026 09:14 · Riverbend IMA';
+/** Splits a MAR row into its cells. */
+export const marCells = (t: string) => t.split(' | ');
+
+export const PRINT_FOOTER = 'Printed from EHR 05/03/2026 06:12 · Meridian Regional MC';

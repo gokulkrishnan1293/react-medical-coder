@@ -1,5 +1,5 @@
 import type { Finding, MdmLevel, MdmSummary } from '@/types';
-import { EM_CODES } from './labels';
+import { CASE } from '@/data';
 import { isLive } from './finding';
 
 /**
@@ -18,5 +18,5 @@ export function summarize(findings: Finding[], includeAi = false): MdmSummary {
   const prob = max('problems');
   const risk = max('risk');
   const overall = [prob, data, risk].sort((a, b) => b - a)[1] as MdmLevel;
-  return { prob, data, risk, c1, overall, code: EM_CODES[overall] };
+  return { prob, data, risk, c1, overall, code: CASE.levelCodes[overall] };
 }

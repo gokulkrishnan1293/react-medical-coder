@@ -6,7 +6,7 @@ import { ui } from '@/stores/uiStore';
 import { flash } from '@/features/record-viewer/navigation';
 import { useAddFindingStore } from './store';
 
-export type NewFinding = Pick<Finding, 'type'> & Partial<Pick<Finding, 'code' | 'desc' | 'mdm' | 'note'>>;
+export type NewFinding = Pick<Finding, 'type'> & Partial<Pick<Finding, 'code' | 'desc' | 'mdm' | 'mar' | 'note'>>;
 
 /** Adds a coder finding for the current selection and flies its chip into the notepad. */
 export function addFinding(spec: NewFinding) {

@@ -4,7 +4,7 @@ import { scrollerRef, evidenceEl } from '@/lib/dom';
 import { clamp, cn } from '@/lib/utils';
 import { useScrollTick } from '@/hooks/useScrollTick';
 import { Button, Icon, IconButton, Kbd, StatusChip } from '@/components/ui';
-import { ELEMENT_LABEL, LEVELS, RouteTag, STATUS_LABEL, mdmTag, titleOf, useFindingsStore } from '@/features/findings';
+import { CommentField, ELEMENT_LABEL, LEVELS, MarDetail, RouteTag, STATUS_LABEL, TypeBadge, codeLabel, titleOf, useFindingsStore } from '@/features/findings';
 import { closeCard, keepCardOpen, scheduleCardClose } from '../navigation';
 import { useUiStore } from '@/stores/uiStore';
 
@@ -37,11 +37,12 @@ export function EvidenceCard({ f }: { f: Finding }) {
       onMouseLeave={() => { if (!pinned) scheduleCardClose(); }}
     >
       <div className="mb-2 flex items-center gap-2">
+        <TypeBadge type={f.type} />
         <StatusChip status={f.status} label={STATUS_LABEL[f.status]} />
         {f.source === 'ai' && f.conf && <span className="font-mono text-[11px] text-ink-3">{Math.round(f.conf * 100)}% confidence</span>}
         <IconButton size="sm" className="ml-auto" onClick={closeCard} aria-label="Close"><Icon.close size={14} /></IconButton>
       </div>
-      <div className="font-mono text-[17px] font-semibold tracking-tight">{f.code || mdmTag(f) || (f.type === 'time' ? 'Time' : 'Note')}</div>
+      <div className="font-mono text-[17px] font-semibold tracking-tight">{codeLabel(f)}</div>
       <div className="mt-0.5 text-[13px] leading-snug font-medium text-balance">{titleOf(f)}</div>
       {f.mdm && (f.code || f.type === 'mdm') && (
         <div className="mt-[7px] flex flex-wrap items-center gap-1.5 text-xs text-ink-2">
@@ -50,9 +51,11 @@ export function EvidenceCard({ f }: { f: Finding }) {
           {f.code ? ` · ${f.mdm.label}` : ''}
         </div>
       )}
+      {f.mar && <div className="mt-1.5"><MarDetail mar={f.mar} /></div>}
       {f.note && f.type !== 'note' && <div className="mt-[7px] text-xs leading-normal text-ink-2">{f.note}</div>}
       <blockquote className="mt-2.5 rounded-r-[5px] border-l-2 border-st bg-chrome px-2.5 py-[7px] font-mono text-xs leading-normal">“{f.text}”</blockquote>
       <div className="mt-2 flex items-center gap-1.5 text-[11.5px] text-ink-3">Page {f.page} · <RouteTag f={f} /></div>
+      {pinned && <CommentField f={f} className="mt-2.5" />}
       <div className="mt-[11px] flex flex-wrap gap-1.5">
         {f.status === 'ai' && (
           <>

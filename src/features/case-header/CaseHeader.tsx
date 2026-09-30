@@ -1,4 +1,4 @@
-import { CASE } from '@/data';
+import { CASE, CLAIM, ENCOUNTER } from '@/data';
 import { cn } from '@/lib/utils';
 import { Icon, Kbd } from '@/components/ui';
 import { useFindings } from '@/features/findings';
@@ -37,10 +37,10 @@ export function CaseHeader() {
       <div className="min-w-0">
         <div className="flex flex-wrap items-baseline gap-2.5">
           <span className="rounded bg-accent-soft px-1.5 py-1 font-mono text-[11px] leading-none font-semibold tracking-[0.03em] text-accent">{CASE.id}</span>
-          <span className="text-[15px] font-bold tracking-tight">{CASE.patient}</span>
-          <span className="font-mono text-xs text-ink-3">MRN {CASE.mrn}</span>
+          <span className="text-[15px] font-bold tracking-tight">{CASE.stage}</span>
+          <span className="text-xs text-ink-3">received {CASE.received}</span>
         </div>
-        <div className="mt-[3px] text-xs text-ink-2">{CASE.payer} · Claim {CASE.claim} · DOS {CASE.dos}</div>
+        <div className="mt-[3px] text-xs text-ink-2">{CASE.payer} · {ENCOUNTER.setting} · Claim <span className="font-mono">{CLAIM.id}</span></div>
       </div>
       <div className="grid grid-cols-[auto_auto] items-baseline gap-x-2 max-[760px]:hidden" title={`${CASE.carc}: ${CASE.carcText}`}>
         <span className="text-[10.5px] tracking-[0.07em] text-ink-3 uppercase">Billed → paid</span>
@@ -51,7 +51,7 @@ export function CaseHeader() {
       </div>
       <div className="inline-flex items-center gap-1.5 rounded-md bg-add-fill px-[9px] py-[5px] text-xs text-add">
         <Icon.cal size={14} />
-        <span><b className="font-semibold">{CASE.stage}</b> due {CASE.due} · {CASE.daysLeft} days</span>
+        <span>Decision due <b className="font-semibold">{CASE.due}</b> · {CASE.daysLeft} days</span>
       </div>
       <div className="ml-auto flex flex-wrap gap-1 max-[760px]:ml-0 max-[760px]:w-full max-[760px]:justify-between">
         <Toggle pressed={view.spot} onClick={toggleSpot} title="Spotlight (S): dim everything except marked evidence"><Icon.spot size={15} /><span className={label}>Spotlight</span></Toggle>

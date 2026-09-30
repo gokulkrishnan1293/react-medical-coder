@@ -1,4 +1,4 @@
-import type { Finding } from '@/types';
+import type { Finding, Route } from '@/types';
 import { BLOCKS, CLAIM_CODES } from '@/data';
 import { ELEMENT_SHORT, LEVELS_SHORT } from './labels';
 
@@ -10,25 +10,28 @@ export function mdmTag(f: Finding): string {
   return f.mdm.el === 'data' ? `DATA·C${f.mdm.cat}` : `${ELEMENT_SHORT[f.mdm.el]}·${LEVELS_SHORT[f.mdm.level ?? 0]}`;
 }
 
-/** Short tag drawn above the evidence box, e.g. "E11.65 · PROB·H". */
+/** Short tag drawn above the evidence box, e.g. "E11.10 · PROB·H" or "J2405 · MAR". */
 export function tagOf(f: Finding): string {
   const parts: string[] = [];
   if (f.code) parts.push(f.code);
   if (f.mdm) parts.push(mdmTag(f));
+  if (f.type === 'mar') parts.push('MAR');
+  if (f.type === 'intervention') parts.push('INTV');
   if (f.type === 'time') parts.push('TIME');
   if (f.type === 'note') parts.push('NOTE');
   return parts.join(' · ');
 }
 
+/** Main label of a finding in lists: its code, else its MDM tag or type. */
 export function codeLabel(f: Finding): string {
-  return f.code || mdmTag(f) || (f.type === 'time' ? 'TIME' : 'NOTE');
+  return f.code || mdmTag(f) || { intervention: 'INTV', time: 'TIME', note: 'NOTE' }[f.type as string] || f.type.toUpperCase();
 }
 
-export function routeOf(f: Finding) {
-  if (f.status === 'rejected') return 'excluded' as const;
-  if (f.type === 'time' || f.type === 'note') return 'info' as const;
-  if (f.code && !CLAIM_CODES.has(f.code)) return 'notOnClaim' as const;
-  return 'onClaim' as const;
+export function routeOf(f: Finding): Route {
+  if (f.status === 'rejected') return 'excluded';
+  if (f.type === 'note') return 'note';
+  if (!f.code) return 'support';
+  return CLAIM_CODES.has(f.code) ? 'onClaim' : 'notOnClaim';
 }
 
 export function titleOf(f: Finding): string {

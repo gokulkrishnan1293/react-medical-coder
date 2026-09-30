@@ -6,7 +6,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { RAIL_W, useNotepadStore } from '../store';
 import { startPointerDrag } from '../usePointerDrag';
 import { NotepadHeader } from './NotepadHeader';
-import { NotesBody } from './NotesBody';
+import { NotepadBody } from './NotepadBody';
 
 /** Notepad docked as a right-hand panel: resizable width, collapsible to a tab. */
 export function DockedNotepad({ narrow }: { narrow: boolean }) {
@@ -61,7 +61,7 @@ export function DockedNotepad({ narrow }: { narrow: boolean }) {
               <IconButton size="sm" title="Collapse" aria-label="Collapse notes" onClick={() => np.set({ railCollapsed: true })}><Icon.right size={14} /></IconButton>
             )}
           </NotepadHeader>
-          <NotesBody />
+          <NotepadBody />
         </>
       )}
     </aside>

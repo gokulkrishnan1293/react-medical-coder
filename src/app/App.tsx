@@ -3,8 +3,7 @@ import { AnimatePresence, MotionConfig } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { useNarrow } from '@/hooks/useMediaQuery';
 import { useUiStore } from '@/stores/uiStore';
-import { CaseHeader } from '@/features/case-header';
-import { CheckpointBar } from '@/features/checkpoints';
+import { CaseHeader, PatientStrip } from '@/features/case-header';
 import { RecordViewer, EvidenceCard } from '@/features/record-viewer';
 import { ComposePanel, SelectionToolbar, useAddFindingStore } from '@/features/add-finding';
 import { DockHint, DockedNotepad, FloatingNotepad, NotesBubble, keepOnScreen, tuckForNarrow, useNotepadStore } from '@/features/notepad';
@@ -13,7 +12,7 @@ import { CommandPalette } from '@/features/command-palette';
 import { UndoToast, useFindings } from '@/features/findings';
 import { useKeyboardShortcuts } from '@/features/shortcuts';
 
-/** Layout shell: header, checkpoints, record + notepad, and floating layers. */
+/** Layout shell: header, patient strip, record + notepad, and floating layers. */
 export function App() {
   const narrow = useNarrow();
   const view = useUiStore((s) => s.view);
@@ -38,7 +37,7 @@ export function App() {
     <MotionConfig reducedMotion="user">
       <div className={cn('grid h-full grid-rows-[auto_auto_minmax(0,1fr)]', view.spot && 'spot', view.clean && 'clean')}>
         <CaseHeader />
-        <CheckpointBar />
+        <PatientStrip />
         <div className="flex min-h-0">
           <RecordViewer />
           {npMode === 'dock' && <DockedNotepad narrow={narrow} />}

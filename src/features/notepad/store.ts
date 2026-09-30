@@ -17,7 +17,10 @@ interface NotepadState extends Rect {
   /** Dragging near the right edge: show the dock hint. */
   snap: boolean;
   hover: boolean;
-  tab: 'view' | 'all';
+  /** Half-view tab. */
+  panel: 'findings' | 'claim';
+  /** Findings list: pages in view, or everything. */
+  scope: 'view' | 'all';
   /** Pages the "In view" list is frozen on, or null to follow the scroll. */
   pinnedPages: number[] | null;
   set: (patch: Partial<Omit<NotepadState, 'set'>>) => void;
@@ -52,7 +55,8 @@ export const useNotepadStore = create<NotepadState>((set, get) => ({
   railCollapsed: false,
   snap: false,
   hover: false,
-  tab: 'view',
+  panel: 'findings',
+  scope: 'view',
   pinnedPages: null,
   set: (patch) => set(patch),
   dock: () => set({ mode: 'dock', railCollapsed: false }),

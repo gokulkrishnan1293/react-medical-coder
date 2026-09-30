@@ -5,7 +5,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { MIN_H, MIN_W, useNotepadStore } from '../store';
 import { startPointerDrag } from '../usePointerDrag';
 import { NotepadHeader } from './NotepadHeader';
-import { NotesBody } from './NotesBody';
+import { NotepadBody } from './NotepadBody';
 
 type Dir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 
@@ -90,7 +90,7 @@ export function FloatingNotepad({ narrow }: { narrow: boolean }) {
         <IconButton size="sm" title="Close" aria-label="Close notepad" onClick={np.close}><Icon.close size={14} /></IconButton>
       </NotepadHeader>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-b-xl">
-        <NotesBody />
+        <NotepadBody />
       </div>
       {(Object.keys(HANDLE) as Dir[]).map((d) => (
         <div key={d} aria-hidden="true" onPointerDown={onResize(d)} className={cn('absolute z-2 touch-none', HANDLE[d])} />

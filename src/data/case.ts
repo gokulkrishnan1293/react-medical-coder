@@ -1,30 +1,37 @@
-import type { CaseInfo, ClaimLine } from '@/types';
+import type { CaseInfo, Encounter, Patient } from '@/types';
 
 /* Synthetic demo case. No real patient information. */
 
 export const CASE: CaseInfo = {
-  id: 'APL-2026-0418',
-  patient: 'DEMO, Alex',
-  mrn: 'TEST-004417',
+  id: 'RC-2026-1187',
+  stage: 'Reconsideration',
+  received: 'Sep 18',
+  due: 'Oct 18',
+  daysLeft: 18,
   payer: 'Northstar Health Plan',
-  claim: 'NSH-88213-07',
-  dos: '03/14/2026',
-  billed: '99215',
-  paid: '99214',
+  billed: '99285',
+  paid: '99284',
   carc: 'CARC 150',
   carcText: 'Payer deems the information submitted does not support this level of service.',
-  stage: 'Reconsideration',
-  due: 'Oct 23',
-  daysLeft: 24,
-  provider: 'Mei Chen, MD',
-  practice: 'Riverbend Internal Medicine Associates',
+  levelCodes: ['99282', '99283', '99284', '99285'],
 };
 
-export const CLAIM_LINES: ClaimLine[] = [
-  { code: '99215', desc: 'Office visit, established patient, high MDM', paid: '99214' },
-  { code: 'E11.65', desc: 'Type 2 diabetes mellitus with hyperglycemia', paid: 'E11.65' },
-  { code: 'I10', desc: 'Essential (primary) hypertension', paid: 'I10' },
-  { code: '83036', desc: 'Hemoglobin A1c', paid: '83036' },
-];
+export const PATIENT: Patient = {
+  name: 'DEMO, Jordan',
+  memberId: 'NSH-4471-0928',
+  mrn: 'ED-TEST-20931',
+  dob: '11/19/1978',
+  age: 47,
+  sex: 'F',
+  plan: 'Northstar PPO Gold',
+};
 
-export const CLAIM_CODES = new Set(CLAIM_LINES.map((c) => c.code));
+export const ENCOUNTER: Encounter = {
+  setting: 'Emergency department · facility',
+  facility: 'Meridian Regional Medical Center',
+  attending: 'Priya Raman, MD',
+  dos: '05/02/2026',
+  arrival: '02:14',
+  departure: '08:05',
+  disposition: 'Admitted to observation',
+};
