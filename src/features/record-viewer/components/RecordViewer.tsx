@@ -1,6 +1,6 @@
 import { type ReactNode, useMemo, useRef } from 'react';
 import type { Finding } from '@/types';
-import { PAGES } from '@/data';
+import { OVERLAY_AVAILABLE, PAGES } from '@/data';
 import { scrollerRef } from '@/lib/dom';
 import { useFindings } from '@/features/findings';
 import { useTextSelection } from '@/features/add-finding';
@@ -70,7 +70,7 @@ export function RecordViewer({ margin, tools }: Props) {
         Page {currentPage} of {PAGES.length}
       </div>
       {margin}
-      {source !== 'compare' && <PageSlider />}
+      {source !== 'compare' && OVERLAY_AVAILABLE && <PageSlider />}
       <div data-tour="record-tools" className="absolute top-2.5 left-[30px] z-6 flex items-center gap-1 rounded-full border border-line bg-chrome p-0.5 shadow-page max-[760px]:hidden">
         <ZoomControls side="record" />
         {tools && <><span className="mx-1 h-4 w-px bg-line" />{tools}</>}

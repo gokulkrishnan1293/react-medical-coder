@@ -14,6 +14,9 @@ export function ReviewProgress() {
   const done = rows.length - open.length;
   const byType = open.reduce<Partial<Record<FindingType, number>>>((m, { lead }) => ({ ...m, [lead.type]: (m[lead.type] ?? 0) + 1 }), {});
 
+  if (!rows.length) {
+    return <span className="text-[12px] text-ink-3">No findings yet</span>;
+  }
   if (!open.length) {
     return (
       <span className="inline-flex items-center gap-1.5 rounded-[7px] bg-ok-fill px-2.5 py-1.5 text-[12px] font-semibold text-ok">

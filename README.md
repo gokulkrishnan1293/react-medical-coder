@@ -92,6 +92,7 @@ React 19 · TypeScript · Vite · Tailwind CSS v4 · Motion · zustand · React 
 ## Structure
 
 ```
+server/                Dev-server endpoint that saves review.json into the case folder
 src/
 ├─ app/                 Router (home, case), workbench shell (layout + floating layers)
 ├─ components/ui/       Shared building blocks: Button, Icon, Kbd, Modal, HoverTip, SegmentedTabs, StatusChip, Table
@@ -112,7 +113,8 @@ src/
 │  ├─ worklist/         Home screen: CLAIRE's suggestions accepted / modified / rejected / to review, your cases with search, today
 │  ├─ shortcuts/        Global keyboard shortcuts
 │  └─ tour/            Guided tour of every feature over the live screen (Tour button, ?, or ?tour in the URL)
-├─ data/                Synthetic ED case, record, page images and line layout, claim, findings, MDM and intervention rules
+├─ api/                 The only data access: load and autosave the review (review.json via the dev server, or the browser)
+├─ data/                Readers for case folders (cases/<id>/: case, claim, record.md, findings, images) and reference JSON (codes, MDM, interventions, user)
 ├─ hooks/               useMediaQuery, useScrollTick
 ├─ lib/                 Document positions, platform keys, shared refs, helpers
 ├─ stores/              Cross-feature UI state

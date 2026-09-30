@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "CLAIRE sample",
+  "findings": [
+    { "id": "d1", "page": 2, "text": "Acute chest pain with risk factors", "type": "dx", "code": "R07.9", "desc": "Chest pain, unspecified", "note": "ACS considered and ruled out with serial troponins and ECGs; HEART score 4.", "status": "confirmed", "conf": 0.93 },
+    { "id": "d1b", "page": 1, "text": "substernal chest pressure", "type": "dx", "code": "R07.9", "desc": "Chest pain, unspecified", "status": "confirmed", "conf": 0.86 },
+    { "id": "d2", "page": 1, "text": "Hypertension", "type": "dx", "code": "I10", "desc": "Essential (primary) hypertension", "status": "confirmed", "conf": 0.9 },
+
+    { "id": "s1", "page": 2, "text": "comprehensive metabolic panel", "type": "svc", "code": "80053", "desc": "Comprehensive metabolic panel", "status": "confirmed", "conf": 0.95 },
+    { "id": "s2", "page": 2, "text": "Ordered troponin", "type": "svc", "code": "84484", "desc": "Troponin, quantitative", "status": "confirmed", "conf": 0.92 },
+    { "id": "s3", "page": 2, "text": "CBC", "type": "svc", "code": "85025", "desc": "Complete blood count with automated differential", "status": "confirmed", "conf": 0.9 },
+    { "id": "s4", "page": 2, "text": "12-lead ECG independently interpreted by me", "type": "svc", "code": "93005", "desc": "Electrocardiogram, tracing only", "status": "confirmed", "conf": 0.91 },
+    { "id": "s4b", "page": 2, "text": "Repeat ECG at 3 hours", "type": "svc", "code": "93005", "desc": "Electrocardiogram, tracing only", "status": "confirmed", "conf": 0.84 },
+    { "id": "s5", "page": 2, "text": "Portable chest x-ray", "type": "svc", "code": "71045", "desc": "Radiologic examination, chest, single view", "status": "confirmed", "conf": 0.9 },
+    { "id": "i1", "page": 2, "text": "Placed on continuous cardiac monitoring", "type": "svc", "desc": "Continuous cardiac monitoring", "status": "confirmed", "conf": 0.94 },
+    { "id": "i2", "page": 2, "text": "Serial lab draws for troponin", "type": "svc", "desc": "Serial lab monitoring", "status": "confirmed", "conf": 0.87 },
+    { "id": "i3", "page": 2, "text": "IV access established 19:50", "type": "svc", "desc": "Peripheral IV access", "status": "confirmed", "conf": 0.88 },
+
+    { "id": "m1", "page": 2, "text": "20:20 | Morphine sulfate | 2 mg | IV push | R. Singh, RN", "type": "mar", "code": "J2270", "desc": "Morphine sulfate injection, up to 10 mg",
+      "mar": { "time": "20:20", "drug": "Morphine sulfate", "dose": "2 mg", "route": "IV push", "units": 1 }, "status": "confirmed", "conf": 0.93 },
+
+    { "id": "r1", "page": 2, "text": "Discussed with cardiology (Dr. Lin)", "type": "doc", "docKind": "externalDiscussion", "desc": "Discussion with external physician", "status": "confirmed", "conf": 0.89 }
+  ]
+}

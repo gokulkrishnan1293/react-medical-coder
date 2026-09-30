@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "NSH-ED-55341-01",
+  "source": "ERDM",
+  "form": "UB-04 (837I)",
+  "billType": "0131",
+  "patient": {
+    "name": "TEST, AVERY",
+    "dob": "07/22/1994"
+  },
+  "dos": "05/14/2026",
+  "reasonDx": "J45.901",
+  "dx": [
+    {
+      "pointer": "A",
+      "code": "J45.901",
+      "desc": "Unspecified asthma with (acute) exacerbation",
+      "principal": true
+    }
+  ],
+  "lines": [
+    {
+      "line": 1,
+      "rev": "0450",
+      "code": "99285",
+      "desc": "Emergency department visit, high complexity",
+      "kind": "svc",
+      "units": 1,
+      "dxPointers": "A",
+      "charge": 1850,
+      "paidCode": "99284",
+      "paidUnits": 1
+    },
+    {
+      "line": 2,
+      "rev": "0412",
+      "code": "94640",
+      "desc": "Inhalation treatment for airway obstruction",
+      "kind": "svc",
+      "units": 3,
+      "dxPointers": "A",
+      "charge": 270,
+      "paidCode": "94640",
+      "paidUnits": 3
+    },
+    {
+      "line": 3,
+      "rev": "0260",
+      "code": "96374",
+      "desc": "IV push, single or initial drug",
+      "kind": "svc",
+      "units": 1,
+      "dxPointers": "A",
+      "charge": 285,
+      "paidCode": "96374",
+      "paidUnits": 1
+    },
+    {
+      "line": 4,
+      "rev": "0636",
+      "code": "J2930",
+      "desc": "Methylprednisolone sodium succinate injection, up to 125 mg",
+      "kind": "drug",
+      "units": 1,
+      "dxPointers": "A",
+      "charge": 42,
+      "paidCode": "J2930",
+      "paidUnits": 1
+    }
+  ]
+}

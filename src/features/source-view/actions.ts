@@ -1,8 +1,11 @@
 import { scrollerRef } from '@/lib/dom';
 import { readAnchor, writeAnchor } from '@/lib/docPosition';
 import { ui, useUiStore, type SourceMode } from '@/stores/uiStore';
+import { OVERLAY_AVAILABLE } from '@/data';
 
-const ORDER: SourceMode[] = ['stage', 'compare', 'overlay'];
+/** The views this case offers: no overlay when it has real page images but no line boxes. */
+export const SOURCE_MODES: SourceMode[] = OVERLAY_AVAILABLE ? ['stage', 'compare', 'overlay'] : ['stage', 'compare'];
+const ORDER = SOURCE_MODES;
 
 export const VIEW_LABEL: Record<SourceMode, string> = {
   stage: 'Reading view',
@@ -12,7 +15,7 @@ export const VIEW_LABEL: Record<SourceMode, string> = {
 
 /** Switch how the original shows, staying on the same spot of the record. */
 export function setSourceMode(mode: SourceMode) {
-  if (ui().source === mode) return;
+  if (ui().source === mode || !ORDER.includes(mode)) return;
   const sc = scrollerRef.current;
   const at = sc && readAnchor(sc);
   ui().set({ source: mode, peek: false });

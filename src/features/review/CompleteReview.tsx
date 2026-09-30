@@ -38,7 +38,7 @@ export function CompleteReview({ openIssues }: { openIssues: number }) {
   const submit = () => { complete(draft); setOpen(false); };
   return (
     <div ref={box} data-tour="complete" className="relative">
-      <Button variant="primary" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="py-1">
+      <Button variant="primary" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="py-1 whitespace-nowrap">
         <Icon.check size={14} sw={2.2} />Complete review
       </Button>
       {open && (

@@ -39,7 +39,6 @@ function StatusCell({ w }: { w: WorkItem }) {
 
 /**
  * The worklist. A row opens its case; a case another reviewer has open is locked and cannot be opened.
- * Cases whose data is not loaded in this prototype open a notice instead of the workbench.
  */
 export function WorkTable({ items }: { items: WorkItem[] }) {
   const navigate = useNavigate();

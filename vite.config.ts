@@ -3,9 +3,12 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath, URL } from 'node:url';
+import { reviewApi } from './server/reviewApi';
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), reviewApi()],
+  // saved reviews are written while the app runs; they are data, not source, so they never trigger a reload
+  server: { watch: { ignored: ['**/src/data/cases/*/review.json', '**/src/data/cases/*/review.json.tmp'] } },
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

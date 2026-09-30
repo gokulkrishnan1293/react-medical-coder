@@ -209,6 +209,8 @@ export interface WorkItem {
   outcome?: Outcome;
   /** Minutes spent reviewing so far (all of it, once completed). */
   minutes?: number;
+  /** Those minutes by day (YYYY-MM-DD), for the time-by-day chart. */
+  minutesByDay?: Record<string, number>;
   /** What happened to CLAIRE's suggestions on this case, counted per code. */
   claire?: ClaireTally;
   /** The case's record and findings are loaded in this prototype. */
@@ -226,4 +228,25 @@ export interface ClaireTally {
   pending: number;
   /** Findings the reviewer added that CLAIRE did not suggest. */
   added: number;
+}
+
+/** Fields of one of CLAIRE's findings that a review can change. */
+export type FindingDecision = { [K in 'status' | 'code' | 'desc' | 'editedFrom' | 'editedFromDesc' | 'page' | 'text' | 'movedFrom' | 'comment']?: Finding[K] | null };
+
+/**
+ * The reviewer's work on one case (cases/<id>/review.json): only what differs from CLAIRE's findings.json,
+ * the findings the reviewer added, and the review itself. CLAIRE's files are never changed.
+ */
+export interface SavedReview {
+  schemaVersion: 1;
+  caseId: string;
+  /** Set by the server on each save. */
+  revision: number;
+  savedAt: string;
+  /** timeByDay: seconds spent in the workbench on each day (YYYY-MM-DD). */
+  review: { status: 'inProgress' | 'completed'; comment: string; completedAt: string | null; timeByDay: Record<string, number> };
+  /** Changes to CLAIRE's findings, by finding ID. `null` means the field was cleared. */
+  decisions: Record<string, FindingDecision>;
+  /** Findings the reviewer added, without their block (found again from page and text on load). */
+  added: Omit<Finding, 'block'>[];
 }

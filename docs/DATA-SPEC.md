@@ -9,6 +9,8 @@
 
 Today every case detail is TypeScript in `src/data/` and nothing survives a reload. This spec moves the case into a **case folder** (the record as Markdown, page images, claim and CLAIRE's findings as JSON), loads it through **one data-access module** that has the same shape as the future backend API, and **saves the reviewer's work to the file system** so it survives a page refresh.
 
+> **Built so far (30 Sep 2026):** case folders live in `src/data/cases/<id>/` (`case.json`, `claim.json`, `record.md`, `findings.json`, `images/`; how-to in `src/data/cases/README.md`). They are read at build time with `import.meta.glob`; the open case comes from `/cases/<id>` when the page loads, so opening another case reloads the page. `record.md` is parsed by `src/data/markdown.ts`. Reference tables are JSON in `src/data/reference/` (codes, MDM, interventions, user). **Saving is built:** `src/api/` (the only data-access module) saves the review delta (§4.1 `SavedReview`, simplified: no `base` hashes or `orphans` yet) through the dev-server plugin `server/reviewApi.ts` to `cases/<id>/review.json`, or to `localStorage` in a static build; the saved review is loaded before the first render and autosaved 500 ms after each change. Not built yet: listing and locking through the API, conflict handling (§5.3), full rebase rules (§5.4), `layout.json`, `expected.json`.
+
 Three rules drive everything below:
 
 1. **The client never reads files.** It calls `api.*`. In development the API is a Vite middleware that reads and writes the case folder; later it is the real backend. Swapping them changes one file.
@@ -90,8 +92,7 @@ The extracted text of every page, in reading order. The format follows the Markd
 
 | Markdown | Block kind | Notes |
 |---|---|---|
-| `<!-- PageBreak -->` | — | Starts the next page. Page 1 starts at the top of the file |
-| `<!-- PageLabel="Triage & history" -->` | — | Our extension, anywhere on a page: its label in the page list and palette. Default `Page n` |
+| `<!-- Page: n -->` | — | Starts page n. Text before the first marker is page 1. The page is named after its first `##` heading (`<!-- Page: n \| Label -->` names it explicitly) |
 | `<!-- PageHeader="…" -->`, `<!-- PageFooter="…" -->`, `<!-- PageNumber="…" -->` | — | Emitted by Document Intelligence; ignored (not record text) |
 | A paragraph that is entirely bold: `**MERIDIAN REGIONAL MEDICAL CENTER**` | `org` | Facility name at the top of a form |
 | A paragraph that is entirely italic: `*Emergency Department · 400 Lakeview Parkway*` | `sub` | Address or sub-heading line |
@@ -109,7 +110,7 @@ Inline Markdown inside a block (`**`, `*`, `` ` ``, links) is stripped to plain 
 Example (start of page 1 and the MAR page):
 
 ````markdown
-<!-- PageLabel="Triage & history" -->
+<!-- Page: 1 -->
 **MERIDIAN REGIONAL MEDICAL CENTER**
 
 *Emergency Department · 400 Lakeview Parkway · Tel (555) 013-2200*
@@ -126,8 +127,7 @@ Date of service: 05/02/2026     Arrival: 02:14     Attending: Priya Raman, MD
 47-year-old woman with type 2 diabetes on metformin and glipizide presents with 2 days of
 nausea, repeated vomiting, diffuse abdominal pain, polyuria and increasing thirst.
 
-<!-- PageBreak -->
-<!-- PageLabel="Medication administration" -->
+<!-- Page: 4 -->
 ## MEDICATION ADMINISTRATION RECORD
 
 <!-- MAR -->
@@ -596,7 +596,7 @@ startAutosave(id, bundle);
 For the agent that writes or converts sample data:
 
 1. Make `cases/<id>/` with `case.json`, `claim.json`, `record.md`, `findings.json`, `README.md` (§2.4). Images and `layout.json` only if the case is about the original document.
-2. Write `record.md` with the §1.3 mapping. Keep page breaks where the source pages break; give each page a `PageLabel`.
+2. Write `record.md` with the §1.3 mapping. Start each page with `<!-- Page: n -->`, matching the source pages.
 3. Put the checkpoint-bar values in the record text on the pages named in `sourcePages` (§2.3).
 4. Write `findings.json`: copy each anchor's text straight out of the parsed block (run the validator to see block text), give every finding a stable `id` (`d1`, `s3`, `m2`… or a UUID, never positional), add every other place a code is documented as its own finding.
 5. Check every code against `codes.ts` and the rule files; add what is missing (§2.2).

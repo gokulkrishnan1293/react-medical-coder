@@ -1,5 +1,6 @@
 import type { RecordPage } from '@/types';
-import { PAGES } from './pages';
+import { CURRENT } from './caseFolders';
+import { CASE, PAGES } from './current';
 
 /*
  * Stand-ins for the original page images and their OCR line boxes. In production each page is an
@@ -90,7 +91,7 @@ function scan(page: RecordPage, lines: LayoutLine[], total: number): string {
 <defs><filter id="g"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${page.n}"/><feColorMatrix values="0 0 0 0 0.35  0 0 0 0 0.35  0 0 0 0 0.33  0 0 0 0.09 0"/></filter></defs>
 <rect width="100%" height="100%" fill="#f3f1ea"/>
 <g transform="rotate(${tilt} ${PAGE_W / 2} ${PAGE_H / 2})" font-family="${SCAN_FONT.replace(/'/g, '&apos;')}" fill="#262626">
-<text x="36" y="34" font-size="10" fill="#555">FROM: MERIDIAN RMC HIM   05/09/2026 10:42   FAX (555) 013-2291   P.${String(page.n).padStart(3, '0')}/${String(total).padStart(3, '0')}</text>
+<text x="36" y="34" font-size="10" fill="#555">FROM: HIM · ${CASE.id}   FAX   P.${String(page.n).padStart(3, '0')}/${String(total).padStart(3, '0')}</text>
 ${text.join('\n')}
 <text x="${PAGE_W - 64}" y="${PAGE_H - 36}" font-size="10" text-anchor="end" fill="#555">Page ${page.n} of ${total}</text>
 </g>
@@ -102,5 +103,16 @@ ${text.join('\n')}
 /** Line boxes for each page, keyed by page number. */
 export const PAGE_LAYOUT: Record<number, LayoutLine[]> = Object.fromEntries(PAGES.map((p) => [p.n, layout(p)]));
 
-/** Image source for each record page, keyed by page number. */
-export const PAGE_IMAGES: Record<number, string> = Object.fromEntries(PAGES.map((p) => [p.n, scan(p, PAGE_LAYOUT[p.n], PAGES.length)]));
+/** The case folder has its own page images (images/page-001.png …). */
+export const HAS_SCANS = Object.keys(CURRENT.images).length > 0;
+
+/**
+ * The overlay lays extracted words on the scan's line boxes. Those come from the synthetic layout, which only
+ * matches the synthetic scans, so real page images turn the overlay off (docs/DATA-SPEC.md §1.5).
+ */
+export const OVERLAY_AVAILABLE = !HAS_SCANS;
+
+/** Image source for each record page, keyed by page number: the case's own image, else a drawn scan. */
+export const PAGE_IMAGES: Record<number, string> = Object.fromEntries(
+  PAGES.map((p) => [p.n, CURRENT.images[p.n] ?? scan(p, PAGE_LAYOUT[p.n], PAGES.length)]),
+);

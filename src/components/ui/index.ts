@@ -7,3 +7,4 @@ export { SegmentedTabs } from './SegmentedTabs';
 export { Modal } from './Modal';
 export { HoverTip } from './HoverTip';
 export { Avatar } from './Avatar';
+export { ThemeToggle } from './ThemeToggle';

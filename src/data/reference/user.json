@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "note": "The signed-in reviewer.",
+  "me": {
+    "id": "gk",
+    "name": "Gokul K.",
+    "initials": "GK"
+  }
+}

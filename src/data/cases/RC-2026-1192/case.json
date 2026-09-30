@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "case": {
+    "id": "RC-2026-1192",
+    "stage": "Reconsideration",
+    "received": "Sep 20",
+    "due": "Oct 2",
+    "daysLeft": 2,
+    "payer": "Northstar Health Plan",
+    "billed": "99285",
+    "paid": "99284",
+    "levelCodes": [
+      "99282",
+      "99283",
+      "99284",
+      "99285"
+    ]
+  },
+  "patient": {
+    "name": "TEST, Avery",
+    "memberId": "NSH-6031-2290",
+    "mrn": "ED-TEST-40216",
+    "dob": "07/22/1994",
+    "age": 31,
+    "sex": "F",
+    "plan": "Northstar PPO Silver"
+  },
+  "encounter": {
+    "setting": "Emergency department \u00b7 facility",
+    "facility": "Meridian Regional Medical Center",
+    "attending": "Priya Raman, MD",
+    "dos": "05/14/2026",
+    "arrival": "06:05",
+    "departure": "10:40",
+    "disposition": "Discharged home",
+    "reason": "Wheezing and shortness of breath since last night."
+  },
+  "sourcePages": {
+    "name": 1,
+    "dob": 1,
+    "dos": 1,
+    "reason": 1
+  },
+  "worklist": {
+    "documentId": "MR-26-0048255",
+    "status": "new",
+    "receivedDaysAgo": 10,
+    "dueInDays": 2,
+    "sessions": []
+  }
+}

@@ -1,0 +1,267 @@
+{
+  "schemaVersion": 1,
+  "note": "PLACEHOLDER criteria. An intervention is met when any one condition matches an accepted service or MAR finding. code: finding code (also matches claim lines). text: regular expression on the finding text or description. route: regular expression on the MAR route. because: diagnoses that make it necessary (shown, not required).",
+  "rules": [
+    {
+      "id": "monitor",
+      "label": "Continuous cardiac monitoring",
+      "anyOf": [
+        {
+          "kind": "text",
+          "pattern": "cardiac monitoring",
+          "flags": "i",
+          "label": "Record says “cardiac monitoring”"
+        },
+        {
+          "kind": "code",
+          "codes": [
+            "93040",
+            "93041"
+          ],
+          "label": "Rhythm strip code 93040–93041"
+        }
+      ],
+      "because": {
+        "codes": [
+          "E87.5",
+          "E11.10"
+        ],
+        "label": "Arrhythmia risk: hyperkalemia or DKA"
+      }
+    },
+    {
+      "id": "infusion",
+      "label": "Titrated or continuous IV infusion",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "96365",
+            "96366"
+          ],
+          "label": "IV infusion code 96365–96366"
+        },
+        {
+          "kind": "route",
+          "pattern": "continuous",
+          "flags": "i",
+          "label": "MAR route is continuous"
+        },
+        {
+          "kind": "text",
+          "pattern": "infusion titrated",
+          "flags": "i",
+          "label": "Record says “infusion titrated”"
+        }
+      ],
+      "because": {
+        "codes": [
+          "E11.10"
+        ],
+        "label": "DKA needs an insulin drip"
+      }
+    },
+    {
+      "id": "fluids",
+      "label": "IV fluids (hydration)",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "96360",
+            "96361"
+          ],
+          "label": "IV hydration code 96360–96361"
+        },
+        {
+          "kind": "code",
+          "codes": [
+            "J7030",
+            "J7040",
+            "J7050"
+          ],
+          "label": "Saline given on the MAR"
+        }
+      ],
+      "because": {
+        "codes": [
+          "E86.0",
+          "E11.10"
+        ],
+        "label": "Dehydration or DKA"
+      }
+    },
+    {
+      "id": "ivMeds",
+      "label": "IV push or piggyback medication",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "96374",
+            "96375"
+          ],
+          "label": "IV push code 96374–96375"
+        },
+        {
+          "kind": "route",
+          "pattern": "IV (push|piggyback)",
+          "flags": "i",
+          "label": "MAR route is IV push or piggyback"
+        }
+      ]
+    },
+    {
+      "id": "poc",
+      "label": "Serial point-of-care testing",
+      "anyOf": [
+        {
+          "kind": "text",
+          "pattern": "point-of-care",
+          "flags": "i",
+          "label": "Record says “point-of-care”"
+        },
+        {
+          "kind": "code",
+          "codes": [
+            "82962"
+          ],
+          "label": "Glucose by device 82962"
+        }
+      ],
+      "because": {
+        "codes": [
+          "E11.10"
+        ],
+        "label": "DKA protocol"
+      }
+    },
+    {
+      "id": "labs",
+      "label": "Serial lab monitoring",
+      "anyOf": [
+        {
+          "kind": "text",
+          "pattern": "serial .*(panel|lab)",
+          "flags": "i",
+          "label": "Record says “serial … panels / labs”"
+        }
+      ],
+      "because": {
+        "codes": [
+          "E87.5",
+          "E11.10"
+        ],
+        "label": "Following potassium and anion gap"
+      }
+    },
+    {
+      "id": "reassess",
+      "label": "Serial reassessments",
+      "anyOf": [
+        {
+          "kind": "text",
+          "pattern": "reassess",
+          "flags": "i",
+          "label": "Record says “reassessed”"
+        }
+      ]
+    },
+    {
+      "id": "specimen",
+      "label": "Specimen collection and prep (lab)",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "80048",
+            "80053",
+            "82010",
+            "82803",
+            "85025",
+            "36415",
+            "36600"
+          ],
+          "label": "Lab test or draw code on the record"
+        },
+        {
+          "kind": "text",
+          "pattern": "venipuncture|blood (drawn|collected)|specimen",
+          "flags": "i",
+          "label": "Record says “specimen” or “blood drawn”"
+        }
+      ]
+    },
+    {
+      "id": "imaging",
+      "label": "Radiology prep",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "70450",
+            "71045",
+            "71046",
+            "74176",
+            "74177",
+            "76705"
+          ],
+          "label": "Imaging code: CT, x-ray or ultrasound"
+        },
+        {
+          "kind": "text",
+          "pattern": "x-ray|radiograph|\\bCT\\b|ultrasound|contrast",
+          "flags": "i",
+          "label": "Record mentions imaging"
+        }
+      ]
+    },
+    {
+      "id": "ivAccess",
+      "label": "IV access and IV medication administered",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "36000",
+            "36410"
+          ],
+          "label": "IV placement code 36000 / 36410"
+        },
+        {
+          "kind": "text",
+          "pattern": "IV access|IV (line|placed)|antecubital",
+          "flags": "i",
+          "label": "Record says “IV access”"
+        },
+        {
+          "kind": "route",
+          "pattern": "^IV",
+          "flags": "i",
+          "label": "A MAR entry was given IV"
+        }
+      ]
+    },
+    {
+      "id": "ecg",
+      "label": "ECG",
+      "anyOf": [
+        {
+          "kind": "code",
+          "codes": [
+            "93000",
+            "93005",
+            "93010"
+          ],
+          "label": "ECG code 93000–93010"
+        }
+      ],
+      "because": {
+        "codes": [
+          "E87.5"
+        ],
+        "label": "Hyperkalemia"
+      }
+    }
+  ]
+}

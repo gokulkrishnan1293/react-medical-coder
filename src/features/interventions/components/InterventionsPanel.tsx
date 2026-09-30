@@ -1,20 +1,24 @@
+import { useState } from 'react';
 import { Icon } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { jumpTo } from '@/features/record-viewer';
 import { useInterventions } from '../hooks';
-import { INTERVENTIONS_NOTE, InterventionBadge } from './InterventionBadge';
+import { INTERVENTIONS_NOTE, InterventionBadge, NotFoundToggle, relevant } from './InterventionBadge';
 
 const pages = (ids: { page: number }[]) => [...new Set(ids.map((f) => f.page))].map((p) => `p. ${p}`).join(', ');
 
-/** Notepad half view: each derived intervention, its status, and a way into its path. */
+/** Notepad half view: the interventions this case points to, their status, and a way into each path. */
 export function InterventionsPanel() {
   const all = useInterventions();
   const set = useUiStore((s) => s.set);
+  const [showAll, setShowAll] = useState(false);
+  const shown = relevant(all, showAll);
   return (
     <div className="flex flex-col gap-1 px-1.5 pt-2 pb-2">
       <p className="px-1.5 pb-1 text-[11px] leading-snug text-ink-3">{INTERVENTIONS_NOTE}</p>
-      {all.map((d) => (
+      {!shown.length && <p className="px-2.5 py-2 text-[12px] text-ink-2">No interventions found in this case's services or medications.</p>}
+      {shown.map((d) => (
         <div key={d.rule.id} className="group flex items-center gap-1 rounded-lg hover:bg-chrome-2">
           <button
             disabled={!d.evidence.length}
@@ -36,6 +40,7 @@ export function InterventionsPanel() {
           </button>
         </div>
       ))}
+      <NotFoundToggle hidden={all.length - relevant(all, false).length} showAll={showAll} onToggle={() => setShowAll((v) => !v)} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { CASE } from '@/data';
 import { cn } from '@/lib/utils';
-import { Icon, Kbd } from '@/components/ui';
+import { Icon, Kbd, ThemeToggle } from '@/components/ui';
 import { useFindings } from '@/features/findings';
 import { useNotepadStore } from '@/features/notepad';
 import { useUiStore } from '@/stores/uiStore';
@@ -64,6 +64,7 @@ export function CaseHeader() {
           <Icon.notes size={15} /><span className={label}>Notepad</span>
           <span className="rounded-full bg-ink px-1.5 py-[3px] font-mono text-[10.5px] leading-none font-semibold text-paper">{count}</span>
         </Toggle>
+        <ThemeToggle />
         <Toggle onClick={startTour} title="Take the tour (?)"><Icon.help size={15} /><span className={label}>Tour</span></Toggle>
         <Toggle onClick={() => set({ palette: true })} title="Command palette" className="border-line"><Icon.search size={15} /><Kbd>{modLabel('K')}</Kbd></Toggle>
       </div>

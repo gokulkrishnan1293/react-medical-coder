@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "id": "NSH-ED-55288-02",
+  "source": "ERDM",
+  "form": "UB-04 (837I)",
+  "billType": "0131",
+  "patient": {
+    "name": "DEMO, HARPER",
+    "dob": "03/08/1961"
+  },
+  "dos": "05/11/2026",
+  "reasonDx": "R07.9",
+  "dx": [
+    {
+      "pointer": "A",
+      "code": "R07.9",
+      "desc": "Chest pain, unspecified",
+      "principal": true
+    },
+    {
+      "pointer": "B",
+      "code": "I10",
+      "desc": "Essential (primary) hypertension"
+    }
+  ],
+  "lines": [
+    {
+      "line": 1,
+      "rev": "0450",
+      "code": "99285",
+      "desc": "Emergency department visit, high complexity",
+      "kind": "svc",
+      "units": 1,
+      "dxPointers": "AB",
+      "charge": 1850,
+      "paidCode": "99284",
+      "paidUnits": 1
+    },
+    {
+      "line": 2,
+      "rev": "0730",
+      "code": "93005",
+      "desc": "Electrocardiogram, tracing only",
+      "kind": "svc",
+      "units": 1,
+      "dxPointers": "A",
+      "charge": 140,
+      "paidCode": "93005",
+      "paidUnits": 1
+    },
+    {
+      "line": 3,
+      "rev": "0301",
+      "code": "80053",
+      "desc": "Comprehensive metabolic panel",
+      "kind": "svc",
+      "units": 1,
+      "dxPointers": "A",
+      "charge": 180,
+      "paidCode": "80053",
+      "paidUnits": 1
+    },
+    {
+      "line": 4,
+      "rev": "0324",
+      "code": "71045",
+      "desc": "Radiologic examination, chest, single view",
+      "kind": "svc",
+      "units": 1,
+      "dxPointers": "A",
+      "charge": 210,
+      "paidCode": "71045",
+      "paidUnits": 1
+    }
+  ]
+}

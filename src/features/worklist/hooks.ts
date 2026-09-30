@@ -1,9 +1,8 @@
 import { useMemo } from 'react';
-import type { ClaireTally, WorkItem } from '@/types';
-import { CASE, ME, WORKLIST, minutesByDay } from '@/data';
+import type { ClaireTally, Finding, WorkItem } from '@/types';
+import { CASE, CASE_FOLDERS, INITIAL_FINDINGS, ME, WORKLIST, minutesByDay } from '@/data';
 import { tallyReview, useOrderedFindings, useSummary } from '@/features/findings';
 import { useReviewStore } from '@/features/review';
-import { completedToday } from './filter';
 
 /**
  * The worklist, with the case loaded in this prototype reflecting its live review: its CLAIRE counts follow
@@ -15,13 +14,23 @@ export function useWorklist(): WorkItem[] {
   const completedAt = useReviewStore((s) => s.completedAt);
   const supports = useSummary().code;
   const ordered = useOrderedFindings();
-  const spent = useReviewStore((s) => Math.floor(s.spentSeconds / 60));
+  const timeByDay = useReviewStore((s) => s.timeByDay);
   return useMemo(() => {
     const claire = tallyReview(ordered);
     return WORKLIST.map((w) => {
-      if (w.id !== CASE.id) return w;
-      const live: WorkItem = { ...w, claire, minutes: (w.minutes ?? 0) + spent };
-      if (status !== 'completed') return live;
+      if (w.id !== CASE.id) {
+        // a case with CLAIRE's findings counts them as written; without, case.json's counts stand in
+        const raw = CASE_FOLDERS[w.id]?.findings;
+        return raw ? { ...w, claire: tallyReview(raw.map((f): Finding => ({ ...f, block: '', source: 'ai' }))) } : w;
+      }
+      // time in the workbench, saved by day, on top of the sessions case.json lists
+      const byDay = { ...w.minutesByDay };
+      for (const [k, sec] of Object.entries(timeByDay)) byDay[k] = (byDay[k] ?? 0) + sec / 60;
+      const minutes = Math.floor(Object.values(byDay).reduce((a, b) => a + b, 0));
+      const touched = ordered.length !== INITIAL_FINDINGS.length || ordered.some((f) => !INITIAL_FINDINGS.includes(f)) || Object.keys(timeByDay).length > 0;
+      const live: WorkItem = { ...w, claire, minutes, minutesByDay: byDay };
+      // started, or reopened after completing: in progress until completed again
+      if (status !== 'completed') return touched || w.status === 'completed' ? { ...live, status: 'inProgress', completedAt: undefined, outcome: undefined } : live;
       return {
         ...live,
         status: 'completed',
@@ -30,7 +39,7 @@ export function useWorklist(): WorkItem[] {
         outcome: supports === CASE.billed ? 'overturned' : 'upheld',
       };
     });
-  }, [status, completedAt, supports, ordered, spent]);
+  }, [status, completedAt, supports, ordered, timeByDay]);
 }
 
 /** CLAIRE counts summed over cases. */
@@ -40,13 +49,7 @@ export const sumTally = (items: WorkItem[]): ClaireTally =>
     { accepted: 0, modified: 0, rejected: 0, pending: 0, added: 0 },
   );
 
-/**
- * Minutes per day for the last 14 days. Today counts the cases completed today and the time on the open
- * case in this session; earlier days are synthetic until saved work exists (docs/DATA-SPEC.md).
- */
+/** Minutes per day for the last 14 days, from every case's sessions and the time saved on the open case. */
 export function useMinutesByDay(items: WorkItem[]) {
-  const session = useReviewStore((s) => Math.floor(s.spentSeconds / 60));
-  // the open case counts only its time in this session; its earlier minutes belong to earlier days
-  const done = items.filter((w) => completedToday(w) && w.id !== CASE.id).reduce((n, w) => n + (w.minutes ?? 0), 0);
-  return minutesByDay(done + session);
+  return minutesByDay(items).map((d) => ({ ...d, minutes: Math.floor(d.minutes) }));
 }

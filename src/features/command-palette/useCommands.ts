@@ -6,8 +6,10 @@ import { nextAiSuggestion, openFullNotes, stepFinding } from '@/features/shortcu
 import { useUiStore } from '@/stores/uiStore';
 import { modLabel } from '@/lib/platform';
 import { setZoom, stepZoom } from '@/features/zoom';
-import { cycleSourceMode, setSourceMode } from '@/features/source-view';
+import { SOURCE_MODES, cycleSourceMode, setSourceMode } from '@/features/source-view';
 import { startTour } from '@/features/tour';
+import { resetReview } from '@/api';
+import { THEME_LABEL, THEME_ORDER, useThemeStore } from '@/lib/theme';
 
 export interface Command {
   label: string;
@@ -27,7 +29,7 @@ export function getCommands(): Command[] {
     { label: 'Toggle clean read', key: 'C', run: ui.toggleClean },
     { label: 'Reading view', run: () => setSourceMode('stage') },
     { label: 'Compare with original side by side', run: () => setSourceMode('compare') },
-    { label: 'Overlay original on the record (slider)', run: () => setSourceMode('overlay') },
+    ...(SOURCE_MODES.includes('overlay') ? [{ label: 'Overlay original on the record (slider)', run: () => setSourceMode('overlay') }] : []),
     { label: 'Cycle original view', key: 'O', run: cycleSourceMode },
     { label: 'Zoom in record', key: '+', run: () => stepZoom('record', 1) },
     { label: 'Zoom out record', key: '−', run: () => stepZoom('record', -1) },
@@ -45,5 +47,7 @@ export function getCommands(): Command[] {
     { label: 'Minimize notepad', key: 'N', run: np.minimize },
     { label: 'Undo last change', key: modLabel('Z'), run: useFindingsStore.getState().undo },
     { label: 'Take the tour of every feature', key: '?', run: startTour },
+    ...THEME_ORDER.map((t) => ({ label: `Theme: ${THEME_LABEL[t]}${t === 'system' ? ' (follow the computer)' : ''}`, run: () => useThemeStore.getState().setTheme(t) })),
+    { label: 'Reset review: discard saved work and start from CLAIRE\'s findings', run: () => { if (window.confirm('Discard everything saved for this case and start again from CLAIRE\'s findings?')) void resetReview(); } },
   ];
 }

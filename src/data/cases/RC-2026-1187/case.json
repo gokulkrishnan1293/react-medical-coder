@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "case": {
+    "id": "RC-2026-1187",
+    "stage": "Reconsideration",
+    "received": "Sep 18",
+    "due": "Oct 18",
+    "daysLeft": 18,
+    "payer": "Northstar Health Plan",
+    "billed": "99285",
+    "paid": "99284",
+    "levelCodes": [
+      "99282",
+      "99283",
+      "99284",
+      "99285"
+    ]
+  },
+  "patient": {
+    "name": "DEMO, Jordan",
+    "memberId": "NSH-4471-0928",
+    "mrn": "ED-TEST-20931",
+    "dob": "11/19/1978",
+    "age": 47,
+    "sex": "F",
+    "plan": "Northstar PPO Gold"
+  },
+  "encounter": {
+    "setting": "Emergency department \u00b7 facility",
+    "facility": "Meridian Regional Medical Center",
+    "attending": "Priya Raman, MD",
+    "dos": "05/02/2026",
+    "arrival": "02:14",
+    "departure": "08:05",
+    "disposition": "Admitted to observation",
+    "reason": "\"I can't keep anything down.\" Vomiting and abdominal pain for 2 days."
+  },
+  "sourcePages": {
+    "name": 1,
+    "dob": 1,
+    "dos": 1,
+    "reason": 1
+  },
+  "worklist": {
+    "documentId": "MR-26-0048117",
+    "status": "inProgress",
+    "receivedDaysAgo": 12,
+    "dueInDays": 18,
+    "sessions": [
+      {
+        "daysAgo": 2,
+        "minutes": 7
+      },
+      {
+        "daysAgo": 1,
+        "minutes": 5
+      }
+    ]
+  }
+}

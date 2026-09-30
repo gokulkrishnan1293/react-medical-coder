@@ -1,5 +1,6 @@
+import { useEffect } from 'react';
 import { Link, Navigate, useParams } from 'react-router';
-import { CASE, ME, WORKLIST, reviewerById } from '@/data';
+import { CURRENT_CASE_ID, ME, WORKLIST, reviewerById } from '@/data';
 import { Avatar, Icon } from '@/components/ui';
 import { lockedFor } from '@/features/worklist';
 import { App } from './App';
@@ -18,30 +19,29 @@ function Notice({ title, children }: { title: string; children: React.ReactNode 
   );
 }
 
+/** Case data is read once per page load (src/data/caseFolders.ts), so opening another case loads the page again at its address. */
+function LoadCase() {
+  useEffect(() => { window.location.replace(window.location.pathname); }, []);
+  return <div className="grid h-full place-items-center bg-desk text-[13px] text-ink-3">Opening the case…</div>;
+}
+
 /**
- * /cases/:caseId. Opens the workbench for the case whose data is loaded; a case another reviewer has open
- * is refused here too, not only in the list, so a pasted link cannot get around the lock.
+ * /cases/:caseId. Opens the workbench for a case folder. A case another reviewer has open is refused here
+ * too, not only in the list, so a pasted link cannot get around the lock.
  */
 export function CaseRoute() {
   const { caseId } = useParams();
   const w = WORKLIST.find((x) => x.id === caseId);
   if (!w) return <Navigate to="/" replace />;
   if (lockedFor(w, ME.id)) {
-    const by = reviewerById(w.openBy!.reviewer)!;
+    const by = reviewerById(w.openBy!.reviewer);
     return (
       <Notice title={`${w.id} is locked`}>
-        <span className="mb-3 flex items-center justify-center gap-2"><Avatar r={by} size={28} /><b className="font-semibold text-ink">{by.name}</b> is reviewing it now.</span>
+        {by && <span className="mb-3 flex items-center justify-center gap-2"><Avatar r={by} size={28} /><b className="font-semibold text-ink">{by.name}</b> is reviewing it now.</span>}
         You can open it once they leave the case.
       </Notice>
     );
   }
-  if (w.id !== CASE.id) {
-    return (
-      <Notice title={`${w.id} has no record loaded`}>
-        Only {CASE.id} has its record and CLAIRE's findings in this prototype. Other cases open once they are
-        prepared as case folders (docs/DATA-SPEC.md).
-      </Notice>
-    );
-  }
+  if (w.id !== CURRENT_CASE_ID) return <LoadCase />;
   return <App />;
 }

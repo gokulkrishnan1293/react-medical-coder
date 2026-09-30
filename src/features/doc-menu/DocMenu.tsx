@@ -5,8 +5,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { useAddFindingStore, type ComposeType } from '@/features/add-finding';
 import { useFindingsStore } from '@/features/findings';
 import { setZoom, stepZoom } from '@/features/zoom';
-import { setSourceMode, VIEW_LABEL } from '@/features/source-view';
-import type { SourceMode } from '@/stores/uiStore';
+import { SOURCE_MODES, setSourceMode, VIEW_LABEL } from '@/features/source-view';
 import { closeDocMenu, showInOriginal, showInRecord } from './actions';
 
 interface Item {
@@ -49,7 +48,7 @@ export function DocMenu() {
   if (side === 'record') {
     if (at) entries.push({ label: 'Show this in the original', icon: <Icon.compare size={14} />, run: () => showInOriginal(at) });
     entries.push('sep');
-    (['stage', 'compare', 'overlay'] as SourceMode[]).forEach((m) =>
+    SOURCE_MODES.forEach((m) =>
       entries.push({ label: VIEW_LABEL[m], checked: source === m, run: () => setSourceMode(m) }));
   } else {
     if (at) entries.push({ label: 'Show this in the record', icon: <Icon.notes size={14} />, run: () => showInRecord(at) });

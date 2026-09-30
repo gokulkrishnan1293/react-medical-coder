@@ -39,6 +39,7 @@
   /* current status colour, set by .st-* */
   --c: var(--line);
   --cf: transparent;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {

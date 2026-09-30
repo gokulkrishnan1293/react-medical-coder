@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "CLAIRE demo",
+  "findings": [
+    {
+      "id": "d1",
+      "page": 1,
+      "text": "nausea, repeated vomiting",
+      "type": "dx",
+      "code": "R11.2",
+      "desc": "Nausea with vomiting, unspecified",
+      "status": "confirmed",
+      "conf": 0.9
+    },
+    {
+      "id": "d2",
+      "page": 5,
+      "text": "Diabetic ketoacidosis without coma, type 2 diabetes",
+      "type": "dx",
+      "code": "E11.10",
+      "desc": "Type 2 diabetes mellitus with ketoacidosis without coma",
+      "replaces": "E11.65",
+      "note": "Record documents DKA (anion gap 23, pH 7.21, beta-hydroxybutyrate 5.9). Claim lists E11.65.",
+      "status": "ai",
+      "conf": 0.94
+    },
+    {
+      "id": "d3",
+      "page": 5,
+      "text": "Acute kidney injury, prerenal",
+      "type": "dx",
+      "code": "N17.9",
+      "desc": "Acute kidney failure, unspecified",
+      "note": "Creatinine 1.9 from baseline 0.9.",
+      "status": "ai",
+      "conf": 0.91
+    },
+    {
+      "id": "d4",
+      "page": 5,
+      "text": "Hyperkalemia",
+      "type": "dx",
+      "code": "E87.5",
+      "desc": "Hyperkalemia",
+      "status": "ai",
+      "conf": 0.89
+    },
+    {
+      "id": "d5",
+      "page": 5,
+      "text": "Dehydration",
+      "type": "dx",
+      "code": "E86.0",
+      "desc": "Dehydration",
+      "status": "confirmed",
+      "conf": 0.93
+    },
+    {
+      "id": "d1b",
+      "page": 2,
+      "text": "nausea, vomiting",
+      "type": "dx",
+      "code": "R11.2",
+      "desc": "Nausea with vomiting, unspecified",
+      "status": "ai",
+      "conf": 0.84
+    },
+    {
+      "id": "d2b",
+      "page": 5,
+      "text": "Diabetic ketoacidosis, moderate",
+      "type": "dx",
+      "code": "E11.10",
+      "desc": "Type 2 diabetes mellitus with ketoacidosis without coma",
+      "replaces": "E11.65",
+      "note": "Assessment restates DKA and its severity.",
+      "status": "ai",
+      "conf": 0.92
+    },
+    {
+      "id": "d3b",
+      "page": 5,
+      "text": "acute kidney injury",
+      "type": "dx",
+      "code": "N17.9",
+      "desc": "Acute kidney failure, unspecified",
+      "status": "ai",
+      "conf": 0.88
+    },
+    {
+      "id": "d4b",
+      "page": 3,
+      "text": "Consistent with hyperkalemia",
+      "type": "dx",
+      "code": "E87.5",
+      "desc": "Hyperkalemia",
+      "note": "ECG read: peaked T waves.",
+      "status": "ai",
+      "conf": 0.86
+    },
+    {
+      "id": "s1",
+      "page": 3,
+      "text": "comprehensive metabolic panel",
+      "type": "svc",
+      "code": "80053",
+      "desc": "Comprehensive metabolic panel",
+      "status": "confirmed",
+      "conf": 0.95
+    },
+    {
+      "id": "s2",
+      "page": 3,
+      "text": "beta-hydroxybutyrate",
+      "type": "svc",
+      "code": "82010",
+      "desc": "Ketone bodies, quantitative (beta-hydroxybutyrate)",
+      "status": "confirmed",
+      "conf": 0.92
+    },
+    {
+      "id": "s3",
+      "page": 3,
+      "text": "venous blood gas",
+      "type": "svc",
+      "code": "82803",
+      "desc": "Blood gases",
+      "status": "confirmed",
+      "conf": 0.9
+    },
+    {
+      "id": "s4",
+      "page": 3,
+      "text": "12-lead ECG independently interpreted by me",
+      "type": "svc",
+      "code": "93005",
+      "desc": "Electrocardiogram, tracing only",
+      "status": "ai",
+      "conf": 0.9
+    },
+    {
+      "id": "s5",
+      "page": 4,
+      "text": "Ondansetron given by IV push over 2 minutes",
+      "type": "svc",
+      "code": "96374",
+      "desc": "IV push, single or initial drug",
+      "status": "confirmed",
+      "conf": 0.93
+    },
+    {
+      "id": "s6",
+      "page": 4,
+      "text": "Normal saline bolus infused 02:40–03:30 (50 minutes)",
+      "type": "svc",
+      "code": "96360",
+      "desc": "IV hydration, initial 31 min to 1 hour",
+      "status": "confirmed",
+      "conf": 0.88
+    },
+    {
+      "id": "s7",
+      "page": 4,
+      "text": "Insulin infusion started 03:50 and continued until transfer at 08:05",
+      "type": "svc",
+      "code": "96365",
+      "desc": "IV infusion, therapy, initial, up to 1 hour",
+      "note": "Insulin infusion ran 4 h 15 min. Would also support 96366 × 3.",
+      "status": "ai",
+      "conf": 0.87
+    },
+    {
+      "id": "m1",
+      "page": 4,
+      "text": "02:40 | Sodium chloride 0.9% bolus | 1000 mL | IV | K. Ortiz, RN",
+      "type": "mar",
+      "code": "J7030",
+      "desc": "Normal saline solution infusion, 1000 cc",
+      "mar": {
+        "time": "02:40",
+        "drug": "Sodium chloride 0.9% bolus",
+        "dose": "1000 mL",
+        "route": "IV",
+        "units": 1
+      },
+      "status": "confirmed",
+      "conf": 0.96
+    },
+    {
+      "id": "m2",
+      "page": 4,
+      "text": "02:42 | Ondansetron | 4 mg | IV push | K. Ortiz, RN",
+      "type": "mar",
+      "code": "J2405",
+      "desc": "Ondansetron HCl injection, per 1 mg",
+      "mar": {
+        "time": "02:42",
+        "drug": "Ondansetron",
+        "dose": "4 mg",
+        "route": "IV push",
+        "units": 4
+      },
+      "status": "confirmed",
+      "conf": 0.97
+    },
+    {
+      "id": "m3",
+      "page": 4,
+      "text": "03:35 | Sodium chloride 0.9% bolus | 1000 mL | IV | K. Ortiz, RN",
+      "type": "mar",
+      "code": "J7030",
+      "desc": "Normal saline solution infusion, 1000 cc",
+      "mar": {
+        "time": "03:35",
+        "drug": "Sodium chloride 0.9% bolus",
+        "dose": "1000 mL",
+        "route": "IV",
+        "units": 1
+      },
+      "status": "confirmed",
+      "conf": 0.96
+    },
+    {
+      "id": "m4",
+      "page": 4,
+      "text": "03:50 | Insulin regular infusion | 8 units/hr | IV continuous | K. Ortiz, RN",
+      "type": "mar",
+      "code": "J1815",
+      "desc": "Insulin injection, per 5 units",
+      "mar": {
+        "time": "03:50",
+        "drug": "Insulin regular infusion",
+        "dose": "8 units/hr",
+        "route": "IV continuous",
+        "units": 7
+      },
+      "note": "32 units total per nursing note = 7 billing units.",
+      "status": "ai",
+      "conf": 0.9
+    },
+    {
+      "id": "m5",
+      "page": 4,
+      "text": "04:20 | Potassium chloride | 20 mEq | IV piggyback | L. Park, RN",
+      "type": "mar",
+      "code": "J3480",
+      "desc": "Potassium chloride injection, per 2 mEq",
+      "mar": {
+        "time": "04:20",
+        "drug": "Potassium chloride",
+        "dose": "20 mEq",
+        "route": "IV piggyback",
+        "units": 10
+      },
+      "status": "ai",
+      "conf": 0.88
+    },
+    {
+      "id": "i1",
+      "page": 5,
+      "text": "Placed on continuous cardiac monitoring",
+      "type": "svc",
+      "desc": "Continuous cardiac monitoring",
+      "status": "confirmed",
+      "conf": 0.95
+    },
+    {
+      "id": "i2",
+      "page": 5,
+      "text": "Hourly point-of-care glucose and neuro checks",
+      "type": "svc",
+      "desc": "Serial point-of-care glucose and neuro checks",
+      "status": "ai",
+      "conf": 0.9
+    },
+    {
+      "id": "i3",
+      "page": 5,
+      "text": "Insulin infusion titrated per DKA protocol",
+      "type": "svc",
+      "desc": "Titrated IV infusion",
+      "status": "ai",
+      "conf": 0.88
+    },
+    {
+      "id": "i4",
+      "page": 5,
+      "text": "Reassessed at 04:30 and 06:30",
+      "type": "svc",
+      "desc": "Serial reassessments",
+      "status": "ai",
+      "conf": 0.84
+    },
+    {
+      "id": "i5",
+      "page": 3,
+      "text": "Serial basic metabolic panels ordered every 2 hours",
+      "type": "svc",
+      "desc": "Serial lab monitoring",
+      "status": "ai",
+      "conf": 0.82
+    },
+    {
+      "id": "r1",
+      "page": 5,
+      "text": "Decision made to admit to the observation step-down unit",
+      "type": "doc",
+      "docKind": "hospitalization",
+      "desc": "Decision regarding hospitalization",
+      "status": "ai",
+      "conf": 0.92
+    },
+    {
+      "id": "r3",
+      "page": 5,
+      "text": "Discussed management with Dr. Evans",
+      "type": "doc",
+      "docKind": "externalDiscussion",
+      "desc": "Discussion of management with external physician",
+      "status": "ai",
+      "conf": 0.86
+    }
+  ]
+}

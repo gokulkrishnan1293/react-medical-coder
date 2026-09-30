@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "CLAIRE sample",
+  "findings": [
+    { "id": "d1", "page": 2, "text": "Acute asthma exacerbation, moderate to severe", "type": "dx", "code": "J45.901", "desc": "Unspecified asthma with (acute) exacerbation", "note": "Peak flow 38% of predicted, SpO2 91%, speaking in short phrases.", "status": "ai", "conf": 0.94 },
+    { "id": "d1b", "page": 1, "text": "worsening wheeze and dyspnea", "type": "dx", "code": "J45.901", "desc": "Unspecified asthma with (acute) exacerbation", "status": "ai", "conf": 0.82 },
+
+    { "id": "s1", "page": 2, "text": "three albuterol/ipratropium nebulizers", "type": "svc", "code": "94640", "desc": "Inhalation treatment for airway obstruction", "note": "Three treatments: 3 units.", "status": "ai", "conf": 0.92 },
+    { "id": "s2", "page": 2, "text": "Methylprednisolone 125 mg given by IV push over 2 minutes", "type": "svc", "code": "96374", "desc": "IV push, single or initial drug", "status": "ai", "conf": 0.9 },
+    { "id": "i1", "page": 2, "text": "Placed on continuous pulse oximetry and cardiac monitoring", "type": "svc", "desc": "Continuous cardiac monitoring", "status": "ai", "conf": 0.88 },
+    { "id": "i2", "page": 2, "text": "Reassessed after each treatment", "type": "svc", "desc": "Serial reassessments", "status": "ai", "conf": 0.9 },
+    { "id": "i3", "page": 2, "text": "IV access established 06:12", "type": "svc", "desc": "Peripheral IV access", "status": "ai", "conf": 0.87 },
+
+    { "id": "m1", "page": 2, "text": "06:15 | Albuterol/ipratropium nebulizer | 3 mL | Inhaled | M. Chen, RT", "type": "mar", "code": "J7620", "desc": "Albuterol/ipratropium, inhalation, per 3 mL",
+      "mar": { "time": "06:15", "drug": "Albuterol/ipratropium nebulizer", "dose": "3 mL", "route": "Inhaled", "units": 1 }, "status": "ai", "conf": 0.91 },
+    { "id": "m2", "page": 2, "text": "06:20 | Methylprednisolone | 125 mg | IV push | J. Ortiz, RN", "type": "mar", "code": "J2930", "desc": "Methylprednisolone sodium succinate injection, up to 125 mg",
+      "mar": { "time": "06:20", "drug": "Methylprednisolone", "dose": "125 mg", "route": "IV push", "units": 1 }, "status": "ai", "conf": 0.93 },
+    { "id": "m3", "page": 2, "text": "06:35 | Magnesium sulfate | 2 g | IV piggyback | J. Ortiz, RN", "type": "mar", "code": "J3475", "desc": "Magnesium sulfate injection, per 500 mg",
+      "mar": { "time": "06:35", "drug": "Magnesium sulfate", "dose": "2 g", "route": "IV piggyback", "units": 4 }, "status": "ai", "conf": 0.9 },
+    { "id": "m4", "page": 2, "text": "06:40 | Albuterol/ipratropium nebulizer | 3 mL | Inhaled | M. Chen, RT", "type": "mar", "code": "J7620", "desc": "Albuterol/ipratropium, inhalation, per 3 mL",
+      "mar": { "time": "06:40", "drug": "Albuterol/ipratropium nebulizer", "dose": "3 mL", "route": "Inhaled", "units": 1 }, "status": "ai", "conf": 0.91 },
+    { "id": "m5", "page": 2, "text": "07:05 | Albuterol/ipratropium nebulizer | 3 mL | Inhaled | M. Chen, RT", "type": "mar", "code": "J7620", "desc": "Albuterol/ipratropium, inhalation, per 3 mL",
+      "mar": { "time": "07:05", "drug": "Albuterol/ipratropium nebulizer", "dose": "3 mL", "route": "Inhaled", "units": 1 }, "status": "ai", "conf": 0.91 }
+  ]
+}

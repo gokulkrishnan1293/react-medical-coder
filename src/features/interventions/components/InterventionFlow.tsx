@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Background, Controls, Handle, Position, ReactFlow, type Edge, type Node, type NodeProps } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { useThemeStore } from '@/lib/theme';
 import type { Finding } from '@/types';
 import { CASE } from '@/data';
 import { cn } from '@/lib/utils';
@@ -130,8 +131,10 @@ function buildPath(d: DerivedIntervention): { nodes: Node[]; edges: Edge[] } {
 /** Flowchart of how one intervention was derived. Click a finding to see it in the record. */
 export function InterventionFlow({ d, onJump }: { d: DerivedIntervention; onJump: (id: string) => void }) {
   const { nodes, edges } = useMemo(() => buildPath(d), [d]);
+  const theme = useThemeStore((t) => t.theme);
   return (
     <ReactFlow
+      colorMode={theme}
       key={d.rule.id}
       nodes={nodes}
       edges={edges}

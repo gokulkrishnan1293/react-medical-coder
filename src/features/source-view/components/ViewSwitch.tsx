@@ -1,7 +1,7 @@
 import { Icon } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useUiStore, type SourceMode } from '@/stores/uiStore';
-import { setSourceMode, VIEW_LABEL } from '../actions';
+import { SOURCE_MODES, setSourceMode, VIEW_LABEL } from '../actions';
 
 const VIEWS: { mode: SourceMode; icon: keyof typeof Icon }[] = [
   { mode: 'stage', icon: 'stage' },
@@ -14,7 +14,7 @@ export function ViewSwitch() {
   const source = useUiStore((s) => s.source);
   return (
     <div role="radiogroup" aria-label="Original document view" className="flex items-center gap-0.5">
-      {VIEWS.map(({ mode, icon }) => {
+      {VIEWS.filter(({ mode }) => SOURCE_MODES.includes(mode)).map(({ mode, icon }) => {
         const I = Icon[icon];
         const on = source === mode;
         return (

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { ME } from '@/data';
-import { Avatar, Icon, Kbd } from '@/components/ui';
+import { Avatar, Icon, Kbd, ThemeToggle } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { sumTally, useMinutesByDay, useWorklist } from '../hooks';
 import { countByView, filterCases, type WorkView } from '../filter';
@@ -59,7 +59,7 @@ export function HomePage() {
           <div className="mb-4 flex items-center gap-2 text-[13px] font-bold tracking-tight">
             <span aria-hidden className="grid size-6 place-items-center rounded-md bg-accent font-mono text-[12px] text-accent-ink">C</span>
             CLAIRE
-            <span className="ml-auto flex items-center gap-2 font-normal text-ink-2 min-[1100px]:hidden"><Avatar r={ME} size={26} />{ME.name}</span>
+            <span className="ml-auto flex items-center gap-2 font-normal text-ink-2 min-[1100px]:hidden"><ThemeToggle /><Avatar r={ME} size={26} />{ME.name}</span>
           </div>
           <h1 id="worklist-title" className="text-[22px] font-bold tracking-tight">{greeting()}, {ME.name.split(' ')[0]}</h1>
           <p className="mt-0.5 text-[13px] text-ink-2">
@@ -106,12 +106,9 @@ export function HomePage() {
           </div>
 
           <WorkTable items={rows} />
-          <p className="mt-2 text-[11.5px] text-ink-3">
-            Only {items.filter((w) => w.available).map((w) => w.id).join(', ')} has its record loaded in this prototype.
-          </p>
         </section>
         <div className="flex flex-col gap-4">
-          <span className="flex items-center justify-end gap-2 text-[13px] text-ink-2 max-[1099px]:hidden"><Avatar r={ME} size={28} />{ME.name}</span>
+          <span className="flex items-center justify-end gap-2 text-[13px] text-ink-2 max-[1099px]:hidden"><ThemeToggle withLabel /><Avatar r={ME} size={28} />{ME.name}</span>
           <TodayPanel items={items} />
           <TimeChart items={items} />
         </div>

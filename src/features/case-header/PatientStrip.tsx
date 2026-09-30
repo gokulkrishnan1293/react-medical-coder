@@ -4,7 +4,7 @@ import { HoverTip, Icon } from '@/components/ui';
 import { cn } from '@/lib/utils';
 import { useFindings } from '@/features/findings';
 import { goPage } from '@/features/record-viewer';
-import { CompleteReview, ReviewStatusBadge } from '@/features/review';
+import { CompleteReview, ReviewStatusBadge, SaveStatus } from '@/features/review';
 import { checkFields, type FieldCheck, type FieldState } from './fieldChecks';
 import { ReviewProgress } from './ReviewProgress';
 
@@ -96,6 +96,7 @@ export function PatientStrip() {
       </div>
       {/* Right slot: review checkpoints, the review status, and completing the review */}
       <div data-slot="right" className="flex min-w-0 items-center justify-end gap-2">
+        <SaveStatus />
         <ReviewStatusBadge />
         <CompleteReview openIssues={checks.filter((c) => c.state !== 'verified').length} />
       </div>
