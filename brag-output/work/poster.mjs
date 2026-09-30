@@ -1,0 +1,13 @@
+import { chromium } from 'playwright';
+import fs from 'fs';
+import { routeFonts } from './fontroute.mjs';
+const b = await chromium.launch();
+const ctx = await b.newContext({ viewport: { width: 1920, height: 1080 } });
+await routeFonts(ctx, process.cwd() + '/fonts');
+const p = await ctx.newPage();
+await p.addInitScript(`window.META=${fs.readFileSync('meta.json', 'utf8')}`);
+await p.goto('file://' + process.cwd() + '/comp.html');
+await p.evaluate(() => window.ready());
+await p.evaluate(() => { window.render(7.3); document.getElementById('cursor').style.opacity = 0; });
+await p.screenshot({ path: '../brag.jpg', type: 'jpeg', quality: 92 });
+await b.close();

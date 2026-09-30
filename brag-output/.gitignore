@@ -1,0 +1,4 @@
+work/*
+!work/comp.html
+!work/*.mjs
+!work/meta.json
