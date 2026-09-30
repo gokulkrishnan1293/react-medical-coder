@@ -87,6 +87,10 @@ export const STEPS: TourStep[] = [
       <>
         This is where you review E/M and ER downcode reconsiderations and appeals. You read the medical record, check CLAIRE's AI findings
         against the claim, and decide whether the downcode is upheld or overturned.
+        <span className="mt-2 block">
+          It is built to keep you <b className="font-semibold text-ink">immersed in the record</b>: the document fills the screen, the evidence is marked
+          where you read it, and everything else comes to the page instead of taking you away from it.
+        </span>
         <span className="mt-2 block">The tour takes about two minutes. All patient data here is synthetic.</span>
       </>
     ),
@@ -128,6 +132,23 @@ export const STEPS: TourStep[] = [
       </>
     ),
     targets: at('[data-tour="record"]'),
+  },
+  {
+    id: 'immersive',
+    section: 'The idea',
+    title: 'Stay in the record',
+    body: (
+      <>
+        You never have to leave the page you are reading. The notepad follows the pages in view, so the findings beside you are the ones in
+        front of you. Evidence cards, Full notes and the command palette open over the record and close back to the same spot. From the
+        keyboard you can move through every finding and decide on it without touching the mouse.
+        <span className="mt-2 block">Next: a finding up close, then the ways to go deeper without leaving.</span>
+      </>
+    ),
+    // anchored on the notepad so the card sits beside it, over the edge of the record, and hides neither
+    targets: at('[aria-label="Notepad"], [aria-label="Notes"]', '[data-tour="record"]'),
+    setup: openNotepad,
+    keys: [[['J', 'K'], 'Next / previous finding'], [['A', 'R'], 'Accept / reject'], [['N'], 'Notepad out of the way'], [['Esc'], 'Close whatever is open']],
   },
   {
     id: 'evidence',
@@ -192,9 +213,9 @@ export const STEPS: TourStep[] = [
   },
   {
     id: 'lenses',
-    section: 'The record',
-    title: 'Spotlight and Clean read',
-    body: 'Spotlight dims everything except marked evidence, so the findings stand out. It is on now. Clean read does the opposite: it hides every mark so you can read the record as written.',
+    section: 'The idea',
+    title: 'Two ways to focus',
+    body: 'Two focus modes for staying in the document. Spotlight dims everything except marked evidence, so the findings stand out; it is on now. Clean read does the opposite: it hides every mark, so you read the record as written, with nothing between you and it. Press N as well to tuck the notepad away.',
     targets: at('[data-tour="lenses"]', '[data-tour="record"]'),
     placement: 'below',
     setup: () => ui().toggleSpot(),
@@ -255,6 +276,6 @@ export const STEPS: TourStep[] = [
     id: 'done',
     section: 'Finish',
     title: "You're ready",
-    body: 'Start with the AI suggestions: press J to go to the first finding. You can take this tour again from the Tour button in the header, or by pressing ?.',
+    body: 'Stay in the record and let the rest come to you. Start with the AI suggestions: press J to go to the first finding. You can take this tour again from the Tour button in the header, or by pressing ?.',
   },
 ];

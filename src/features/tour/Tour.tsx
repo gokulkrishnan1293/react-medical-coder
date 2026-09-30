@@ -1,7 +1,7 @@
 import { Fragment, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Button, Icon, Kbd } from '@/components/ui';
-import { clamp, cn } from '@/lib/utils';
+import { clamp, cn, prefersReducedMotion } from '@/lib/utils';
 import { useTourStore } from './store';
 import type { TourStep } from './steps';
 
@@ -78,6 +78,8 @@ const block = (e: React.SyntheticEvent) => { e.preventDefault(); e.stopPropagati
  */
 export function Tour() {
   const { steps, index, next, prev, stop } = useTourStore();
+  // leaving the screen mid-tour (e.g. opening a case) ends it without marking it seen
+  useEffect(() => () => { if (useTourStore.getState().index !== null) useTourStore.setState({ index: null }); }, []);
   if (index === null) return null;
   return <TourStepView key={index} step={steps[index]} i={index} n={steps.length} next={next} prev={prev} stop={stop} />;
 }
@@ -99,6 +101,14 @@ function TourStepView({ step, i, n, next, prev, stop }: { step: TourStep; i: num
 
   useEffect(() => {
     card.current?.focus({ preventScroll: true });
+    // on a screen that scrolls (home), bring the step's part into view if it is off screen
+    const first = (step.targets?.() ?? [])
+      .map((sel) => { try { return document.querySelector(sel); } catch { return null; } })
+      .find((el) => { const b = el?.getBoundingClientRect(); return !!b && b.width > 0 && b.height > 0; });
+    const r = first?.getBoundingClientRect();
+    if (first && r && (r.top < 0 || r.bottom > window.innerHeight)) {
+      first.scrollIntoView({ block: r.height > window.innerHeight * 0.8 ? 'start' : 'center', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+    }
     const onResize = () => setVp({ w: window.innerWidth, h: window.innerHeight });
     // capture, so the tour's keys win over the app's shortcuts; typing in a field is left alone
     const onKey = (e: KeyboardEvent) => {

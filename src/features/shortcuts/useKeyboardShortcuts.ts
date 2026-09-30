@@ -82,7 +82,7 @@ export function useKeyboardShortcuts(narrow: boolean) {
         case 's': ui.toggleSpot(); break;
         case 'c': ui.toggleClean(); break;
         case 'o': cycleSourceMode(); break;
-        case '?': if (useTourStore.getState().index === null) startTour(); break;
+        case '?': if (useTourStore.getState().index === null) startTour('case'); break;
       }
     };
     // releasing Space ends the overlay peek; so does leaving the window while it is held

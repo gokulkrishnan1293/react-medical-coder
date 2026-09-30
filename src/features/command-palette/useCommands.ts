@@ -46,7 +46,7 @@ export function getCommands(): Command[] {
     { label: 'Float notepad', run: np.float },
     { label: 'Minimize notepad', key: 'N', run: np.minimize },
     { label: 'Undo last change', key: modLabel('Z'), run: useFindingsStore.getState().undo },
-    { label: 'Take the tour of every feature', key: '?', run: startTour },
+    { label: 'Take the tour of every feature', key: '?', run: () => startTour('case') },
     ...THEME_ORDER.map((t) => ({ label: `Theme: ${THEME_LABEL[t]}${t === 'system' ? ' (follow the computer)' : ''}`, run: () => useThemeStore.getState().setTheme(t) })),
     { label: 'Reset review: discard saved work and start from CLAIRE\'s findings', run: () => { if (window.confirm('Discard everything saved for this case and start again from CLAIRE\'s findings?')) void resetReview(); } },
   ];

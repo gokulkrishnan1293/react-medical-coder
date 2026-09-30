@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { ME } from '@/data';
 import { Avatar, Icon, Kbd, ThemeToggle } from '@/components/ui';
+import { Tour, startTour, startTourIfNew, useTourStore } from '@/features/tour';
 import { cn } from '@/lib/utils';
 import { sumTally, useMinutesByDay, useWorklist } from '../hooks';
 import { countByView, filterCases, type WorkView } from '../filter';
@@ -36,6 +37,7 @@ export function HomePage() {
   const counts = countByView(items, ME.id);
   const byDay = useMinutesByDay(items);
   const search = useRef<HTMLInputElement>(null);
+  useEffect(() => startTourIfNew('home'), []);
 
   const update = (patch: Record<string, string>) => {
     const next = new URLSearchParams(params);
@@ -46,7 +48,9 @@ export function HomePage() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (e.key === '/' && t.tagName !== 'INPUT' && t.tagName !== 'TEXTAREA') { e.preventDefault(); search.current?.focus(); }
+      if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return;
+      if (e.key === '/') { e.preventDefault(); search.current?.focus(); }
+      if (e.key === '?' && useTourStore.getState().index === null) startTour('home');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -59,10 +63,10 @@ export function HomePage() {
           <div className="mb-4 flex items-center gap-2 text-[13px] font-bold tracking-tight">
             <span aria-hidden className="grid size-6 place-items-center rounded-md bg-accent font-mono text-[12px] text-accent-ink">C</span>
             CLAIRE
-            <span className="ml-auto flex items-center gap-2 font-normal text-ink-2 min-[1100px]:hidden"><ThemeToggle /><Avatar r={ME} size={26} />{ME.name}</span>
+            <span data-tour="home-tools-narrow" className="ml-auto flex items-center gap-1 font-normal text-ink-2 min-[1100px]:hidden"><ThemeToggle /><TourButton /><Avatar r={ME} size={26} /><span className="ml-1">{ME.name}</span></span>
           </div>
           <h1 id="worklist-title" className="text-[22px] font-bold tracking-tight">{greeting()}, {ME.name.split(' ')[0]}</h1>
-          <p className="mt-0.5 text-[13px] text-ink-2">
+          <p data-tour="home-summary" className="mt-0.5 w-fit text-[13px] text-ink-2">
             {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })} ·{' '}
             <span className="font-semibold text-ok">{counts.completed} completed</span> · <span className="font-semibold text-ai">{counts.inProgress} in progress</span> · {counts.new} to do
           </p>
@@ -72,6 +76,7 @@ export function HomePage() {
           <div className="mt-5"><DayTimeChart data={byDay} /></div>
 
           <h2 className="mt-6 text-[13.5px] font-semibold">Your cases</h2>
+          <div data-tour="home-find">
           <label className="mt-2 flex items-center gap-2 rounded-xl border border-line bg-paper px-3.5 shadow-page focus-within:border-accent">
             <Icon.search size={16} className="text-ink-3" />
             <input
@@ -104,15 +109,32 @@ export function HomePage() {
               </button>
             ))}
           </div>
+          </div>
 
-          <WorkTable items={rows} />
+          <div data-tour="home-table"><WorkTable items={rows} /></div>
         </section>
         <div className="flex flex-col gap-4">
-          <span className="flex items-center justify-end gap-2 text-[13px] text-ink-2 max-[1099px]:hidden"><ThemeToggle withLabel /><Avatar r={ME} size={28} />{ME.name}</span>
+          <span data-tour="home-tools" className="flex items-center justify-end gap-1 self-end text-[13px] text-ink-2 max-[1099px]:hidden"><ThemeToggle withLabel /><TourButton withLabel /><Avatar r={ME} size={28} className="ml-1" /><span className="ml-1">{ME.name}</span></span>
           <TodayPanel items={items} />
           <TimeChart items={items} />
         </div>
       </main>
+      <Tour />
     </div>
+  );
+}
+
+/** Starts the home screen's walkthrough (also ? on this screen). */
+function TourButton({ withLabel }: { withLabel?: boolean }) {
+  return (
+    <button
+      type="button"
+      onClick={() => startTour('home')}
+      title="Take the tour of this screen (?)"
+      aria-label="Take the tour of this screen"
+      className="inline-flex h-[30px] items-center gap-1.5 rounded-[7px] px-2 text-[12.5px] text-ink-2 hover:bg-chrome-2 hover:text-ink"
+    >
+      <Icon.help size={15} />{withLabel && <span>Tour</span>}
+    </button>
   );
 }

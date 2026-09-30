@@ -112,7 +112,7 @@ src/
 │  ├─ command-palette/  ⌘K / Ctrl+K
 │  ├─ worklist/         Home screen: CLAIRE's suggestions accepted / modified / rejected / to review, your cases with search, today
 │  ├─ shortcuts/        Global keyboard shortcuts
-│  └─ tour/            Guided tour of every feature over the live screen (Tour button, ?, or ?tour in the URL)
+│  └─ tour/            Guided tours over the live screen: one for Home, one for the case workbench (Tour button, ?, or ?tour in the URL)
 ├─ api/                 The only data access: load and autosave the review (review.json via the dev server, or the browser)
 ├─ data/                Readers for case folders (cases/<id>/: case, claim, record.md, findings, images) and reference JSON (codes, MDM, interventions, user)
 ├─ hooks/               useMediaQuery, useScrollTick
