@@ -1,0 +1,154 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Public+Sans:wght@400;500;600;700&display=swap">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:#17222d;font-family:'Public Sans',sans-serif}
+#view{position:absolute;inset:0;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1440px;height:810px;transform-origin:0 0;overflow:hidden}
+.bg,.ov{position:absolute;left:0;top:0;width:1440px;height:810px}
+#scrim{position:absolute;inset:0}
+.card{position:absolute;border-radius:12px;overflow:hidden;box-shadow:0 14px 36px rgba(12,22,32,.22),0 2px 6px rgba(12,22,32,.12)}
+.card img{display:block;width:100%;height:100%}
+#band{position:absolute;left:0;right:0;bottom:0;height:330px;background:linear-gradient(to bottom,rgba(12,22,32,0),rgba(12,22,32,.84) 62%)}
+#cap{position:absolute;left:120px;right:120px;bottom:84px;color:#fff}
+#kick{font-size:24px;font-weight:700;letter-spacing:.14em;color:#6fd0d9;margin-bottom:12px}
+#line{font-weight:700;font-size:58px;letter-spacing:-.02em;line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.25)}
+.kbd{display:inline-block;font-family:'IBM Plex Mono',monospace;font-weight:500;font-size:40px;padding:0 14px;border:2px solid rgba(255,255,255,.7);border-bottom-width:5px;border-radius:10px;transform:translateY(-6px)}
+#cursor{position:absolute;left:0;top:0;width:44px;height:44px;transform-origin:4px 4px}
+#dip{position:absolute;inset:0;background:#17222d}
+#outro{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff}
+.mark{display:flex;align-items:center;gap:22px;font-weight:700;font-size:44px;letter-spacing:.01em}
+.mark i{font-style:normal;display:grid;place-items:center;width:78px;height:78px;border-radius:18px;background:#0a6b74;color:#fff;font-size:42px}
+.big{margin-top:46px;font-size:104px;font-weight:700;letter-spacing:-.035em}
+.sub{margin-top:26px;font-size:40px;color:#a5b1bc;font-weight:500}
+.sub .kbd{color:#fff;font-size:32px;padding:0 13px;border-color:#4db6c0;border-radius:9px;transform:translateY(-3px);margin:0 4px}
+.o{opacity:0}
+</style></head><body>
+<div id="view">
+  <div id="stage">
+    <img class="bg" id="bgA"><img class="bg" id="bgB">
+    <img class="ov" id="ov0"><img class="ov" id="ov1">
+    <svg id="scrim" width="1440" height="810" viewBox="0 0 1440 810">
+      <defs><mask id="m"><rect width="1440" height="810" fill="white"/><g id="holes"></g></mask></defs>
+      <rect width="1440" height="810" fill="rgba(12,22,32,.42)" mask="url(#m)"/>
+      <g id="rings"></g>
+    </svg>
+    <div class="card" id="cardA"><img></div>
+    <div class="card" id="cardB"><img></div>
+  </div>
+  <div id="band"></div>
+  <div id="cap"><div id="kick"></div><div id="line"></div></div>
+  <svg id="cursor" viewBox="0 0 44 44"><path d="M4 3 L4 33 L12 26 L17.5 38.5 L23 36 L17.5 24 L28 24 Z" fill="#17222d" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/></svg>
+  <div id="dip"></div>
+  <div id="outro">
+    <div class="mark o" id="o1"><i>C</i>CLAIRE Review</div>
+    <div class="big o" id="o2">CLAIRE finds it. You decide.</div>
+    <div class="sub o" id="o3">Press <span class="kbd">?</span> in any case for the full tour.</div>
+  </div>
+</div>
+<script>
+const M=window.META, T=window.TL, STEPS=M.steps;
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)), lerp=(a,b,t)=>a+(b-a)*t;
+const ez=t=>{t=clamp(t,0,1);return t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2}, eo=t=>{t=clamp(t,0,1);return 1-Math.pow(1-t,3)};
+const prog=(t,a,b)=>clamp((t-a)/(b-a),0,1);
+const TR=0.6, OUT=T.out, END=T.end, NOCARD=new Set(T.nocard);
+const $=id=>document.getElementById(id);
+const at=(list,t)=>{let i=-1; for(let k=0;k<list.length;k++) if(list[k][0]<=t) i=k; return i;};
+
+// camera
+const FULL={s:4/3,x:0,y:0};
+const mixCam=(a,b,k)=>({s:Math.exp(lerp(Math.log(a.s),Math.log(b.s),k)),x:lerp(a.x,b.x,k),y:lerp(a.y,b.y,k)});
+function fit(x0,y0,x1,y1,maxS=2.1){
+  const sc=clamp(Math.min(1920/(x1-x0),780/(y1-y0)),4/3,maxS);
+  const X=(x0+x1)/2-960/sc, Y=(y0+y1)/2-400/sc;
+  return {s:sc,x:clamp(X,0,1440-1920/sc),y:clamp(Y,0,810-1080/sc)};
+}
+function camStep(s){ const m=STEPS[s], rs=[...m.boxes,...(NOCARD.has(+s)?[]:[m.card])];
+  const P=m.boxes.length?40:140;
+  return fit(Math.min(...rs.map(r=>r.x))-P,Math.min(...rs.map(r=>r.y))-P,Math.max(...rs.map(r=>r.x+r.w))+P,Math.max(...rs.map(r=>r.y+r.h))+P); }
+const HOOK=mixCam(FULL,camStep(0),0.45);
+function camOf(v,t){ if(v==='hook') return mixCam(FULL,camStep(0),0.45*ez(prog(t,0.8,6)));
+  if(typeof v==='string') return camStep(v.split(':')[1]);
+  return fit(v[0],v[1],v[0]+v[2],v[1]+v[3]); }
+function camAt(t){
+  const i=at(T.cam,t); const [t0,v]=T.cam[i]; let c=camOf(v,t);
+  if(i>0){ const pv=T.cam[i-1][1]; const from=pv==='hook'?HOOK:camOf(pv,t); c=mixCam(from,c,ez(prog(t,t0,t0+TR))); }
+  const nt=T.cam[i+1]?T.cam[i+1][0]:OUT, f=1+0.03*ez(prog(t,t0+TR,nt));
+  const cx=c.x+960/c.s, cy=c.y+540/c.s; c={s:c.s*f,x:cx-960/(c.s*f),y:cy-540/(c.s*f)};
+  if(t>OUT) c=mixCam(c,FULL,ez(prog(t,OUT,OUT+0.7)));
+  return c;
+}
+
+// tour lit boxes
+const rr=(b,r=8)=>{const {x,y,w,h}=b;r=Math.min(r,w/2,h/2);return `M${x+r} ${y}H${x+w-r}A${r} ${r} 0 0 1 ${x+w} ${y+r}V${y+h-r}A${r} ${r} 0 0 1 ${x+w-r} ${y+h}H${x+r}A${r} ${r} 0 0 1 ${x} ${y+h-r}V${y+r}A${r} ${r} 0 0 1 ${x+r} ${y}Z`};
+const zero=b=>({x:b.x+b.w/2,y:b.y+b.h/2,w:0,h:0});
+function mixB(A,B,k){const out=[];for(let i=0;i<Math.max(A.length,B.length);i++){let a=A[i],b=B[i];if(!a&&!b)continue;if(!a)a=zero(b);if(!b)b=zero(a);out.push({x:lerp(a.x,b.x,k),y:lerp(a.y,b.y,k),w:lerp(a.w,b.w,k),h:lerp(a.h,b.h,k)});}return out;}
+function boxesOf(s,t){ if(s==null) return []; let b=STEPS[s].boxes;
+  if(+s===7){ const q=eo(prog(t,T.bar7grow[0],T.bar7grow[1])); b=[b[0],...(q>0?mixB([zero(b[1])],[b[1]],q):[])]; }
+  return b; }
+
+// cursor
+function cursorAt(t){
+  const K=T.cur; if(!K.length||t<K[0][0]) return null;
+  // resolve holds
+  let px=null,py=null; const R=K.map(k=>{ if(k[1]==null) return [k[0],px,py,k[3]]; px=k[1];py=k[2]; return k; });
+  let i=-1; for(let k=0;k<R.length;k++) if(R[k][0]<=t) i=k;
+  const a=R[i], b=R[i+1]; if(a[1]==null) return null;
+  if(!b||b[1]==null) return [a[1],a[2],a[3]];
+  const lin=a[3]&&b[3], k=lin?prog(t,a[0],b[0]):ez(prog(t,a[0],b[0]));
+  return [lerp(a[1],b[1],k),lerp(a[2],b[2],k),a[3]&&b[3]];
+}
+
+function setImg(el,name){const src=`bg-${name}.png`; if(!el.getAttribute('src')||!el.getAttribute('src').endsWith(src)) el.src=src;}
+function setCard(el,s,op,dy){ if(s==null||op<=0||NOCARD.has(+s)){el.style.opacity=0;return}
+  const c=STEPS[s].card, img=el.firstElementChild, src=`card-${s}.png`; if(!img.getAttribute('src')?.endsWith(src))img.src=src;
+  Object.assign(el.style,{left:c.x+'px',top:(c.y+dy)+'px',width:c.w+'px',height:c.h+'px',opacity:op});}
+
+window.render=function(t){
+  const cam=camAt(t);
+  $('stage').style.transform=`scale(${cam.s}) translate(${-cam.x}px,${-cam.y}px)`;
+  // screens: a quick cut between states
+  const bi=at(T.bg,t), cur=T.bg[bi][1], prv=bi>0?T.bg[bi-1][1]:cur;
+  setImg($('bgA'),prv); setImg($('bgB'),cur); $('bgB').style.opacity=prog(t,T.bg[bi][0],T.bg[bi][0]+0.07);
+  // live selections, toolbars and the capture box
+  const ovs=[$('ov0'),$('ov1')]; ovs.forEach(o=>o.style.opacity=0); let oi=0;
+  for(const r of T.reveals){ if(t<r.t0||cur!==r.frm||oi>1) continue; const o=ovs[oi++]; setImg(o,r.to);
+    const [x,y,w,h]=r.r, p=prog(t,r.t0,r.t1);
+    if(r.mode==='wipe'){ o.style.clipPath=`inset(${y}px ${1440-(x+w*p)}px ${810-(y+h)}px ${x}px)`; o.style.opacity=1; }
+    else if(r.mode==='box'){ const q=ez(p); o.style.clipPath=`inset(${y}px ${1440-(x+w*q)}px ${810-(y+h*q)}px ${x}px)`; o.style.opacity=1; }
+    else { o.style.clipPath=`inset(${y}px ${1440-(x+w)}px ${810-(y+h)}px ${x}px)`; o.style.opacity=eo(p); } }
+  // tour: scrim, lit boxes, cards
+  const mi=at(T.mode,t), [mt,step]=T.mode[mi], pstep=mi>0?T.mode[mi-1][1]:null, k=ez(prog(t,mt,mt+TR));
+  let so = step!=null ? (mi===0?ez(prog(t,0.5,0.9)):(pstep==null?ez(prog(t,mt,mt+0.3)):1)) : (pstep!=null?1-ez(prog(t,mt,mt+0.3)):0);
+  if(t>OUT) so*=1-ez(prog(t,OUT,OUT+0.3));
+  $('scrim').style.opacity=so;
+  const bx=(step!=null?mixB(pstep!=null?boxesOf(pstep,mt):[],boxesOf(step,t),k):boxesOf(pstep,mt)).filter(b=>b.w>1);
+  $('holes').innerHTML=bx.map(b=>`<path d="${rr(b)}" fill="black"/>`).join('');
+  $('rings').innerHTML=bx.map(b=>`<path d="${rr(b)}" fill="none" stroke="#0a6b74" stroke-width="2"/>`).join('');
+  setCard($('cardA'),pstep,1-prog(t,mt,mt+0.15),0);
+  const inS=mi===0?0.85:mt+0.32, ci=eo(prog(t,inS,inS+0.28));
+  setCard($('cardB'),step,ci*(t>OUT?1-prog(t,OUT,OUT+0.15):1),(1-ci)*10);
+  // caption
+  const c=T.caps.find(c=>t>=c[0]-0.05&&t<c[1]+0.22);
+  if(c){ const a=eo(prog(t,c[0],c[0]+0.3)), z=1-prog(t,c[1],c[1]+0.2);
+    if($('line').dataset.v!==c[3]){$('line').innerHTML=c[3].replace(/<k>(.*?)<\/k>/g,'<span class="kbd">$1</span>');$('line').dataset.v=c[3];$('kick').textContent=c[2];}
+    $('cap').style.opacity=a*z; $('cap').style.transform=`translateY(${(1-a)*18}px)`; } else $('cap').style.opacity=0;
+  $('band').style.opacity=(t<OUT?1:1-prog(t,OUT,OUT+0.3))*clamp(t/0.3,0,1);
+  // cursor
+  const p=cursorAt(t), cu=$('cursor');
+  if(p&&t<OUT){ const vx=(p[0]-cam.x)*cam.s, vy=(p[1]-cam.y)*cam.s;
+    const pr=p[2]?1:T.clicks.reduce((m,ct)=>Math.max(m,1-Math.abs(t-ct)/0.09),0);
+    cu.style.opacity=clamp((t-T.cur[0][0])/0.2,0,1)*(1-prog(t,OUT-.3,OUT));
+    cu.style.transform=`translate(${vx-4}px,${vy-4}px) scale(${1-0.14*clamp(pr,0,1)})`; } else cu.style.opacity=0;
+  // outro
+  $('dip').style.opacity=ez(prog(t,OUT+0.3,OUT+0.75));
+  [[OUT+0.8,'o1'],[OUT+1.0,'o2'],[OUT+2.6,'o3']].forEach(([s,id])=>{const a=eo(prog(t,s,s+0.45)); const e=$(id); e.style.opacity=a*(1-prog(t,END-0.4,END)); e.style.transform=`translateY(${(1-a)*22}px)`;});
+  window._dec=Promise.all([...document.images].map(im=>im.decode().catch(()=>{})));
+};
+const IMGS=[...new Set([...T.bg.map(b=>`bg-${b[1]}.png`),...T.reveals.map(r=>`bg-${r.to}.png`),...Object.keys(STEPS).map(s=>`card-${s}.png`)])];
+window.ready=async()=>{ await document.fonts.ready; await Promise.all(IMGS.map(src=>new Promise(r=>{const im=new Image();im.onload=r;im.onerror=r;im.src=src;}))); };
+window.CUES=[...T.clicks.map(t=>[t,'click']),...T.keys.map(t=>[t,'key'])].sort((a,b)=>a[0]-b[0]);
+window.END=END;
+</script>
+</body></html>
