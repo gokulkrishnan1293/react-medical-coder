@@ -257,7 +257,7 @@ CLAIRE's pipeline (Document Intelligence → extraction agent) supplies the AI f
 5. ~~Completed reviews are not locked.~~ Decided 30 Sep: a completed review is read-only until reopened.
 6. **On-claim rows:** code is locked, but evidence can still be changed and findings accepted/rejected; confirm.
 7. **Nothing persists;** a reload resets the demo. Planned in [DATA-SPEC.md](DATA-SPEC.md) §5.
-8. **Incorrect-extraction flags** (mark text that OCR got wrong) were deferred.
+8. ~~Incorrect-extraction flags were deferred.~~ Built 30 Sep: formatting / wrong data / missed content flags, saved to `extraction.json`, with PDF and JSON reports.
 9. **Checkpoints for the left and right slots** of the bar are to be defined. The superseded MDM pill bar (Problems, Data, Risk, Level, DOS, AI review) is a candidate source.
 10. **Record/claim scope:** ED facility only today; office E/M, other visit families and inpatient are not modelled.
 
@@ -295,6 +295,10 @@ CLAIRE's pipeline (Document Intelligence → extraction agent) supplies the AI f
 | 30 Sep 2026 | Completed reviews are read-only (banner, no edit controls, every change refused with a notice) until **Reopen to edit** |
 | 30 Sep 2026 | React Router: home screen **Worklist** (`/`: search, views, locked cases another reviewer has open, today's completions), **Dashboard** (`/dashboard`: throughput, decisions by week, time per case, CLAIRE acceptance, team, due soon) and the workbench at `/cases/:caseId`. Mock data in `src/data/worklist.ts` |
 | 30 Sep 2026 | Worklist and dashboard merged into one **Home** screen with no top nav: cards for CLAIRE's suggestions (accepted, modified, rejected, to review, counted per code; the demo case live), three example cases with the same counts per case, and today's work. Dashboard charts and the due-soon list removed; `/dashboard` redirects home |
+| 30 Sep 2026 | Case tour walks the extraction flow on the open case: select words → ⚑ Flag, the flag editor (kinds, what the original shows, Capture from original), and the notepad's Extraction section with the PDF / JSON downloads |
+| 30 Sep 2026 | Built-in **Capture from original** for extraction flags: opens the flag's page of the original at the flag, drag a box (page arrows to move, Enter uses it, Esc cancels); cut from the page image at scan resolution and attached as the flag's screenshot |
+| 30 Sep 2026 | **Extraction flags**: select words → ⚑ Flag, or right-click *Flag missing content here* on the record or the original; kinds Formatting, Wrong data, Missed content; what the original shows, a comment, an optional pasted/dropped screenshot. Shown as a wavy underline (CSS Custom Highlight API) and a pin; own Extraction section in the notepad and Full notes; saved apart from the review in `cases/<id>/extraction.json`; downloadable as a PDF or JSON, each flag with its screenshot |
+| 30 Sep 2026 | Home split into **Overview** (CLAIRE's suggestions, time by day, today, time per case) and **Cases** (full-width list with search and status views), still one screen with no nav; `?tab=cases` |
 | 30 Sep 2026 | Separate **Home tour** (10 steps: where you stand, CLAIRE's suggestions, time by day, finding a case, the cases table, today, time per case, theme): starts on the first visit to Home, from its Tour button or ?; seen apart from the case tour. Tour steps scroll their part into view |
 | 30 Sep 2026 | Tour states the immersive idea (stay in the record; everything comes to the page): in the welcome, a new *Stay in the record* step, the focus modes and the close. Its finding and add-a-finding steps now use the open case's own data |
 | 30 Sep 2026 | Theme switch (System / Light / Dark) in the workbench header, on Home and in the palette; remembered per browser and applied before the page draws |

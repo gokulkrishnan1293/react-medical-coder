@@ -5,11 +5,13 @@ import { useUiStore, type FullNotesTab } from '@/stores/uiStore';
 import { FindingsTab } from './FindingsTab';
 import { ClaimTables } from '@/features/claim';
 import { InterventionsTab } from '@/features/interventions';
+import { ExtractionTab } from '@/features/extraction';
 
 const TABS: { key: FullNotesTab; label: string }[] = [
   { key: 'findings', label: 'Findings' },
   { key: 'claim', label: 'Claim' },
   { key: 'interventions', label: 'Interventions' },
+  { key: 'extraction', label: 'Extraction' },
 ];
 
 /** Full view of the review: every finding, the claim against the record, and the interventions derived from both. */
@@ -31,6 +33,7 @@ export function FullNotes({ tab }: { tab: FullNotesTab }) {
         {tab === 'findings' && <FindingsTab onJump={onJump} />}
         {tab === 'claim' && <ClaimTables onJump={onJump} />}
         {tab === 'interventions' && <InterventionsTab onJump={onJump} />}
+        {tab === 'extraction' && <ExtractionTab onClose={close} />}
       </div>
     </Modal>
   );

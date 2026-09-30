@@ -34,7 +34,8 @@ cases/
    ├─ layout.json      OCR line boxes for the overlay view (optional)
    ├─ expected.json    what the app must compute for this case: MDM, claim checks, interventions (§2.6)
    ├─ rules/           this case's own rule tables, replacing the shared ones (optional, §2.5)
-   └─ review.json      the reviewer's work — written by the app, never by hand
+   ├─ review.json      the reviewer's work — written by the app, never by hand
+   └─ extraction.json  the reviewer's extraction flags (`SavedExtraction`) — written by the app, apart from the review
 rules/
 ├─ interventions.json  shared intervention rules (§2.5)
 └─ mdm.json            shared MDM tables (§2.5)

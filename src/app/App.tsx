@@ -14,6 +14,7 @@ import { DocMenu } from '@/features/doc-menu';
 import { UndoToast, useFindings } from '@/features/findings';
 import { useKeyboardShortcuts } from '@/features/shortcuts';
 import { ReadOnlyBanner, useReviewTimer } from '@/features/review';
+import { CaptureOverlay, FlagComposer, useExtractionStore } from '@/features/extraction';
 import { Tour, startTourIfNew } from '@/features/tour';
 
 /** Layout shell: header, patient strip, record + notepad, and floating layers. */
@@ -29,6 +30,8 @@ export function App() {
   const { sel, compose, rebind } = useAddFindingStore();
   const npMode = useNotepadStore((s) => s.mode);
   const snap = useNotepadStore((s) => s.snap);
+  const flagDraft = useExtractionStore((s) => s.draft);
+  const capturing = useExtractionStore((s) => !!s.capture);
 
   useKeyboardShortcuts(narrow);
   useReviewTimer();
@@ -60,6 +63,8 @@ export function App() {
         {cardFinding && <EvidenceCard f={cardFinding} />}
         {sel && !compose && !menu && <SelectionToolbar sel={sel} />}
         {sel && compose && <ComposePanel key={sel.text} sel={sel} type={compose} />}
+        {flagDraft && <FlagComposer key={JSON.stringify(flagDraft)} />}
+        {capturing && <CaptureOverlay />}
 
         <AnimatePresence>
           {full && <FullNotes key="full" tab={full} />}

@@ -5,11 +5,14 @@ import type { Plugin } from 'vite';
 
 /*
  * Dev-server stand-in for the review API (docs/DATA-SPEC.md §4.3). Saves the reviewer's work next to the
- * case's own files, as src/data/cases/<id>/review.json. CLAIRE's files are never written.
+ * case's own files, in src/data/cases/<id>/. CLAIRE's files are never written. Two documents:
  *
- *   GET    /api/cases/:id/review   200 the saved review · 204 none yet · 404 no such case
- *   PUT    /api/cases/:id/review   200 { revision, savedAt } · 400 bad body
- *   DELETE /api/cases/:id/review   204 (reset: back to CLAIRE's findings)
+ *   review       review.json      decisions, edits, comments, completion, time
+ *   extraction   extraction.json  the reviewer's extraction flags
+ *
+ *   GET    /api/cases/:id/:doc   200 the saved document · 204 none yet · 404 no such case
+ *   PUT    /api/cases/:id/:doc   200 { revision, savedAt } · 400 bad body
+ *   DELETE /api/cases/:id/:doc   204 (reset)
  */
 
 const MAX_BODY = 5 * 1024 * 1024;
@@ -40,11 +43,11 @@ export function reviewApi(): Plugin {
     configureServer(server) {
       const root = path.resolve(server.config.root, 'src/data/cases');
       server.middlewares.use('/api/cases', async (req, res, next) => {
-        const m = /^\/([A-Za-z0-9._-]+)\/review\/?$/.exec((req.url ?? '').split('?')[0]);
+        const m = /^\/([A-Za-z0-9._-]+)\/(review|extraction)\/?$/.exec((req.url ?? '').split('?')[0]);
         if (!m || m[1].startsWith('.')) return next();
         const dir = path.join(root, m[1]);
         try { await fs.access(path.join(dir, 'case.json')); } catch { return send(res, 404, { error: 'no such case' }); }
-        const file = path.join(dir, 'review.json');
+        const file = path.join(dir, `${m[2]}.json`);
         try {
           if (req.method === 'GET') {
             const text = await fs.readFile(file, 'utf8').catch(() => null);

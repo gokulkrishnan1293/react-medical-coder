@@ -4,6 +4,7 @@ import { marCells } from '@/data';
 import { cn } from '@/lib/utils';
 import { segments, tagOf } from '@/features/findings';
 import { hoverEvidence, leaveEvidence, pinEvidence } from '../navigation';
+import { FlagPins } from '@/features/extraction';
 
 const KIND: Record<BlockKind, string> = {
   org: 'font-semibold tracking-[0.08em]',
@@ -42,6 +43,7 @@ export const Block = memo(function Block({ b, fs, hotId, activeId, flashId }: Pr
     const f = b.k === 'mar' ? fs.find((x) => x.text === b.t) : undefined;
     return (
       <div className={cn('blk relative', KIND[b.k])} data-block={b.id}>
+        <FlagPins block={b.id} />
         {f ? (
           <mark
             id={'ev-' + f.id}
@@ -61,6 +63,7 @@ export const Block = memo(function Block({ b, fs, hotId, activeId, flashId }: Pr
   }
   return (
     <div className={cn('blk relative', KIND[b.k])} data-block={b.id}>
+      <FlagPins block={b.id} />
       {segments(b.t, fs).map((s, i) =>
         typeof s === 'string' ? (
           <Fragment key={i}>{s}</Fragment>

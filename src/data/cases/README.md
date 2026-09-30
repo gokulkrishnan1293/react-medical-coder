@@ -10,7 +10,8 @@ src/data/cases/
    ├─ record.md             required: the extracted record
    ├─ findings.json         optional: CLAIRE's findings
    ├─ images/               optional: original page images
-   └─ review.json           written by the app: your review work (never edit by hand)
+   ├─ review.json           written by the app: your review work (never edit by hand)
+   └─ extraction.json       written by the app: extraction problems you flagged (never edit by hand)
       ├─ page-001.png
       └─ page-002.png
 ```
@@ -106,6 +107,12 @@ While you review (in `npm run dev`), every accept, reject, code change, moved ev
 - **Start over:** command palette (⌘K) → *Reset review* deletes `review.json`.
 - **Edited record.md or findings.json since?** Saved work is matched by finding `id` and exact words; anything that no longer fits is left out and listed on hover of the save status.
 - `review.json` is git-ignored. In a static build without the dev server, work is saved in the browser instead.
+
+## extraction.json: extraction problems you flag
+
+`record.md` is extracted from the original, and extraction can slip. While reviewing, select words and choose **⚑ Flag** (or right-click where something is missing, on the record or the original) and mark it **Formatting**, **Wrong data** or **Missed content**, with what the original shows, a comment and, if you like, a screenshot: **Capture from original** opens that page of the original at the flag so you can drag a box around what matters, or paste / drop an image. Flags are kept apart from the review, in `extraction.json` in the case folder, and never count toward the claim.
+
+Full notes → *Extraction* lists them and downloads them as **PDF** (for people: each flag with your screenshot) or **JSON** (for tools: the same, the screenshot as a data URL). *Clear extraction flags* in the palette deletes the file.
 
 ## Checking your folders
 

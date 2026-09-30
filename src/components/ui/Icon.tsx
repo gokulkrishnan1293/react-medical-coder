@@ -49,6 +49,7 @@ export const Icon = {
   pencil: make(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>),
   lock: make(<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>),
   alert: make(<><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18v.5" /></>),
+  flag: make(<><path d="M5 21V4" /><path d="M5 4h11l-2 4 2 4H5" /></>),
   sun: make(<><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>),
   moon: make(<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" />),
   monitor: make(<><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></>),

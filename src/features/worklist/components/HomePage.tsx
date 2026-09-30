@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { ME } from '@/data';
-import { Avatar, Icon, Kbd, ThemeToggle } from '@/components/ui';
+import { Avatar, Icon, Kbd, SegmentedTabs, ThemeToggle } from '@/components/ui';
 import { Tour, startTour, startTourIfNew, useTourStore } from '@/features/tour';
 import { cn } from '@/lib/utils';
 import { sumTally, useMinutesByDay, useWorklist } from '../hooks';
@@ -11,6 +11,7 @@ import { TodayPanel } from './TodayPanel';
 import { ClaireCards } from './ClaireCards';
 import { TimeChart } from './TimeChart';
 import { DayTimeChart } from './DayTimeChart';
+import { useHomeTab, type HomeTab } from '../homeTab';
 
 const VIEWS: { key: WorkView; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -23,15 +24,18 @@ const VIEWS: { key: WorkView; label: string }[] = [
 const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening'; };
 
 /**
- * Home, the one screen before a case: what happened to CLAIRE's suggestions, the worklist with search and
- * views, and today's work beside it. Search and view live in the address (?q=…&view=…), so a refresh or
- * the back button keeps them. Press / to search.
+ * Home, before a case, in two views. Overview: what happened to CLAIRE's suggestions, time by day, today's work
+ * and time per case. Cases: the worklist across the full width, with search and status views. The view, search
+ * and status live in the address (?tab=cases&q=…&view=…), so a refresh or the back button keeps them.
+ * Press / to search the cases, ? for the tour.
  */
 export function HomePage() {
   const [params, setParams] = useSearchParams();
   // the box has its own state so typing never waits on the address; the address follows it
   const [q, setQ] = useState(() => params.get('q') ?? '');
   const view = (params.get('view') as WorkView) || 'all';
+  const tab = useHomeTab((s) => s.tab);
+  const setTab = useHomeTab((s) => s.setTab);
   const items = useWorklist();
   const rows = filterCases(items, { q, view, me: ME.id });
   const counts = countByView(items, ME.id);
@@ -41,83 +45,100 @@ export function HomePage() {
 
   const update = (patch: Record<string, string>) => {
     const next = new URLSearchParams(params);
-    Object.entries(patch).forEach(([k, v]) => (v && v !== 'all' ? next.set(k, v) : next.delete(k)));
+    Object.entries(patch).forEach(([k, v]) => (v && v !== 'all' && v !== 'overview' ? next.set(k, v) : next.delete(k)));
     setParams(next, { replace: true });
   };
+  // the tab can change from outside (the tour), so the address follows the store
+  useEffect(() => { if ((params.get('tab') ?? 'overview') !== tab) update({ tab }); }, [tab]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA') return;
-      if (e.key === '/') { e.preventDefault(); search.current?.focus(); }
+      if (e.key === '/') { e.preventDefault(); useHomeTab.getState().setTab('cases'); setTimeout(() => search.current?.focus(), 0); }
       if (e.key === '?' && useTourStore.getState().index === null) startTour('home');
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
+  const HOME_TABS: { key: HomeTab; label: string; count?: number }[] = [
+    { key: 'overview', label: 'Overview' },
+    { key: 'cases', label: 'Cases', count: counts.all },
+  ];
+
   return (
     <div className="h-full overflow-y-auto bg-desk">
-      <main className="mx-auto grid max-w-[1320px] gap-5 px-5 py-6 min-[1100px]:grid-cols-[minmax(0,1fr)_320px] max-[760px]:px-4">
-        <section aria-labelledby="worklist-title" className="min-w-0">
-          <div className="mb-4 flex items-center gap-2 text-[13px] font-bold tracking-tight">
-            <span aria-hidden className="grid size-6 place-items-center rounded-md bg-accent font-mono text-[12px] text-accent-ink">C</span>
-            CLAIRE
-            <span data-tour="home-tools-narrow" className="ml-auto flex items-center gap-1 font-normal text-ink-2 min-[1100px]:hidden"><ThemeToggle /><TourButton /><Avatar r={ME} size={26} /><span className="ml-1">{ME.name}</span></span>
-          </div>
-          <h1 id="worklist-title" className="text-[22px] font-bold tracking-tight">{greeting()}, {ME.name.split(' ')[0]}</h1>
-          <p data-tour="home-summary" className="mt-0.5 w-fit text-[13px] text-ink-2">
-            {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })} ·{' '}
-            <span className="font-semibold text-ok">{counts.completed} completed</span> · <span className="font-semibold text-ai">{counts.inProgress} in progress</span> · {counts.new} to do
-          </p>
-
-          <ClaireCards t={sumTally(items)} cases={items.length} />
-
-          <div className="mt-5"><DayTimeChart data={byDay} /></div>
-
-          <h2 className="mt-6 text-[13.5px] font-semibold">Your cases</h2>
-          <div data-tour="home-find">
-          <label className="mt-2 flex items-center gap-2 rounded-xl border border-line bg-paper px-3.5 shadow-page focus-within:border-accent">
-            <Icon.search size={16} className="text-ink-3" />
-            <input
-              ref={search}
-              type="search"
-              value={q}
-              onChange={(e) => { setQ(e.target.value); update({ q: e.target.value }); }}
-              onKeyDown={(e) => { if (e.key === 'Escape') { setQ(''); update({ q: '' }); e.currentTarget.blur(); } }}
-              placeholder="Search case, patient, document or claim number"
-              aria-label="Search the worklist"
-              className="min-w-0 flex-1 bg-transparent py-2.5 text-[14px] outline-none"
-            />
-            <Kbd>/</Kbd>
-          </label>
-
-          <div role="tablist" aria-label="Worklist views" className="mt-3 mb-3 flex flex-wrap gap-1.5">
-            {VIEWS.filter((v) => v.key !== 'locked' || counts.locked > 0).map((v) => (
-              <button
-                key={v.key}
-                role="tab"
-                aria-selected={view === v.key}
-                onClick={() => update({ view: v.key })}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-[5px] text-[12.5px]',
-                  view === v.key ? 'border-ink bg-paper font-semibold' : 'border-line bg-paper text-ink-2 hover:border-ink-3',
-                )}
-              >
-                {v.key === 'locked' && <Icon.lock size={11} />}
-                {v.label} <span className="font-mono text-[11px] text-ink-3">{counts[v.key]}</span>
-              </button>
-            ))}
-          </div>
-          </div>
-
-          <div data-tour="home-table"><WorkTable items={rows} /></div>
-        </section>
-        <div className="flex flex-col gap-4">
-          <span data-tour="home-tools" className="flex items-center justify-end gap-1 self-end text-[13px] text-ink-2 max-[1099px]:hidden"><ThemeToggle withLabel /><TourButton withLabel /><Avatar r={ME} size={28} className="ml-1" /><span className="ml-1">{ME.name}</span></span>
-          <TodayPanel items={items} />
-          <TimeChart items={items} />
+      <main className="mx-auto max-w-[1320px] px-5 py-6 max-[760px]:px-4">
+        <div className="mb-4 flex items-center gap-2 text-[13px] font-bold tracking-tight">
+          <span aria-hidden className="grid size-6 place-items-center rounded-md bg-accent font-mono text-[12px] text-accent-ink">C</span>
+          CLAIRE
+          <span data-tour="home-tools" className="ml-auto flex items-center gap-1 font-normal text-ink-2">
+            <ThemeToggle withLabel /><TourButton withLabel /><Avatar r={ME} size={28} className="ml-1" /><span className="ml-1 max-[480px]:hidden">{ME.name}</span>
+          </span>
         </div>
+
+        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
+          <div className="min-w-0">
+            <h1 id="worklist-title" className="text-[22px] font-bold tracking-tight">{greeting()}, {ME.name.split(' ')[0]}</h1>
+            <p data-tour="home-summary" className="mt-0.5 w-fit text-[13px] text-ink-2">
+              {new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })} ·{' '}
+              <span className="font-semibold text-ok">{counts.completed} completed</span> · <span className="font-semibold text-ai">{counts.inProgress} in progress</span> · {counts.new} to do
+            </p>
+          </div>
+          <span data-tour="home-tabs" className="ml-auto"><SegmentedTabs tabs={HOME_TABS} value={tab} onChange={setTab} size="lg" /></span>
+        </div>
+
+        {tab === 'overview' ? (
+          <div className="mt-5 grid gap-5 min-[1100px]:grid-cols-[minmax(0,1fr)_320px]">
+            <section aria-label="Overview" className="min-w-0">
+              <ClaireCards t={sumTally(items)} cases={items.length} />
+              <div className="mt-5"><DayTimeChart data={byDay} /></div>
+            </section>
+            <div className="flex flex-col gap-4 min-[1100px]:pt-[30px]">
+              <TodayPanel items={items} />
+              <TimeChart items={items} />
+            </div>
+          </div>
+        ) : (
+          <section aria-label="Cases" className="mt-5">
+            <div data-tour="home-find">
+              <label className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3.5 shadow-page focus-within:border-accent">
+                <Icon.search size={16} className="text-ink-3" />
+                <input
+                  ref={search}
+                  type="search"
+                  value={q}
+                  onChange={(e) => { setQ(e.target.value); update({ q: e.target.value }); }}
+                  onKeyDown={(e) => { if (e.key === 'Escape') { setQ(''); update({ q: '' }); e.currentTarget.blur(); } }}
+                  placeholder="Search case, patient, document or claim number"
+                  aria-label="Search the worklist"
+                  className="min-w-0 flex-1 bg-transparent py-2.5 text-[14px] outline-none"
+                />
+                <Kbd>/</Kbd>
+              </label>
+
+              <div role="tablist" aria-label="Worklist views" className="mt-3 mb-3 flex flex-wrap gap-1.5">
+                {VIEWS.filter((v) => v.key !== 'locked' || counts.locked > 0).map((v) => (
+                  <button
+                    key={v.key}
+                    role="tab"
+                    aria-selected={view === v.key}
+                    onClick={() => update({ view: v.key })}
+                    className={cn(
+                      'inline-flex items-center gap-1.5 rounded-full border px-3 py-[5px] text-[12.5px]',
+                      view === v.key ? 'border-ink bg-paper font-semibold' : 'border-line bg-paper text-ink-2 hover:border-ink-3',
+                    )}
+                  >
+                    {v.key === 'locked' && <Icon.lock size={11} />}
+                    {v.label} <span className="font-mono text-[11px] text-ink-3">{counts[v.key]}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div data-tour="home-table"><WorkTable items={rows} /></div>
+          </section>
+        )}
       </main>
       <Tour />
     </div>

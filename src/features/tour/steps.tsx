@@ -7,7 +7,8 @@ import { ui } from '@/stores/uiStore';
 import { STATUS_LABEL, sortByReading, useFindingsStore } from '@/features/findings';
 import { jumpTo } from '@/features/record-viewer';
 import { useNotepadStore } from '@/features/notepad';
-import { selectInRecord } from '@/features/add-finding';
+import { selectInRecord, useAddFindingStore } from '@/features/add-finding';
+import { useExtractionStore } from '@/features/extraction';
 import { setSourceMode } from '@/features/source-view';
 
 export interface TourStep {
@@ -76,6 +77,24 @@ function pickWords() {
   const w = shownWords;
   if (w) setTimeout(() => selectInRecord(w.page, w.text), 0);
 }
+
+/** The flag editor on the words pickWords chose, opened once the record has scrolled to them. */
+function openFlagEditor() {
+  pickWords();
+  const w = shownWords;
+  if (!w) return;
+  setTimeout(() => {
+    const r = useAddFindingStore.getState().sel?.range.getBoundingClientRect();
+    useExtractionStore.getState().set({
+      draft: { mode: 'words', page: w.page, block: w.block, text: w.text, x: r ? r.left + r.width / 2 : window.innerWidth / 2, y: r ? r.bottom : 160 },
+    });
+  }, 800);
+}
+
+const openExtractionNotes = () => {
+  openNotepad();
+  useNotepadStore.getState().set({ panel: 'extraction' });
+};
 
 /** The tour, in order. Every step's setup runs after resetStage(). */
 export const STEPS: TourStep[] = [
@@ -166,6 +185,31 @@ export const STEPS: TourStep[] = [
     body: 'Select words in the record and say what they are: a diagnosis, service, MAR entry, documentation, or a note. A MAR row is always taken whole. Right-clicking a selection offers the same choices.',
     targets: () => (shownWords ? [`[data-block="${shownWords.block}"]`, '[aria-label="Add finding"]'] : ['[data-tour="record"]']),
     setup: pickWords,
+  },
+  {
+    id: 'extraction',
+    section: 'Extraction',
+    title: 'Flag what the extraction got wrong',
+    body: 'This record was extracted from the scan, and extraction can slip: a table broken up, a misread number, a line left out. Select the words and choose ⚑ Flag, even inside a finding. For something missing, right-click the spot on the record or on the original and choose Flag missing content here.',
+    targets: () => (shownWords ? [`[data-block="${shownWords.block}"]`, 'button[title^="Flag an extraction problem"]'] : ['[data-tour="record"]']),
+    setup: pickWords,
+  },
+  {
+    id: 'extraction-editor',
+    section: 'Extraction',
+    title: 'Say what is wrong',
+    body: 'Mark it Formatting, Wrong data or Missed content, write what the original actually shows, and add a comment if it helps. Capture from original opens that page of the scan at this spot: drag a box around the evidence and it is attached as the screenshot. You can also paste or drop an image.',
+    targets: () => ['[role="dialog"][aria-label="Flag an extraction problem"], [role="dialog"][aria-label="Extraction flag"]'],
+    setup: openFlagEditor,
+    keys: [[[modLabel('V')], 'Paste a screenshot'], [[modLabel('↵')], 'Save the flag']],
+  },
+  {
+    id: 'extraction-notes',
+    section: 'Extraction',
+    title: 'Extraction issues, kept apart',
+    body: 'Flags have their own section in the notes, never count toward the claim, and are saved separately from the review (extraction.json). Each shows as a wavy underline and a ⚑ pin on the record. In Full notes → Extraction, download them as a PDF for people or JSON for tools, each with its screenshot.',
+    targets: at('[aria-label="Notepad"], [aria-label="Notes"]'),
+    setup: openExtractionNotes,
   },
   {
     id: 'minimap',

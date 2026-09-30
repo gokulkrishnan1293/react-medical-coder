@@ -7,6 +7,7 @@ import { useTextSelection } from '@/features/add-finding';
 import { useUiStore } from '@/stores/uiStore';
 import { ZoomControls, useFitWidth, useZoom, useZoomGestures } from '@/features/zoom';
 import { openDocMenu } from '@/features/doc-menu';
+import { useFlagHighlights } from '@/features/extraction';
 import { useScrollSync } from '../useScrollSync';
 import { RecordPage } from './RecordPage';
 import { OverlayPage } from './OverlayPage';
@@ -34,6 +35,7 @@ export function RecordViewer({ margin, tools }: Props) {
   useFitWidth('record', scrollerRef);
   useZoomGestures('record', scrollerRef);
   useScrollSync(overlay);
+  useFlagHighlights(scrollerRef);
 
   const byBlock = useMemo(() => {
     const m: Record<string, Finding[]> = {};

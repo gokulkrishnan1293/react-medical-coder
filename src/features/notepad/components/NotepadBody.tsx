@@ -2,6 +2,7 @@ import { Button, Icon, Kbd } from '@/components/ui';
 import { useFindings } from '@/features/findings';
 import { ClaimPanel, useClaimChecks } from '@/features/claim';
 import { InterventionsPanel, useInterventions } from '@/features/interventions';
+import { ExtractionPanel, useExtractionStore } from '@/features/extraction';
 import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { useNotepadStore } from '../store';
@@ -13,6 +14,7 @@ export function NotepadBody() {
   const { lines, dx } = useClaimChecks();
   const { panel, set } = useNotepadStore();
   const interventions = useInterventions();
+  const flagCount = useExtractionStore((s) => s.flags.length);
   const setUi = useUiStore((st) => st.set);
   const pending = findings.filter((f) => f.status === 'ai').length;
   const claimOpen = [...lines, ...dx].filter(({ c }) => c.state !== 'supported').length;
@@ -22,11 +24,14 @@ export function NotepadBody() {
       role="tab"
       aria-selected={panel === key}
       onClick={() => set({ panel: key })}
-      className={cn('relative flex flex-1 items-center justify-center gap-1 py-2 text-[12.5px] font-medium whitespace-nowrap', panel === key ? 'text-ink after:absolute after:inset-x-3 after:bottom-0 after:h-0.5 after:rounded-full after:bg-accent' : 'text-ink-3 hover:text-ink')}
+      title={alert > 0 ? `${count} · ${alert} open` : String(count)}
+      className={cn('relative flex min-w-0 flex-1 items-center justify-center gap-1 px-1 py-2 text-[12px] font-medium whitespace-nowrap', panel === key ? 'text-ink after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-accent' : 'text-ink-3 hover:text-ink')}
     >
-      {label}
-      <span className="font-mono text-[10.5px] text-ink-3">{count}</span>
-      {alert > 0 && <span title={`${alert} open`} aria-label={`${alert} open`} className="rounded-full bg-ai-fill px-1.5 py-px text-[10px] font-semibold text-ai">{alert}</span>}
+      <span className="truncate">{label}</span>
+      {/* one number per tab so four fit: what is open when anything is, otherwise the total */}
+      {alert > 0
+        ? <span aria-label={`${alert} open`} className="rounded-full bg-ai-fill px-1.5 py-px text-[10px] font-semibold text-ai">{alert}</span>
+        : <span className="font-mono text-[10.5px] text-ink-3">{count}</span>}
     </button>
   );
 
@@ -36,10 +41,12 @@ export function NotepadBody() {
         {tab('findings', 'Findings', findings.length, pending)}
         {tab('claim', 'Claim', lines.length + dx.length, claimOpen)}
         {tab('interventions', 'Interventions', interventions.filter((d) => d.state === 'met').length, interventions.filter((d) => d.state === 'pending' || d.state === 'billedOnly').length)}
+        {tab('extraction', 'Extraction', flagCount, 0)}
       </div>
       {panel === 'findings' && <FindingsList />}
       {panel === 'claim' && <div className="min-h-0 flex-1 overflow-y-auto"><ClaimPanel /></div>}
       {panel === 'interventions' && <div className="min-h-0 flex-1 overflow-y-auto"><InterventionsPanel /></div>}
+      {panel === 'extraction' && <div className="min-h-0 flex-1 overflow-y-auto"><ExtractionPanel /></div>}
       <div className="border-t border-line px-2.5 pt-[9px] pb-3">
         <Button className="w-full" onClick={() => setUi({ full: panel, card: null })}>
           <Icon.expand size={14} />Full notes <Kbd>F</Kbd>

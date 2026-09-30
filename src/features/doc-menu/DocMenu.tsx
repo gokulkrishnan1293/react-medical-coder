@@ -4,6 +4,7 @@ import { clamp, cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { useAddFindingStore, type ComposeType } from '@/features/add-finding';
 import { useFindingsStore } from '@/features/findings';
+import { blockAt, useExtractionStore } from '@/features/extraction';
 import { setZoom, stepZoom } from '@/features/zoom';
 import { SOURCE_MODES, setSourceMode, VIEW_LABEL } from '@/features/source-view';
 import { closeDocMenu, showInOriginal, showInRecord } from './actions';
@@ -34,9 +35,22 @@ export function DocMenu() {
   const { side, at } = menu;
 
   const entries: Entry[] = [];
-  if (side === 'record' && sel && !sel.overlap && !useFindingsStore.getState().readOnly) {
+  const readOnly = useFindingsStore.getState().readOnly;
+  const draft = useExtractionStore.getState().set;
+  if (side === 'record' && sel && !sel.overlap && !readOnly) {
     ADD.forEach(([k, l]) => entries.push({ label: l, icon: <span className="text-[13px] leading-none">+</span>, run: () => setAdd({ compose: k }) }));
-    entries.push({ label: 'Copy', icon: <Icon.copy size={14} />, run: () => void navigator.clipboard?.writeText(sel.text) }, 'sep');
+  }
+  if (side === 'record' && sel && !readOnly) {
+    entries.push({ label: 'Flag extraction problem', icon: <Icon.flag size={14} />, run: () => draft({ draft: { mode: 'words', page: sel.page, block: sel.block, text: sel.text, x: menu.x, y: menu.y } }) });
+  }
+  if (side === 'record' && sel) entries.push({ label: 'Copy', icon: <Icon.copy size={14} />, run: () => void navigator.clipboard?.writeText(sel.text) }, 'sep');
+  // no words for what is missing: flag the spot, on the record or on the original
+  if (!sel && at && !readOnly) {
+    entries.push({
+      label: 'Flag missing content here',
+      icon: <Icon.flag size={14} />,
+      run: () => { const block = blockAt(at.n, at.f); if (block) draft({ draft: { mode: 'spot', page: at.n, block, x: menu.x, y: menu.y } }); },
+    }, 'sep');
   }
   entries.push(
     { label: 'Zoom in', hint: '+', run: () => stepZoom(side, 1) },

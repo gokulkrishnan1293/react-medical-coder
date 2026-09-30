@@ -5,6 +5,8 @@ import { useScrollTick } from '@/hooks/useScrollTick';
 import { useAddFindingStore, type ComposeType, type TextSelection } from '../store';
 import { useReadOnly } from '@/features/findings';
 import { applyRebind, cancelRebind, rebindLabel } from '../rebind';
+import { Icon } from '@/components/ui';
+import { useExtractionStore } from '@/features/extraction';
 
 const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['svc', 'Service'], ['mar', 'MAR'], ['doc', 'Doc'], ['note', 'Note']];
 
@@ -17,7 +19,18 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   const readOnly = useReadOnly();
   const r = sel.range.getBoundingClientRect();
   if (!r.width && !r.height) return null;
-  const W = sel.overlap ? 250 : rebind ? 330 : 390;
+  const W = sel.overlap ? 330 : rebind ? 330 : 470;
+  // flag what the extraction got wrong, even inside a finding's evidence
+  const flag = (
+    <button
+      type="button"
+      onClick={() => useExtractionStore.getState().set({ draft: { mode: 'words', page: sel.page, block: sel.block, text: sel.text, x: r.left + r.width / 2, y: r.bottom } })}
+      title="Flag an extraction problem: formatting, wrong data or missed content"
+      className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12.5px] font-medium hover:bg-paper/15"
+    >
+      <Icon.flag size={13} />Flag
+    </button>
+  );
   const left = clamp(r.left + r.width / 2 - W / 2, 8, window.innerWidth - W - 8);
   const top = r.top > 120 ? r.top - 46 : r.bottom + 8;
   const base = 'fixed z-70 rounded-[9px] bg-ink text-paper shadow-float';
@@ -32,8 +45,10 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   }
   if (sel.overlap) {
     return (
-      <motion.div data-add-finding {...anim} className={base + ' px-3 py-2 text-xs'} style={{ left, top, width: W }} onMouseDown={(e) => e.preventDefault()}>
-        Part of this is already marked. Hover the box to edit it.
+      <motion.div data-add-finding {...anim} className={base + ' flex items-center gap-2 py-1 pr-1 pl-3 text-xs'} style={{ left, top, width: W }} onMouseDown={(e) => e.preventDefault()}>
+        <span className="flex-1">Part of this is already a finding.</span>
+        <span className="h-4 w-px bg-paper/25" />
+        {flag}
       </motion.div>
     );
   }
@@ -55,6 +70,8 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
           + {l}
         </button>
       ))}
+      <span className="mx-1 h-4 w-px bg-paper/25" />
+      {flag}
     </motion.div>
   );
 }

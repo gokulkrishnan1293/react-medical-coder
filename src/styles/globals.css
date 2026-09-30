@@ -33,6 +33,9 @@
   /* chart series: validated categorical slots 1–2 on --paper (see dataviz palette) */
   --series-1: #2a78d6;
   --series-2: #eb6834;
+  /* extraction flags: distinct from finding types and review statuses */
+  --flag: #a21caf;
+  --flag-fill: rgba(162, 28, 175, 0.1);
   --shadow: 0 18px 40px -12px rgba(18, 32, 46, 0.32), 0 2px 6px rgba(18, 32, 46, 0.1);
   --page-shadow: 0 1px 2px rgba(18, 32, 46, 0.12), 0 10px 28px -14px rgba(18, 32, 46, 0.28);
   --scrim: rgba(12, 22, 32, 0.42);
@@ -54,6 +57,7 @@
     --on-tag: #0b1116;
     --t-dx: #4db6c0; --t-svc: #a993f0; --t-mar: #e58bbd;
     --series-1: #3987e5; --series-2: #d95926;
+    --flag: #e879f9; --flag-fill: rgba(232, 121, 249, 0.14);
     --shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
     --page-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
     --scrim: rgba(0, 0, 0, 0.55);
@@ -71,6 +75,7 @@
   --on-tag: #0b1116;
   --t-dx: #4db6c0; --t-svc: #a993f0; --t-mar: #e58bbd;
   --series-1: #3987e5; --series-2: #d95926;
+  --flag: #e879f9; --flag-fill: rgba(232, 121, 249, 0.14);
   --shadow: 0 18px 44px -12px rgba(0, 0, 0, 0.7), 0 2px 6px rgba(0, 0, 0, 0.4);
   --page-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 10px 28px -14px rgba(0, 0, 0, 0.7);
   --scrim: rgba(0, 0, 0, 0.55);
@@ -105,6 +110,8 @@
   --color-t-mar: var(--t-mar);
   --color-series-1: var(--series-1);
   --color-series-2: var(--series-2);
+  --color-flag: var(--flag);
+  --color-flag-fill: var(--flag-fill);
   /* status colour of the nearest .st-* ancestor: text-st, bg-st-fill, border-st */
   --color-st: var(--c);
   --color-st-fill: var(--cf);
@@ -141,3 +148,13 @@ body.resizing.ew { cursor: ew-resize; }
   30% { transform: translateX(0); }
   100% { background: transparent; }
 }
+
+/* extraction flags on the record's words (CSS Custom Highlight API; see features/extraction/useFlagHighlights) */
+::highlight(extraction-flag) {
+  background-color: var(--flag-fill);
+  text-decoration-line: underline;
+  text-decoration-style: wavy;
+  text-decoration-color: var(--flag);
+}
+.flag-flash { animation: flag-flash 1.4s ease-out; border-radius: 4px; }
+@keyframes flag-flash { 0%, 40% { box-shadow: 0 0 0 3px var(--flag); } 100% { box-shadow: 0 0 0 3px transparent; } }

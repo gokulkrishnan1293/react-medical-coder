@@ -5,3 +5,5 @@ dist/
 # reviewer work saved by the dev server
 src/data/cases/*/review.json
 src/data/cases/*/review.json.tmp
+src/data/cases/*/extraction.json
+src/data/cases/*/extraction.json.tmp

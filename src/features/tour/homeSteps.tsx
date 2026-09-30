@@ -1,11 +1,15 @@
 import type { TourStep } from './steps';
+import { useHomeTab } from '@/features/worklist';
 
 const at = (...s: string[]) => () => s;
+const overview = () => useHomeTab.getState().setTab('overview');
+const cases = () => useHomeTab.getState().setTab('cases');
 
 /** The home screen walkthrough: what each part tells you, before you open a case. */
 export const HOME_STEPS: TourStep[] = [
   {
     id: 'home-welcome',
+    setup: overview,
     section: 'Home',
     title: 'Your home screen',
     body: (
@@ -17,6 +21,7 @@ export const HOME_STEPS: TourStep[] = [
   },
   {
     id: 'home-summary',
+    setup: overview,
     section: 'Today',
     title: 'Where you stand',
     body: 'How many of your cases are completed, in progress and still to do. It follows your work: finishing a review moves it to completed straight away.',
@@ -24,7 +29,17 @@ export const HOME_STEPS: TourStep[] = [
     placement: 'below',
   },
   {
+    id: 'home-tabs',
+    setup: overview,
+    section: 'Home',
+    title: 'Overview and cases',
+    body: 'Home has two views. Overview is how the work is going: CLAIRE\'s suggestions, your time, and today. Cases is the list itself, across the full width. The one you pick stays in the address.',
+    targets: at('[data-tour="home-tabs"]'),
+    placement: 'below',
+  },
+  {
     id: 'home-cards',
+    setup: overview,
     section: 'CLAIRE',
     title: "What happened to CLAIRE's suggestions",
     body: (
@@ -40,6 +55,7 @@ export const HOME_STEPS: TourStep[] = [
   },
   {
     id: 'home-days',
+    setup: overview,
     section: 'Time',
     title: 'Time spent by day',
     body: "Your review time over the last 14 days. It adds up each case's review sessions and the time you spend in the workbench, saved by day. Hover a bar for the exact time, or open the numbers as a table.",
@@ -47,7 +63,24 @@ export const HOME_STEPS: TourStep[] = [
     placement: 'below',
   },
   {
+    id: 'home-today',
+    setup: overview,
+    section: 'Today',
+    title: 'Completed today, and where you left off',
+    body: 'What you finished today and your average time on it, then the reviews you have started, one click from where you stopped.',
+    targets: at('aside[aria-label="Today"]'),
+  },
+  {
+    id: 'home-time',
+    setup: overview,
+    section: 'Time',
+    title: 'Time per case',
+    body: 'The same time, split by case, longest first. The case you are reviewing counts up while it is open.',
+    targets: at('section[aria-labelledby="time-title"]'),
+  },
+  {
     id: 'home-find',
+    setup: cases,
     section: 'Your cases',
     title: 'Find a case',
     body: 'Search by case, patient, document number or claim number, and narrow the list by status. The search and view stay in the address, so a refresh or the back button keeps them.',
@@ -57,37 +90,26 @@ export const HOME_STEPS: TourStep[] = [
   },
   {
     id: 'home-table',
+    setup: cases,
     section: 'Your cases',
     title: 'Your cases',
     body: "Each case with its document and claim numbers, the downcode, its status and CLAIRE's counts for that case. Open starts a review, Continue picks one up, View opens a completed review, read-only until you reopen it.",
     targets: at('[data-tour="home-table"]'),
   },
   {
-    id: 'home-today',
-    section: 'Today',
-    title: 'Completed today, and where you left off',
-    body: 'What you finished today and your average time on it, then the reviews you have started, one click from where you stopped.',
-    targets: at('aside[aria-label="Today"]'),
-  },
-  {
-    id: 'home-time',
-    section: 'Time',
-    title: 'Time per case',
-    body: 'The same time, split by case, longest first. The case you are reviewing counts up while it is open.',
-    targets: at('section[aria-labelledby="time-title"]'),
-  },
-  {
     id: 'home-tools',
+    setup: cases,
     section: 'Settings',
     title: 'Theme and this tour',
     body: 'Switch between the system theme, light and dark; your choice is remembered in this browser. Take this tour again from here, or press ?.',
-    targets: at('[data-tour="home-tools"]', '[data-tour="home-tools-narrow"]'),
+    targets: at('[data-tour="home-tools"]'),
     placement: 'below',
   },
   {
     id: 'home-done',
+    setup: cases,
     section: 'Next',
     title: 'Open a case',
-    body: 'Pick a case to review. Inside it, the Tour button shows the workbench: the record, CLAIRE\'s findings, the original scan, the notepad and completing the review.',
+    body: 'Pick a case here to review it. Inside it, the Tour button shows the workbench: the record, CLAIRE\'s findings, the original scan, the notepad and completing the review.',
   },
 ];

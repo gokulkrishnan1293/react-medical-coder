@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type FullNotesTab = 'findings' | 'claim' | 'interventions';
+export type FullNotesTab = 'findings' | 'claim' | 'interventions' | 'extraction';
 /**
  * How the original page images show: stacked in the margin while reading, as a column beside the
  * record, or laid over the extracted text on the same page with a slider between them.

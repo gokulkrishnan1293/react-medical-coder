@@ -8,7 +8,7 @@ import { modLabel } from '@/lib/platform';
 import { setZoom, stepZoom } from '@/features/zoom';
 import { SOURCE_MODES, cycleSourceMode, setSourceMode } from '@/features/source-view';
 import { startTour } from '@/features/tour';
-import { resetReview } from '@/api';
+import { clearExtractionFlags, resetReview } from '@/api';
 import { THEME_LABEL, THEME_ORDER, useThemeStore } from '@/lib/theme';
 
 export interface Command {
@@ -40,6 +40,8 @@ export function getCommands(): Command[] {
     { label: 'Open full notes', key: 'F', run: () => openFullNotes('findings') },
     { label: 'Open claim view', run: () => openFullNotes('claim') },
     { label: 'Open interventions and how they were derived', run: () => openFullNotes('interventions') },
+    { label: 'Open extraction flags', run: () => openFullNotes('extraction') },
+    { label: 'Clear extraction flags on this case', run: () => { if (window.confirm('Delete every extraction flag on this case?')) void clearExtractionFlags(); } },
     { label: 'Show claim in notepad', run: () => { np.set({ panel: 'claim' }); if (np.mode !== 'float' && np.mode !== 'dock') np.reopen(); } },
     { label: 'Show findings in notepad', run: () => { np.set({ panel: 'findings' }); if (np.mode !== 'float' && np.mode !== 'dock') np.reopen(); } },
     { label: 'Dock notepad to the right', key: 'D', run: np.dock },

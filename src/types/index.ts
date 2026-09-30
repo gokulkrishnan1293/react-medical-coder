@@ -250,3 +250,37 @@ export interface SavedReview {
   /** Findings the reviewer added, without their block (found again from page and text on load). */
   added: Omit<Finding, 'block'>[];
 }
+
+/**
+ * A problem with how the original document was extracted to record.md, flagged by the reviewer:
+ * formatting (layout wrong: a table broken up, a heading lost), data (text differs from the scan: a misread
+ * number, dose or date), or missing (something on the original is not in the extracted text).
+ */
+export type ExtractionKind = 'formatting' | 'data' | 'missing';
+
+export interface ExtractionFlag {
+  id: string;
+  kind: ExtractionKind;
+  page: number;
+  /** Selected words the flag is about, exactly as the record shows them. Missing content has none. */
+  text?: string;
+  /** Start of the paragraph the flag sits by, to find it again when there are no words (missing content). */
+  near?: string;
+  /** What the original actually shows or what is missing, in the reviewer's words. */
+  shouldRead?: string;
+  comment?: string;
+  /** The reviewer's own screenshot (pasted, dropped or chosen), as a JPEG data URL. */
+  screenshot?: string;
+  createdAt: string;
+  /** Resolved from page and words when loaded; not saved. */
+  block?: string;
+}
+
+/** cases/<id>/extraction.json: the reviewer's extraction flags, kept apart from the review. */
+export interface SavedExtraction {
+  schemaVersion: 1;
+  caseId: string;
+  revision: number;
+  savedAt: string;
+  flags: Omit<ExtractionFlag, 'block'>[];
+}
