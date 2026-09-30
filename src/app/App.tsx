@@ -9,6 +9,8 @@ import { ComposePanel, SelectionToolbar, useAddFindingStore } from '@/features/a
 import { DockHint, DockedNotepad, FloatingNotepad, NotesBubble, keepOnScreen, tuckForNarrow, useNotepadStore } from '@/features/notepad';
 import { FullNotes } from '@/features/full-notes';
 import { CommandPalette } from '@/features/command-palette';
+import { CompareToggle, SourcePane, SourceStage } from '@/features/source-view';
+import { DocMenu } from '@/features/doc-menu';
 import { UndoToast, useFindings } from '@/features/findings';
 import { useKeyboardShortcuts } from '@/features/shortcuts';
 
@@ -19,6 +21,8 @@ export function App() {
   const card = useUiStore((s) => s.card);
   const full = useUiStore((s) => s.full);
   const palette = useUiStore((s) => s.palette);
+  const source = useUiStore((s) => s.source);
+  const menu = useUiStore((s) => s.menu);
   const findings = useFindings();
   const { sel, compose } = useAddFindingStore();
   const npMode = useNotepadStore((s) => s.mode);
@@ -39,7 +43,8 @@ export function App() {
         <CaseHeader />
         <PatientStrip />
         <div className="flex min-h-0">
-          <RecordViewer />
+          {source === 'compare' && <SourcePane />}
+          <RecordViewer overlay={source === 'stage' && <SourceStage />} tools={<CompareToggle />} />
           {npMode === 'dock' && <DockedNotepad narrow={narrow} />}
         </div>
 
@@ -48,13 +53,14 @@ export function App() {
         <AnimatePresence>{snap && <DockHint />}</AnimatePresence>
 
         {cardFinding && <EvidenceCard f={cardFinding} />}
-        {sel && !compose && <SelectionToolbar sel={sel} />}
+        {sel && !compose && !menu && <SelectionToolbar sel={sel} />}
         {sel && compose && <ComposePanel key={sel.text} sel={sel} type={compose} />}
 
         <AnimatePresence>
           {full && <FullNotes key="full" tab={full} />}
           {palette && <CommandPalette key="palette" />}
         </AnimatePresence>
+        {menu && <DocMenu />}
         <UndoToast />
       </div>
     </MotionConfig>

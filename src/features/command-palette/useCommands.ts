@@ -4,6 +4,7 @@ import { goPage } from '@/features/record-viewer';
 import { useNotepadStore } from '@/features/notepad';
 import { nextAiSuggestion, openFullNotes, stepFinding } from '@/features/shortcuts';
 import { useUiStore } from '@/stores/uiStore';
+import { setZoom, stepZoom } from '@/features/zoom';
 
 export interface Command {
   label: string;
@@ -21,6 +22,13 @@ export function getCommands(): Command[] {
     ...PAGES.map((p) => ({ label: `Go to page ${p.n} · ${p.label}`, run: () => goPage(p.n) })),
     { label: 'Toggle spotlight', key: 'S', run: ui.toggleSpot },
     { label: 'Toggle clean read', key: 'C', run: ui.toggleClean },
+    { label: ui.source === 'compare' ? 'Close original' : 'Compare with original', key: 'O', run: ui.toggleSource },
+    { label: 'Zoom in record', key: '+', run: () => stepZoom('record', 1) },
+    { label: 'Zoom out record', key: '−', run: () => stepZoom('record', -1) },
+    { label: 'Record at actual size', key: '0', run: () => setZoom('record', 1) },
+    { label: 'Fit record to width', run: () => setZoom('record', 'fit') },
+    { label: 'Fit original to width', run: () => setZoom('source', 'fit') },
+    { label: ui.syncScroll ? 'Unlink original from record scrolling' : 'Scroll original with the record', run: () => ui.set({ syncScroll: !ui.syncScroll }) },
     { label: 'Open full notes', key: 'F', run: () => openFullNotes('findings') },
     { label: 'Open claim view', run: () => openFullNotes('claim') },
     { label: 'Show claim in notepad', run: () => { np.set({ panel: 'claim' }); if (np.mode !== 'float' && np.mode !== 'dock') np.reopen(); } },
