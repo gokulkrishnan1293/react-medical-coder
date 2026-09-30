@@ -63,7 +63,7 @@ export function Minimap() {
   };
 
   return (
-    <div className="relative w-5 flex-none cursor-pointer border-l border-line bg-chrome max-[760px]:w-3.5" onClick={onRail} title="Record overview. Click to jump.">
+    <div data-tour="minimap" className="relative w-5 flex-none cursor-pointer border-l border-line bg-chrome max-[760px]:w-3.5" onClick={onRail} title="Record overview. Click to jump.">
       {pages.map((p) => (
         <div key={p.n} className="absolute inset-x-0 border-t border-line" style={{ top: p.t * 100 + '%', height: p.h * 100 + '%' }} />
       ))}

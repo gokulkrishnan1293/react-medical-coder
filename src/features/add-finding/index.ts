@@ -5,3 +5,4 @@ export { ComposePanel } from './components/ComposePanel';
 export { searchCodes } from './utils/codeSearch';
 export { startRebind, cancelRebind } from './rebind';
 export { RebindBanner } from './components/RebindBanner';
+export { selectInRecord } from './selectInRecord';

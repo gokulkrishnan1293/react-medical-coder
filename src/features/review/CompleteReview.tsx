@@ -23,7 +23,7 @@ export function CompleteReview({ openIssues }: { openIssues: number }) {
   if (status === 'completed') {
     const when = completedAt?.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
     return (
-      <div className="flex items-center gap-1.5">
+      <div data-tour="complete" className="flex items-center gap-1.5">
         <HoverTip tip={<><span className="block font-semibold">Completed {when}</span><span className="mt-0.5 block opacity-85">{comment || 'No comment.'}</span></>}>
           <span tabIndex={0} className="inline-flex h-[30px] items-center gap-1.5 rounded-[7px] bg-ok-fill px-2.5 text-[12.5px] font-semibold text-ok">
             <Icon.check size={14} sw={2.4} />Review completed
@@ -37,7 +37,7 @@ export function CompleteReview({ openIssues }: { openIssues: number }) {
 
   const submit = () => { complete(draft); setOpen(false); };
   return (
-    <div ref={box} className="relative">
+    <div ref={box} data-tour="complete" className="relative">
       <Button variant="primary" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="py-1">
         <Icon.check size={14} sw={2.2} />Complete review
       </Button>

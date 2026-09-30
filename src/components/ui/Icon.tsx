@@ -49,4 +49,5 @@ export const Icon = {
   pencil: make(<><path d="M4 20h4L19 9l-4-4L4 16z" /><path d="M13.5 6.5l4 4" /></>),
   lock: make(<><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 018 0v3" /></>),
   alert: make(<><path d="M12 3l10 18H2z" /><path d="M12 10v5M12 18v.5" /></>),
+  help: make(<><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 014.9.7c0 1.7-2.4 2.3-2.4 3.8M12 17v.5" /></>),
 };

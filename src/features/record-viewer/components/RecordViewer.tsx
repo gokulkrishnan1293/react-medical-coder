@@ -53,6 +53,7 @@ export function RecordViewer({ margin, tools }: Props) {
     <div className="relative flex min-w-0 flex-1">
       <div
         ref={scrollerRef}
+        data-tour="record"
         onScroll={onScroll}
         onMouseUp={onMouseUp}
         onKeyUp={(e) => { if (e.shiftKey) onMouseUp(); }}
@@ -70,7 +71,7 @@ export function RecordViewer({ margin, tools }: Props) {
       </div>
       {margin}
       {source !== 'compare' && <PageSlider />}
-      <div className="absolute top-2.5 left-[30px] z-6 flex items-center gap-1 rounded-full border border-line bg-chrome p-0.5 shadow-page max-[760px]:hidden">
+      <div data-tour="record-tools" className="absolute top-2.5 left-[30px] z-6 flex items-center gap-1 rounded-full border border-line bg-chrome p-0.5 shadow-page max-[760px]:hidden">
         <ZoomControls side="record" />
         {tools && <><span className="mx-1 h-4 w-px bg-line" />{tools}</>}
       </div>

@@ -13,6 +13,7 @@ import { SourcePane, SourceStage, ViewSwitch } from '@/features/source-view';
 import { DocMenu } from '@/features/doc-menu';
 import { UndoToast, useFindings } from '@/features/findings';
 import { useKeyboardShortcuts } from '@/features/shortcuts';
+import { Tour, startTourIfNew } from '@/features/tour';
 
 /** Layout shell: header, patient strip, record + notepad, and floating layers. */
 export function App() {
@@ -30,6 +31,7 @@ export function App() {
 
   useKeyboardShortcuts(narrow);
   useEffect(() => { if (narrow) tuckForNarrow(); }, [narrow]);
+  useEffect(startTourIfNew, []);
   useEffect(() => {
     window.addEventListener('resize', keepOnScreen);
     return () => window.removeEventListener('resize', keepOnScreen);
@@ -63,6 +65,7 @@ export function App() {
         <AnimatePresence>{rebind && <RebindBanner key="rebind" />}</AnimatePresence>
         {menu && <DocMenu />}
         <UndoToast />
+        <Tour />
       </div>
     </MotionConfig>
   );

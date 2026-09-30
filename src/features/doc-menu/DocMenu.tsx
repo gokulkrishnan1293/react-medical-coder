@@ -60,7 +60,7 @@ export function DocMenu() {
   const items = entries.filter((e): e is Item => e !== 'sep');
   const run = (it: Item) => { closeDocMenu(); it.run(); };
 
-  // keep the menu on screen
+  // keep the menu on screen; re-fit when the selection arrives and adds the "Add …" items
   useLayoutEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -68,7 +68,7 @@ export function DocMenu() {
       left: clamp(menu.x, 8, window.innerWidth - el.offsetWidth - 8),
       top: menu.y + el.offsetHeight > window.innerHeight - 8 ? Math.max(8, menu.y - el.offsetHeight) : menu.y,
     });
-  }, [menu.x, menu.y]);
+  }, [menu.x, menu.y, entries.length]);
 
   // close on outside click, scroll or resize; arrow keys move the highlight without taking focus off the selection
   useEffect(() => {

@@ -6,11 +6,12 @@ import { useUiStore } from '@/stores/uiStore';
 import { isModKey } from '@/lib/platform';
 import { hoveredSide, setZoom, stepZoom } from '@/features/zoom';
 import { cycleSourceMode, setDivider, setSourceMode } from '@/features/source-view';
+import { startTour, useTourStore } from '@/features/tour';
 import { openFullNotes, stepFinding } from './actions';
 
 /**
  * Global keys: J/K next/previous finding, A accept, R reject (removes a coder-added finding, as do Delete and Backspace), N notepad, D dock/float,
- * F full notes, S spotlight, C clean read, O cycle original view, Esc close, ⌘K / Ctrl+K palette, ⌘Z / Ctrl+Z undo.
+ * F full notes, S spotlight, C clean read, O cycle original view, ? tour, Esc close, ⌘K / Ctrl+K palette, ⌘Z / Ctrl+Z undo.
  * The modifier follows the platform: ⌘ on Mac, Ctrl on Windows and Linux.
  * Overlay view: ← → move the slider, hold Space to see the whole scan.
  * + / − / 0 (with or without ⌘ / Ctrl) zoom the column under the pointer: the record, or the original.
@@ -81,6 +82,7 @@ export function useKeyboardShortcuts(narrow: boolean) {
         case 's': ui.toggleSpot(); break;
         case 'c': ui.toggleClean(); break;
         case 'o': cycleSourceMode(); break;
+        case '?': if (useTourStore.getState().index === null) startTour(); break;
       }
     };
     // releasing Space ends the overlay peek; so does leaving the window while it is held

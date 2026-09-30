@@ -7,6 +7,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { modLabel } from '@/lib/platform';
 import { setZoom, stepZoom } from '@/features/zoom';
 import { cycleSourceMode, setSourceMode } from '@/features/source-view';
+import { startTour } from '@/features/tour';
 
 export interface Command {
   label: string;
@@ -43,5 +44,6 @@ export function getCommands(): Command[] {
     { label: 'Float notepad', run: np.float },
     { label: 'Minimize notepad', key: 'N', run: np.minimize },
     { label: 'Undo last change', key: modLabel('Z'), run: useFindingsStore.getState().undo },
+    { label: 'Take the tour of every feature', key: '?', run: startTour },
   ];
 }
