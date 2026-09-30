@@ -102,6 +102,7 @@ The extracted text of every page, in reading order. The format follows the Markd
 | Paragraph | `p` | Soft line breaks inside a paragraph are joined with one space |
 | `- item` or `1. item` | `li` | One block per item; nested items are flattened |
 | A fenced block marked `text` | `meta` | **One block per line**; runs of spaces are kept (`Patient: DEMO, JORDAN     MRN: …`) |
+| `<!-- Columns -->` … `<!-- Column -->` … `<!-- /Columns -->` | — | Content in columns side by side; each block records its column group, column and count |
 | `<!-- MAR -->` then a pipe table | `marHead` + `mar` | Header row → `marHead`, each body row → `mar`. Cells are joined with `" \| "`, which is the text MAR findings anchor to |
 | Any other pipe or HTML table | `meta` | One block per row (header included), cells joined with `" · "` |
 | `<figure>…</figure>`, images, `:selected:` / `:unselected:` | — | Dropped, with a warning from the validator |

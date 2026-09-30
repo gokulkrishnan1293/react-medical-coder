@@ -10,10 +10,10 @@ describe('worklist', () => {
     expect(filterCases(WORKLIST, { q: 'nothing-like-this', me: ME.id })).toHaveLength(0);
   });
 
-  it('has three example cases, all mine, none locked', () => {
-    expect(WORKLIST).toHaveLength(3);
+  it('has one row per case folder, all mine, none locked', () => {
+    expect(WORKLIST.map((w) => w.id)).toEqual(['RC-2026-1183', 'RC-2026-1187', 'RC-2026-1192', 'RC-2026-1215']);
     expect(WORKLIST.every((w) => w.assignee === ME.id)).toBe(true);
-    expect(countByView(WORKLIST, ME.id)).toMatchObject({ all: 3, new: 1, inProgress: 1, completed: 1, locked: 0 });
+    expect(countByView(WORKLIST, ME.id)).toMatchObject({ all: 4, new: 2, inProgress: 1, completed: 1, locked: 0 });
   });
 
   it('would lock a case someone else has open, never my own', () => {
@@ -23,7 +23,7 @@ describe('worklist', () => {
   });
 
   it('lists open work by due date before completed work', () => {
-    expect(filterCases(WORKLIST, { me: ME.id }).map((w) => w.id)).toEqual(['RC-2026-1192', 'RC-2026-1187', 'RC-2026-1183']);
+    expect(filterCases(WORKLIST, { me: ME.id }).map((w) => w.id)).toEqual(['RC-2026-1192', 'RC-2026-1187', 'RC-2026-1215', 'RC-2026-1183']);
   });
 
   it('counts my completions today', () => {

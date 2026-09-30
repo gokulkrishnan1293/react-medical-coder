@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "case": {
+    "id": "RC-2026-1215",
+    "stage": "Reconsideration",
+    "received": "Sep 26",
+    "due": "Oct 26",
+    "daysLeft": 26,
+    "payer": "Northstar Health Plan",
+    "billed": "99285",
+    "paid": "99284",
+    "levelCodes": ["99282", "99283", "99284", "99285"]
+  },
+  "patient": { "name": "SAMPLE, Morgan", "memberId": "NSH-7712-4410", "mrn": "ED-TEST-51208", "dob": "02/14/1958", "age": 68, "sex": "M", "plan": "Northstar Medicare Advantage" },
+  "encounter": {
+    "setting": "Emergency department · facility",
+    "facility": "Meridian Regional Medical Center",
+    "attending": "Priya Raman, MD",
+    "dos": "05/20/2026", "arrival": "14:10", "departure": "19:40",
+    "disposition": "Admitted to step-down",
+    "reason": "Sudden shortness of breath and pleuritic chest pain since this morning."
+  },
+  "sourcePages": { "name": 1, "dob": 1, "dos": 1, "reason": 1 },
+  "worklist": {
+    "documentId": "MR-26-0048391",
+    "status": "new",
+    "receivedDaysAgo": 4,
+    "dueInDays": 26,
+    "sessions": []
+  }
+}

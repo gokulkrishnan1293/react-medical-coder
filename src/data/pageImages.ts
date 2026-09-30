@@ -60,13 +60,36 @@ function layout(page: RecordPage): LayoutLine[] {
       case 'sub': one(b, { x: PAGE_W / 2, size: 11, center: true }); y += 34; break;
       case 'title': one(b, { x: PAGE_W / 2, size: 14, bold: true, center: true }); y += 34; break;
       case 'h': y += 8; one(b, { x: 64, bold: true }); y += 22; break;
+      case 'h3': y += 4; one(b, { x: 64, bold: true }); y += 22; break;
       case 'marHead': one(b, { x: 64, size: 11, bold: true }); y += 20; break;
       case 'mar': one(b, { x: 64, size: 11 }); y += 20; break;
+      case 'hr': y += 14; break;
+      case 'code': {
+        // code keeps its own line breaks
+        let start = 0;
+        b.t.split('\n').forEach((text) => {
+          if (text.trim()) lines.push({ block: b.id, start, text, x: 76, y, size: 11 });
+          start += text.length + 1;
+          y += 17;
+        });
+        y += 8;
+        break;
+      }
+      case 'thead':
+      case 'tr':
+        // table rows print as rows, cells spaced apart the way the MAR's are
+        wrap(b.t, 100).forEach((l) => {
+          lines.push({ block: b.id, ...l, x: 64, y, size: 11, ...(b.k === 'thead' ? { bold: true } : {}) });
+          y += 18;
+        });
+        y += 2;
+        break;
       default: {
         const li = b.k === 'li';
-        const x = li ? 84 + 2 * CHAR_W * 13 : 64;
+        const depth = b.list?.depth ?? 0;
+        const x = li ? 84 + depth * 24 + 2 * CHAR_W * 13 : b.k === 'quote' ? 88 : 64;
         wrap(b.t, li ? 86 : 91).forEach((l, i) => {
-          lines.push({ block: b.id, ...l, x, y, size: 13, ...(li && i === 0 ? { bullet: { x: 84 } } : {}) });
+          lines.push({ block: b.id, ...l, x, y, size: 13, ...(li && i === 0 ? { bullet: { x: 84 + depth * 24 } } : {}) });
           y += 20;
         });
         y += 6;

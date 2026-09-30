@@ -42,15 +42,25 @@ Vomiting and abdominal pain for 2 days.
 | `<!-- Page: n -->` | Start of page n. The page is named after its first `##` heading |
 | `**A WHOLE LINE IN BOLD**` | Facility name at the top of a form |
 | `*A whole line in italics*` | Address or sub-heading line |
-| `# Title` | Form title |
-| `## Heading` (or `###`) | Section heading |
+| `# Title` (or a line underlined with `===`) | Form title |
+| `## Heading` (or underlined with `---`) | Section heading |
+| `### Heading`, `####` … | Sub-heading |
 | A paragraph | Paragraph. Line breaks inside it are joined |
-| `- item` or `1. item` | List item |
-| A ` ```text ` block | One line per row, spacing kept (vitals, labs, the patient header) |
+| `**bold**`, `*italic*`, `` `code` ``, `~~strike~~`, `[text](url)`, `<https://…>` | The same, inside any line, table cell or list item |
+| `- item`, `1. item`, indented `  - item` | Bulleted, numbered and nested lists (2 spaces a level) |
+| `- [x] done`, `- [ ] to do` | Checklist items |
+| `> quoted` | Quote |
+| `---` on its own line | Horizontal rule |
+| A ` ```text ` block (or ` ``` `) | One line per row, spacing kept (vitals, labs, the patient header) |
+| A ` ```lang ` block (e.g. ` ```csv `) | Code block, line breaks kept |
+| A pipe table, with or without outer `\|` | A table: header row, alignment from `:--`, `--:`, `:-:`, formatting in cells |
+| An HTML `<table>` | A table, including `colspan` / `rowspan` for grouped, multi-level headers |
 | `<!-- MAR -->` then a table | Medication administration record: header row, then one row per dose |
-| Any other table | One line per row, cells separated by " · " |
+| `<!-- Columns -->` … `<!-- Column -->` … `<!-- /Columns -->` | Content laid out in columns side by side (a two-column form) |
 
-Bold, italics, code and links inside a line show as plain text. Other `<!-- … -->` comments, images and `---` are ignored.
+Inline HTML such as `<b>`, `<i>`, `<br>` and `&nbsp;` is understood; other tags, `<!-- … -->` comments and images are left out. [RC-2026-1215](RC-2026-1215/record.md) uses every one of these and is the reference to copy from.
+
+Findings anchor to the **text as shown**, without the Markdown: for `**Troponin I**` the finding's `text` is `Troponin I`. In a table row, cells are joined with ` | `, so a finding can quote one cell or a whole row.
 
 ## findings.json
 

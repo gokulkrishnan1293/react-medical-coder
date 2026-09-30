@@ -29,6 +29,14 @@
     "J45.901": {
       "level": 2,
       "label": "Acute illness with systemic symptoms"
+    },
+    "I26.99": {
+      "level": 3,
+      "label": "Acute illness that poses a threat to bodily function"
+    },
+    "I82.431": {
+      "level": 2,
+      "label": "Acute illness with systemic symptoms"
     }
   },
   "problemDefault": {
@@ -45,7 +53,8 @@
     "81001",
     "83690",
     "84484",
-    "71045"
+    "71045",
+    "71275"
   ],
   "ecg": [
     "93000",

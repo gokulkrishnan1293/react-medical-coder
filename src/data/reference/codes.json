@@ -294,6 +294,31 @@
       "desc": "Albuterol/ipratropium, inhalation",
       "per": "3 mL",
       "kw": "albuterol ipratropium duoneb nebulizer"
+    },
+    {
+      "code": "I26.99",
+      "kind": "dx",
+      "desc": "Other pulmonary embolism without acute cor pulmonale",
+      "kw": "pulmonary embolism pe"
+    },
+    {
+      "code": "I82.431",
+      "kind": "dx",
+      "desc": "Acute embolism and thrombosis of right popliteal vein",
+      "kw": "dvt deep vein thrombosis popliteal"
+    },
+    {
+      "code": "71275",
+      "kind": "svc",
+      "desc": "CT angiography, chest",
+      "kw": "ctpa ct pulmonary angiogram"
+    },
+    {
+      "code": "J1644",
+      "kind": "drug",
+      "desc": "Heparin sodium injection",
+      "per": "1,000 units",
+      "kw": "heparin"
     }
   ]
 }

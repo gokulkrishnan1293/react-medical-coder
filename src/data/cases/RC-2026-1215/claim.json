@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "NSH-ED-55690-01",
+  "source": "ERDM",
+  "form": "UB-04 (837I)",
+  "billType": "0131",
+  "patient": { "name": "SAMPLE, MORGAN", "dob": "02/14/1958" },
+  "dos": "05/20/2026",
+  "reasonDx": "I26.99",
+  "dx": [
+    { "pointer": "A", "code": "I26.99", "desc": "Other pulmonary embolism without acute cor pulmonale", "principal": true },
+    { "pointer": "B", "code": "I82.431", "desc": "Acute embolism and thrombosis of right popliteal vein" }
+  ],
+  "lines": [
+    { "line": 1, "rev": "0450", "code": "99285", "desc": "Emergency department visit, high complexity", "kind": "svc", "units": 1, "dxPointers": "AB", "charge": 1850, "paidCode": "99284", "paidUnits": 1 },
+    { "line": 2, "rev": "0350", "code": "71275", "desc": "CT angiography, chest", "kind": "svc", "units": 1, "dxPointers": "A", "charge": 1450, "paidCode": "71275", "paidUnits": 1 },
+    { "line": 3, "rev": "0301", "code": "84484", "desc": "Troponin, quantitative", "kind": "svc", "units": 1, "dxPointers": "A", "charge": 95, "paidCode": "84484", "paidUnits": 1 }
+  ]
+}

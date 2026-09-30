@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "CLAIRE sample (formatting)",
+  "findings": [
+    { "id": "d1", "page": 2, "text": "pulmonary embolism", "type": "dx", "code": "I26.99", "desc": "Other pulmonary embolism without acute cor pulmonale", "note": "CTPA: right lower lobe segmental emboli, RV/LV 1.1, troponin elevated.", "status": "ai", "conf": 0.95 },
+    { "id": "d1b", "page": 2, "text": "Right lower lobe segmental pulmonary emboli", "type": "dx", "code": "I26.99", "desc": "Other pulmonary embolism without acute cor pulmonale", "status": "ai", "conf": 0.9 },
+    { "id": "d2", "page": 2, "text": "Occlusive thrombus in the popliteal vein", "type": "dx", "code": "I82.431", "desc": "Acute embolism and thrombosis of right popliteal vein", "status": "ai", "conf": 0.91 },
+    { "id": "d2b", "page": 3, "text": "Right calf swelling", "type": "dx", "code": "I82.431", "desc": "Acute embolism and thrombosis of right popliteal vein", "status": "ai", "conf": 0.78 },
+    { "id": "s1", "page": 2, "text": "Troponin I", "type": "svc", "code": "84484", "desc": "Troponin, quantitative", "status": "ai", "conf": 0.93 },
+    { "id": "s2", "page": 2, "text": "CT pulmonary angiogram", "type": "svc", "code": "71275", "desc": "CT angiography, chest", "status": "ai", "conf": 0.94 },
+    { "id": "m1", "page": 3, "text": "15:10 | Heparin infusion | 18 units/kg/hr | IV continuous | T. Nguyen, RN", "type": "mar", "code": "J1644", "desc": "Heparin sodium injection, per 1,000 units",
+      "mar": { "time": "15:10", "drug": "Heparin infusion", "dose": "18 units/kg/hr", "route": "IV continuous", "units": 2 }, "status": "ai", "conf": 0.89 },
+    { "id": "r1", "page": 2, "text": "Discussed with the PERT team (Dr. Okafor)", "type": "doc", "docKind": "externalDiscussion", "desc": "Discussion with external physician", "status": "ai", "conf": 0.88 }
+  ]
+}

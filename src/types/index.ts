@@ -64,15 +64,51 @@ export interface Finding {
 /** Where a finding lands in the review. */
 export type Route = 'onClaim' | 'notOnClaim' | 'support' | 'note' | 'excluded';
 
-/** 'mar' blocks are MAR table rows with cells separated by " | "; 'marHead' is the header row. */
-export type BlockKind = 'org' | 'sub' | 'title' | 'meta' | 'h' | 'p' | 'li' | 'marHead' | 'mar';
+/**
+ * 'mar' blocks are MAR table rows with cells separated by " | "; 'marHead' is the header row. 'thead' and 'tr' are
+ * rows of any other table (cells also joined with " | " in `t`), grouped by `table`. 'h3' is a third-level or
+ * smaller heading, 'quote' a blockquote, 'hr' a horizontal rule (no text), 'code' a code block (newlines kept).
+ */
+export type BlockKind = 'org' | 'sub' | 'title' | 'meta' | 'h' | 'h3' | 'p' | 'li' | 'quote' | 'hr' | 'code' | 'marHead' | 'mar' | 'thead' | 'tr';
+
+/** Inline formatting over a range of a block's plain text. */
+export interface TextSpan {
+  s: number;
+  e: number;
+  bold?: boolean;
+  italic?: boolean;
+  code?: boolean;
+  strike?: boolean;
+  href?: string;
+}
+
+/** One cell of a table row: where it sits in the row's text, and its column alignment. */
+export interface TableCell {
+  s: number;
+  e: number;
+  align?: 'left' | 'center' | 'right';
+  /** Columns and rows the cell spans (HTML colspan / rowspan), for grouped, multi-level headers. */
+  colSpan?: number;
+  rowSpan?: number;
+}
 
 export interface Block {
   id: string;
   k: BlockKind;
+  /** Plain text: what findings and flags anchor to, and what the scan and search see. */
   t: string;
   idx: number;
   page: number;
+  /** Bold, italic, code, strike and links over `t`. */
+  spans?: TextSpan[];
+  /** Table rows: the cells, in order. */
+  cells?: TableCell[];
+  /** Table rows: which table on the page they belong to. */
+  table?: string;
+  /** List items: numbered or not, the number, nesting depth (0 top level), checkbox state. */
+  list?: { ordered: boolean; n: number; depth: number; checked?: boolean };
+  /** Laid out in columns on the page: which column group, which column (0 first), and how many there are. */
+  cols?: { group: string; col: number; of: number };
 }
 
 export interface RecordPage {
