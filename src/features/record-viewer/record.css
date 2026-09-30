@@ -1,0 +1,38 @@
+/* Evidence boxes need pseudo-elements, box-decoration and keyframes, so they stay in plain CSS. */
+.ev {
+  position: relative;
+  color: inherit;
+  background: var(--cf);
+  border-radius: 3px;
+  padding: 2px;
+  outline: 1.5px dashed var(--c);
+  cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background 0.2s, outline-color 0.2s;
+}
+.ev.st-confirmed, .ev.st-added { outline-style: solid; }
+.ev.st-rejected { outline: 1px dotted var(--c); background: transparent; text-decoration: line-through; text-decoration-color: var(--rej); color: var(--ink-3); }
+.ev::before {
+  content: attr(data-tag);
+  position: absolute; left: -1.5px; bottom: 100%; margin-bottom: 1px;
+  font: 600 8.5px/1 var(--font-mono); letter-spacing: 0.04em;
+  padding: 2px 4px; border-radius: 3px 3px 0 0;
+  background: var(--c); color: var(--on-tag);
+  white-space: nowrap; pointer-events: none; text-indent: 0; text-decoration: none;
+}
+.ev.st-rejected::before { opacity: 0.7; }
+.ev:hover, .ev.hot { background: color-mix(in srgb, var(--c) 22%, transparent); }
+.ev.active { outline-width: 2.5px; }
+.ev.hot, .ev.flash { animation: ev-ring 1s ease-out 2; }
+@keyframes ev-ring {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--c) 55%, transparent); }
+  100% { box-shadow: 0 0 0 10px transparent; }
+}
+
+/* Reading aids */
+.clean .ev { outline: none; background: none; text-decoration: none; color: inherit; }
+.clean .ev::before { display: none; }
+.spot .blk { color: var(--ink-faint); }
+.spot .blk .ev { color: var(--ink); }
+.spot .blk .ev.st-rejected { color: var(--ink-faint); }

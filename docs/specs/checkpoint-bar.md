@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Draft. Describes the prototype as built (commit `e8f3b47`) plus open decisions. |
-| **Component** | `cps` nav in `src/app.jsx`; scoring in `summarize()`; styles `.cps`, `.cp*` in `src/style.css` |
+| **Component** | `src/features/checkpoints/`; scoring in `summarize()` (`src/features/findings/utils/mdm.ts`) |
 | **Screen** | Appeal review workbench, directly under the case header |
 
 ## 1. Purpose

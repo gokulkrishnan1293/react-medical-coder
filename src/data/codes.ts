@@ -1,0 +1,35 @@
+import type { CodeEntry } from '@/types';
+
+/* Demo code dictionary (subset of ICD-10-CM and CPT/HCPCS). */
+
+export const CODES: CodeEntry[] = [
+  { code: 'E86.0', kind: 'dx', desc: 'Dehydration', kw: 'dehydrated dehydration dry mucous' },
+  { code: 'E86.9', kind: 'dx', desc: 'Volume depletion, unspecified', kw: 'volume depletion hypovolemia' },
+  { code: 'I95.1', kind: 'dx', desc: 'Orthostatic hypotension', kw: 'orthostatic hypotension orthostasis drop standing' },
+  { code: 'E11.65', kind: 'dx', desc: 'Type 2 diabetes mellitus with hyperglycemia', kw: 'type 2 diabetes hyperglycemia uncontrolled high sugars glucose' },
+  { code: 'E11.22', kind: 'dx', desc: 'Type 2 diabetes mellitus with diabetic chronic kidney disease', kw: 'diabetic kidney disease nephropathy ckd' },
+  { code: 'E11.9', kind: 'dx', desc: 'Type 2 diabetes mellitus without complications', kw: 'type 2 diabetes' },
+  { code: 'N18.31', kind: 'dx', desc: 'Chronic kidney disease, stage 3a', kw: 'ckd stage 3a chronic kidney disease egfr' },
+  { code: 'N18.32', kind: 'dx', desc: 'Chronic kidney disease, stage 3b', kw: 'ckd stage 3b chronic kidney disease' },
+  { code: 'I12.9', kind: 'dx', desc: 'Hypertensive CKD with stage 1–4 or unspecified CKD', kw: 'hypertension ckd hypertensive kidney' },
+  { code: 'I10', kind: 'dx', desc: 'Essential (primary) hypertension', kw: 'hypertension blood pressure htn' },
+  { code: 'E87.1', kind: 'dx', desc: 'Hypo-osmolality and hyponatremia', kw: 'hyponatremia sodium na 131' },
+  { code: 'R42', kind: 'dx', desc: 'Dizziness and giddiness', kw: 'lightheaded lightheadedness dizziness dizzy' },
+  { code: 'R53.83', kind: 'dx', desc: 'Other fatigue', kw: 'fatigue weak tired' },
+  { code: 'R63.4', kind: 'dx', desc: 'Abnormal weight loss', kw: 'weight loss' },
+  { code: 'R63.1', kind: 'dx', desc: 'Polydipsia', kw: 'polydipsia thirst' },
+  { code: 'R35.1', kind: 'dx', desc: 'Nocturia', kw: 'nocturia urinary frequency' },
+  { code: 'R00.0', kind: 'dx', desc: 'Tachycardia, unspecified', kw: 'tachycardia tachycardic heart rate' },
+  { code: 'Z79.84', kind: 'dx', desc: 'Long term (current) use of oral hypoglycemic drugs', kw: 'metformin oral hypoglycemic' },
+  { code: 'Z79.4', kind: 'dx', desc: 'Long term (current) use of insulin', kw: 'insulin glargine' },
+  { code: 'E78.5', kind: 'dx', desc: 'Hyperlipidemia, unspecified', kw: 'hyperlipidemia atorvastatin cholesterol' },
+  { code: '99215', kind: 'px', desc: 'Office visit, established patient, high MDM or 40+ min', kw: 'office visit level 5 established' },
+  { code: '99214', kind: 'px', desc: 'Office visit, established patient, moderate MDM or 30–39 min', kw: 'office visit level 4 established' },
+  { code: '93000', kind: 'px', desc: 'Electrocardiogram, 12-lead, with interpretation and report', kw: 'ecg ekg 12-lead electrocardiogram tracing' },
+  { code: '93010', kind: 'px', desc: 'Electrocardiogram, interpretation and report only', kw: 'ecg ekg interpretation' },
+  { code: '83036', kind: 'px', desc: 'Hemoglobin A1c', kw: 'hba1c a1c glycated hemoglobin' },
+  { code: '82947', kind: 'px', desc: 'Glucose, quantitative, blood', kw: 'glucose point-of-care blood sugar' },
+  { code: '80048', kind: 'px', desc: 'Basic metabolic panel', kw: 'basic metabolic panel bmp electrolytes' },
+  { code: '36415', kind: 'px', desc: 'Collection of venous blood by venipuncture', kw: 'venipuncture blood draw' },
+  { code: 'G2211', kind: 'px', desc: 'Visit complexity inherent to longitudinal care (add-on)', kw: 'longitudinal complexity add-on' },
+];
