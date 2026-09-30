@@ -4,7 +4,7 @@ import { PAGES } from '@/data';
 import { cn } from '@/lib/utils';
 import { modLabel } from '@/lib/platform';
 import { ui } from '@/stores/uiStore';
-import { STATUS_LABEL } from '@/features/findings';
+import { STATUS_LABEL, sortByReading, useFindingsStore } from '@/features/findings';
 import { jumpTo } from '@/features/record-viewer';
 import { useNotepadStore } from '@/features/notepad';
 import { selectInRecord } from '@/features/add-finding';
@@ -51,9 +51,31 @@ const openNotepad = () => {
 
 const at = (...s: string[]) => () => s;
 
-/** Words the "add a finding" step selects: HPI on page 1, not marked by CLAIRE. */
-const DEMO_TEXT = 'polyuria and increasing thirst';
-const blockWith = (page: number, text: string) => PAGES.find((p) => p.n === page)?.blocks.find((b) => b.t.includes(text))?.id;
+/* Two steps show the open case itself, so they pick what to show from its data when they start. */
+
+/** The finding "Check a finding" opens: the first AI suggestion still to review, in reading order, else the first finding. */
+let shownFinding: string | null = null;
+function pickFinding() {
+  const ordered = sortByReading(useFindingsStore.getState().findings);
+  shownFinding = (ordered.find((f) => f.status === 'ai') ?? ordered[0])?.id ?? null;
+  if (shownFinding) jumpTo(shownFinding);
+}
+
+/** Words "Add what CLAIRE missed" selects: the start of the first paragraph or list item CLAIRE has not marked. */
+let shownWords: { page: number; block: string; text: string } | null = null;
+function pickWords() {
+  const marked = new Set(useFindingsStore.getState().findings.map((f) => f.block));
+  shownWords = null;
+  for (const p of PAGES) {
+    const b = p.blocks.find((x) => (x.k === 'p' || x.k === 'li') && !marked.has(x.id) && x.t.split(/\s+/).length >= 3);
+    if (b) {
+      shownWords = { page: p.n, block: b.id, text: b.t.split(/\s+/).slice(0, 5).join(' ') };
+      break;
+    }
+  }
+  const w = shownWords;
+  if (w) setTimeout(() => selectInRecord(w.page, w.text), 0);
+}
 
 /** The tour, in order. Every step's setup runs after resetStage(). */
 export const STEPS: TourStep[] = [
@@ -112,8 +134,8 @@ export const STEPS: TourStep[] = [
     section: 'Review',
     title: 'Check a finding',
     body: "Hover a box to see its finding; click to pin it. The card shows whether the code is on the claim, CLAIRE's confidence and reasoning, and the MDM element it supports. Evidence lists the pages and every place the record documents this code. Accept or reject the code once and it covers every place; drop a single wrong place, or tag another one yourself. Try it on this one.",
-    targets: at('[aria-label="Finding details"]', '#ev-d2'),
-    setup: () => jumpTo('d2'),
+    targets: () => (shownFinding ? ['[aria-label="Finding details"]', `#ev-${CSS.escape(shownFinding)}`] : ['[data-tour="record"]']),
+    setup: pickFinding,
     keys: [[['J', 'K'], 'Next / previous finding'], [['A'], 'Accept'], [['R'], 'Reject'], [[modLabel('Z')], 'Undo']],
   },
   {
@@ -121,8 +143,8 @@ export const STEPS: TourStep[] = [
     section: 'Review',
     title: 'Add what CLAIRE missed',
     body: 'Select words in the record and say what they are: a diagnosis, service, MAR entry, documentation, or a note. A MAR row is always taken whole. Right-clicking a selection offers the same choices.',
-    targets: at(`[data-block="${blockWith(1, DEMO_TEXT)}"]`, '[aria-label="Add finding"]'),
-    setup: () => setTimeout(() => selectInRecord(1, DEMO_TEXT), 0),
+    targets: () => (shownWords ? [`[data-block="${shownWords.block}"]`, '[aria-label="Add finding"]'] : ['[data-tour="record"]']),
+    setup: pickWords,
   },
   {
     id: 'minimap',
