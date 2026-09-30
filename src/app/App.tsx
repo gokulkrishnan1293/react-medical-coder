@@ -9,7 +9,7 @@ import { ComposePanel, SelectionToolbar, useAddFindingStore } from '@/features/a
 import { DockHint, DockedNotepad, FloatingNotepad, NotesBubble, keepOnScreen, tuckForNarrow, useNotepadStore } from '@/features/notepad';
 import { FullNotes } from '@/features/full-notes';
 import { CommandPalette } from '@/features/command-palette';
-import { CompareToggle, SourcePane, SourceStage } from '@/features/source-view';
+import { SourcePane, SourceStage, ViewSwitch } from '@/features/source-view';
 import { DocMenu } from '@/features/doc-menu';
 import { UndoToast, useFindings } from '@/features/findings';
 import { useKeyboardShortcuts } from '@/features/shortcuts';
@@ -44,7 +44,7 @@ export function App() {
         <PatientStrip />
         <div className="flex min-h-0">
           {source === 'compare' && <SourcePane />}
-          <RecordViewer overlay={source === 'stage' && <SourceStage />} tools={<CompareToggle />} />
+          <RecordViewer margin={source === 'stage' && <SourceStage />} tools={<ViewSwitch />} />
           {npMode === 'dock' && <DockedNotepad narrow={narrow} />}
         </div>
 

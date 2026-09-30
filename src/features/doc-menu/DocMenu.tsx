@@ -4,6 +4,8 @@ import { clamp, cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { useAddFindingStore, type ComposeType } from '@/features/add-finding';
 import { setZoom, stepZoom } from '@/features/zoom';
+import { setSourceMode, VIEW_LABEL } from '@/features/source-view';
+import type { SourceMode } from '@/stores/uiStore';
 import { closeDocMenu, showInOriginal, showInRecord } from './actions';
 
 interface Item {
@@ -45,12 +47,14 @@ export function DocMenu() {
   );
   if (side === 'record') {
     if (at) entries.push({ label: 'Show this in the original', icon: <Icon.compare size={14} />, run: () => showInOriginal(at) });
-    entries.push({ label: source === 'compare' ? 'Close original' : 'Compare with original', hint: 'O', run: () => set({ source: source === 'compare' ? 'stage' : 'compare' }) });
+    entries.push('sep');
+    (['stage', 'compare', 'overlay'] as SourceMode[]).forEach((m) =>
+      entries.push({ label: VIEW_LABEL[m], checked: source === m, run: () => setSourceMode(m) }));
   } else {
     if (at) entries.push({ label: 'Show this in the record', icon: <Icon.notes size={14} />, run: () => showInRecord(at) });
     entries.push(
       { label: 'Scroll with the record', icon: <Icon.link size={14} />, checked: syncScroll, run: () => set({ syncScroll: !syncScroll }) },
-      { label: 'Close original', hint: 'O', run: () => set({ source: 'stage' }) },
+      { label: 'Close original', hint: 'Esc', run: () => setSourceMode('stage') },
     );
   }
   const items = entries.filter((e): e is Item => e !== 'sep');

@@ -4,11 +4,13 @@ import { useAddFindingStore } from '@/features/add-finding';
 import { useNotepadStore } from '@/features/notepad';
 import { useUiStore } from '@/stores/uiStore';
 import { hoveredSide, setZoom, stepZoom } from '@/features/zoom';
+import { cycleSourceMode, setDivider, setSourceMode } from '@/features/source-view';
 import { openFullNotes, stepFinding } from './actions';
 
 /**
  * Global keys: J/K next/previous finding, A accept, R reject, N notepad, D dock/float,
- * F full notes, S spotlight, C clean read, O compare with original, Esc close, ⌘K palette, ⌘Z undo.
+ * F full notes, S spotlight, C clean read, O cycle original view, Esc close, ⌘K palette, ⌘Z undo.
+ * Overlay view: ← → move the slider, hold Space to see the whole scan.
  * + / − / 0 (with or without ⌘) zoom the column under the pointer: the record, or the original.
  */
 export function useKeyboardShortcuts(narrow: boolean) {
@@ -36,11 +38,20 @@ export function useKeyboardShortcuts(narrow: boolean) {
         else if (ui.full) ui.set({ full: null });
         else if (ui.card) ui.set({ card: null });
         else if (add.sel) add.cancel();
-        else if (ui.source !== 'stage') ui.set({ source: 'stage' });
+        else if (ui.source !== 'stage') setSourceMode('stage');
         return;
       }
       if (typing || e.metaKey || e.ctrlKey || e.altKey || ui.palette || add.compose || ui.menu) return;
       if (ui.full && k !== 'f') return;
+
+      if (ui.source === 'overlay' && !ui.full) {
+        if (e.key === ' ') { e.preventDefault(); if (!ui.peek) ui.set({ peek: true }); return; }
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          setDivider(ui.divider + (e.key === 'ArrowLeft' ? -1 : 1) * (e.shiftKey ? 0.01 : 0.05));
+          return;
+        }
+      }
 
       const target = ui.activeId ?? ui.card?.id;
       switch (k) {
@@ -57,10 +68,21 @@ export function useKeyboardShortcuts(narrow: boolean) {
         case 'f': if (ui.full) ui.set({ full: null }); else openFullNotes(); break;
         case 's': ui.toggleSpot(); break;
         case 'c': ui.toggleClean(); break;
-        case 'o': ui.toggleSource(); break;
+        case 'o': cycleSourceMode(); break;
       }
     };
+    // releasing Space ends the overlay peek; so does leaving the window while it is held
+    const endPeek = (e?: KeyboardEvent) => {
+      if ((!e || e.key === ' ') && useUiStore.getState().peek) useUiStore.getState().set({ peek: false });
+    };
+    const onBlur = () => endPeek();
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener('keyup', endPeek);
+    window.addEventListener('blur', onBlur);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('keyup', endPeek);
+      window.removeEventListener('blur', onBlur);
+    };
   }, [narrow]);
 }

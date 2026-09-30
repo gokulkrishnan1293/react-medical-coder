@@ -1,8 +1,11 @@
 import { create } from 'zustand';
 
 export type FullNotesTab = 'findings' | 'claim';
-/** How the original page images show: stacked in the margin, or as a column beside the record. */
-export type SourceMode = 'stage' | 'compare';
+/**
+ * How the original page images show: stacked in the margin while reading, as a column beside the
+ * record, or laid over the extracted text on the same page with a slider between them.
+ */
+export type SourceMode = 'stage' | 'compare' | 'overlay';
 /** The two scrolling columns: extracted record and original page images. */
 export type ZoomSide = 'record' | 'source';
 /** A zoom factor, or fit the page to the column width. */
@@ -38,13 +41,16 @@ interface UiState {
   fit: Record<ZoomSide, number>;
   source: SourceMode;
   syncScroll: boolean;
+  /** Overlay view: how far across the page the scan reaches, 0 to 1. */
+  divider: number;
+  /** Overlay view: the whole page shows the scan while a key is held. */
+  peek: boolean;
   /** Spot on the original to point out briefly, e.g. after "Show in original". */
   sourceMark: (DocSpot & { t: number }) | null;
   menu: DocMenu | null;
   set: (patch: Partial<Omit<UiState, 'set'>>) => void;
   toggleSpot: () => void;
   toggleClean: () => void;
-  toggleSource: () => void;
 }
 
 /* Cross-feature UI state: what is active, hovered, open. */
@@ -63,12 +69,13 @@ export const useUiStore = create<UiState>((set) => ({
   fit: { record: 1, source: 1 },
   source: 'stage',
   syncScroll: true,
+  divider: 0.5,
+  peek: false,
   sourceMark: null,
   menu: null,
   set: (patch) => set(patch),
   toggleSpot: () => set((s) => ({ view: { spot: !s.view.spot, clean: false } })),
   toggleClean: () => set((s) => ({ view: { clean: !s.view.clean, spot: false } })),
-  toggleSource: () => set((s) => ({ source: s.source === 'stage' ? 'compare' : 'stage' })),
 }));
 
 export const ui = () => useUiStore.getState();

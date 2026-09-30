@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { scrollerRef } from '@/lib/dom';
 import { useUiStore } from '@/stores/uiStore';
 
-/** Tracks which record pages are visible and which one is most in view. */
-export function useScrollSync() {
+/** Tracks which record pages are visible and which one is most in view. `layout` changes when the pages are redrawn. */
+export function useScrollSync(layout?: unknown) {
   useEffect(() => {
     const root = scrollerRef.current;
     if (!root) return;
@@ -25,5 +25,5 @@ export function useScrollSync() {
     );
     root.querySelectorAll('[data-page]').forEach((p) => io.observe(p));
     return () => io.disconnect();
-  }, []);
+  }, [layout]);
 }

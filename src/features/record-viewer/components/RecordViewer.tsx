@@ -9,26 +9,30 @@ import { ZoomControls, useFitWidth, useZoom, useZoomGestures } from '@/features/
 import { openDocMenu } from '@/features/doc-menu';
 import { useScrollSync } from '../useScrollSync';
 import { RecordPage } from './RecordPage';
+import { OverlayPage } from './OverlayPage';
+import { OverlayDivider } from './OverlayDivider';
 import { Minimap } from './Minimap';
 import '../record.css';
 
 interface Props {
   /** Floats over the record's margin, e.g. the stack of original pages. */
-  overlay?: ReactNode;
+  margin?: ReactNode;
   /** Extra controls shown next to zoom. */
   tools?: ReactNode;
 }
 
 /** The record: continuous scroll of pages, page indicator and minimap. */
-export function RecordViewer({ overlay, tools }: Props) {
+export function RecordViewer({ margin, tools }: Props) {
   const findings = useFindings();
   const currentPage = useUiStore((s) => s.currentPage);
+  /* Overlay view draws each page on the scan's line boxes, with the scan laid over it. */
+  const overlay = useUiStore((s) => s.source === 'overlay');
   const onMouseUp = useTextSelection();
   const scrollTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const zoom = useZoom('record');
   useFitWidth('record', scrollerRef);
   useZoomGestures('record', scrollerRef);
-  useScrollSync();
+  useScrollSync(overlay);
 
   const byBlock = useMemo(() => {
     const m: Record<string, Finding[]> = {};
@@ -55,18 +59,21 @@ export function RecordViewer({ overlay, tools }: Props) {
         className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 pt-12 pb-[140px] max-[760px]:pt-4 max-[760px]:pb-[120px]"
       >
         <div style={{ zoom }} className="mx-auto flex max-w-[800px] flex-col gap-7">
-          {PAGES.map((p) => <RecordPage key={p.n} page={p} byBlock={byBlock} />)}
+          {PAGES.map((p) => (overlay
+            ? <OverlayPage key={p.n} page={p} byBlock={byBlock} />
+            : <RecordPage key={p.n} page={p} byBlock={byBlock} />))}
         </div>
       </div>
       <div className="pointer-events-none absolute top-2.5 right-[30px] z-5 rounded-full border border-line bg-chrome px-2.5 py-[3px] font-mono text-[11.5px] font-medium text-ink-2 tabular-nums max-[760px]:hidden">
         Page {currentPage} of {PAGES.length}
       </div>
-      {overlay}
+      {margin}
+      {overlay && <OverlayDivider />}
       <div className="absolute top-2.5 left-[30px] z-6 flex items-center gap-1 rounded-full border border-line bg-chrome p-0.5 shadow-page max-[760px]:hidden">
         <ZoomControls side="record" />
         {tools && <><span className="mx-1 h-4 w-px bg-line" />{tools}</>}
       </div>
-      <Minimap />
+      <Minimap key={overlay ? 'overlay' : 'reading'} />
     </div>
   );
 }

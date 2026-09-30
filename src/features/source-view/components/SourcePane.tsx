@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
 import { PAGE_COLUMN, ZoomControls, useFitWidth, useZoom, useZoomGestures } from '@/features/zoom';
 import { openDocMenu } from '@/features/doc-menu';
+import { setSourceMode } from '../actions';
 import { alignSource, syncRecordFromSource, syncSourceFromRecord } from '../sync';
 
 /** The original page images in a column beside the record, zoomed on their own and scroll-locked to it. */
@@ -88,7 +89,7 @@ function SourceToolbar() {
       >
         {syncScroll ? <Icon.link size={14} /> : <Icon.unlink size={14} />}
       </button>
-      <button type="button" className={iconBtn} aria-label="Close original" title="Close original (O)" onClick={() => set({ source: 'stage' })}>
+      <button type="button" className={iconBtn} aria-label="Close original" title="Close original (Esc)" onClick={() => setSourceMode('stage')}>
         <Icon.close size={14} />
       </button>
     </div>

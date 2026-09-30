@@ -4,6 +4,7 @@ import { PAGES, PAGE_H, PAGE_IMAGES, PAGE_W } from '@/data';
 import { pageEl, scrollerRef } from '@/lib/dom';
 import { cn, scrollBehavior } from '@/lib/utils';
 import { useUiStore } from '@/stores/uiStore';
+import { setSourceMode } from '../actions';
 import { PAGE_COLUMN, useZoom } from '@/features/zoom';
 
 const CARD_W = 104;
@@ -17,7 +18,6 @@ const ROOM = CARD_W + 44;
 export function SourceStage() {
   const currentPage = useUiStore((s) => s.currentPage);
   const zoom = useZoom('record');
-  const set = useUiStore((s) => s.set);
   const [gutter, setGutter] = useState(0);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ export function SourceStage() {
 
   const open = (n: number) => {
     if (n !== currentPage) pageEl(n)?.scrollIntoView({ behavior: scrollBehavior(), block: 'start' });
-    set({ source: 'compare' });
+    setSourceMode('compare');
   };
 
   return (

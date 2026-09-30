@@ -38,6 +38,7 @@ export const Icon = {
   right: make(<path d="M9 6l6 6-6 6" />),
   stage: make(<><rect x="9" y="4" width="12" height="16" rx="1.5" /><path d="M3 7h3M3 12h3M3 17h3" /></>),
   compare: make(<><rect x="3" y="4" width="8" height="16" rx="1.5" /><rect x="13" y="4" width="8" height="16" rx="1.5" /></>),
+  overlay: make(<><rect x="4" y="3" width="16" height="18" rx="1.5" /><path d="M12 1v22" /><path d="M4 8h8M4 12h8M4 16h8" strokeDasharray="1.5 2" /></>),
   fitWidth: make(<><path d="M3 5v14M21 5v14" /><path d="M7 12h10M10 9l-3 3 3 3M14 9l3 3-3 3" /></>),
   link: make(<><path d="M10 14a4 4 0 005.66 0l3-3a4 4 0 00-5.66-5.66L11.5 6.8" /><path d="M14 10a4 4 0 00-5.66 0l-3 3a4 4 0 005.66 5.66l1.5-1.46" /></>),
   unlink: make(<><path d="M15.5 13.5l3-3a4 4 0 00-5.66-5.66L11.5 6.2" /><path d="M8.5 10.5l-3 3a4 4 0 005.66 5.66l1.34-1.36" /><path d="M4 4l16 16" /></>),

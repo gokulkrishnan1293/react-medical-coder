@@ -5,6 +5,7 @@ import { useNotepadStore } from '@/features/notepad';
 import { nextAiSuggestion, openFullNotes, stepFinding } from '@/features/shortcuts';
 import { useUiStore } from '@/stores/uiStore';
 import { setZoom, stepZoom } from '@/features/zoom';
+import { cycleSourceMode, setSourceMode } from '@/features/source-view';
 
 export interface Command {
   label: string;
@@ -22,7 +23,10 @@ export function getCommands(): Command[] {
     ...PAGES.map((p) => ({ label: `Go to page ${p.n} · ${p.label}`, run: () => goPage(p.n) })),
     { label: 'Toggle spotlight', key: 'S', run: ui.toggleSpot },
     { label: 'Toggle clean read', key: 'C', run: ui.toggleClean },
-    { label: ui.source === 'compare' ? 'Close original' : 'Compare with original', key: 'O', run: ui.toggleSource },
+    { label: 'Reading view', run: () => setSourceMode('stage') },
+    { label: 'Compare with original side by side', run: () => setSourceMode('compare') },
+    { label: 'Overlay original on the record (slider)', run: () => setSourceMode('overlay') },
+    { label: 'Cycle original view', key: 'O', run: cycleSourceMode },
     { label: 'Zoom in record', key: '+', run: () => stepZoom('record', 1) },
     { label: 'Zoom out record', key: '−', run: () => stepZoom('record', -1) },
     { label: 'Record at actual size', key: '0', run: () => setZoom('record', 1) },

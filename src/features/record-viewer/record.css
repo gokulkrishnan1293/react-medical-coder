@@ -36,3 +36,7 @@
 .spot .blk { color: var(--ink-faint); }
 .spot .blk .ev { color: var(--ink); }
 .spot .blk .ev.st-rejected { color: var(--ink-faint); }
+
+/* Overlay view: text sits on the scan's line boxes, so evidence boxes must not add width. */
+.ov .ev { padding: 1px 0; }
+.ov .ev.cont::before { display: none; }
