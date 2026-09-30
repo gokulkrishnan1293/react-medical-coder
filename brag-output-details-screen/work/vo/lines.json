@@ -1,0 +1,19 @@
+[
+ "This is the CLAIRE case workbench, where you review a downcode reconsideration from start to finish.",
+ "The idea is simple. Stay in the record, and let everything else come to you.",
+ "Up top, every field on the claim is checked against the record. Green is verified, amber is a mismatch.",
+ "The record fills the screen, and each of CLAIRE's findings is boxed right where its evidence appears.",
+ "The notepad follows the pages you're reading, so the findings beside you are the ones in front of you.",
+ "Open a finding to see CLAIRE's confidence, its reasoning, and every place the record supports it.",
+ "Accept it once, and it covers every place. Or just press A.",
+ "If CLAIRE missed something, select the words, and say what they are: a diagnosis, a service, a MAR entry, or a note.",
+ "And if the text itself came out wrong, flag it, and write what the original actually shows.",
+ "To check the source, open the original scan side by side. It scrolls right along with the record.",
+ "Or lay the scan over the text, and compare them line by line.",
+ "Spotlight dims everything but the evidence. Clean read hides every mark, so you read the record as written.",
+ "Full notes puts it all in one place. Every claim line, checked against the record.",
+ "And every intervention, with the path from the findings, through the rules, to the result.",
+ "Every action is one shortcut away. Press Control K, type a few letters, and go.",
+ "When you're done, complete the review with a closing comment.",
+ "Stay in the record. Press the question mark in any case for the full tour."
+]
