@@ -122,7 +122,7 @@ function Confidence({ f }: { f: Finding }) {
 function PageList({ places, onJump }: { places: Finding[]; onJump: (id: string) => void }) {
   const pages = [...new Set(places.map((p) => p.page))];
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex gap-1">
       {pages.map((n) => {
         const here = places.filter((p) => p.page === n);
         const open = here.find((p) => p.status !== 'rejected') ?? here[0];
