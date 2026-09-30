@@ -18,7 +18,9 @@
 
 The app's save API was replaced by an in-memory stand-in during capture, so nothing was written to the case folders.
 
-**Voice:** Kokoro `af_heart` at 1.08×. **Sound:** voice only, with very soft UI clicks under it and no music. **Format:** 1920×1080, 30fps, 154.9s.
+**Voice:** Kokoro `af_heart` at 1.08×. **Two cuts:**
+- `details-screen-v2-voice-music.mp4` has the voice over a light music bed (Happy Beats / Business Moves vol. 1, about 10 dB under the voice) and very soft UI clicks.
+- `details-screen-v2-voice.mp4` has the voice and soft clicks only. **Format:** 1920×1080, 30fps, 154.9s.
 
 ## Voiceover script
 
