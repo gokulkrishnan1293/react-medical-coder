@@ -16,6 +16,7 @@ import { useKeyboardShortcuts } from '@/features/shortcuts';
 import { ReadOnlyBanner, useReviewTimer } from '@/features/review';
 import { CaptureOverlay, FlagComposer, useExtractionStore } from '@/features/extraction';
 import { Tour, startTourIfNew } from '@/features/tour';
+import { AskButton, AssistantPanel, useAssistantStore } from '@/features/assistant';
 
 /** Layout shell: header, patient strip, record + notepad, and floating layers. */
 export function App() {
@@ -32,6 +33,7 @@ export function App() {
   const snap = useNotepadStore((s) => s.snap);
   const flagDraft = useExtractionStore((s) => s.draft);
   const capturing = useExtractionStore((s) => !!s.capture);
+  const asking = useAssistantStore((s) => s.open);
 
   useKeyboardShortcuts(narrow);
   useReviewTimer();
@@ -65,6 +67,7 @@ export function App() {
         {sel && compose && <ComposePanel key={sel.text} sel={sel} type={compose} />}
         {flagDraft && <FlagComposer key={JSON.stringify(flagDraft)} />}
         {capturing && <CaptureOverlay />}
+        <AnimatePresence>{asking ? <AssistantPanel key="assistant" narrow={narrow} /> : <AskButton key="ask" />}</AnimatePresence>
 
         <AnimatePresence>
           {full && <FullNotes key="full" tab={full} />}

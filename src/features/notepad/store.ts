@@ -41,7 +41,8 @@ function initialRect(narrow: boolean): Rect & { mode: NotepadMode } {
   const H = window.innerHeight;
   if (narrow) return { mode: 'min', x: 8, y: Math.round(H * 0.4), w: W - 16, h: Math.round(H * 0.55) };
   const w = 360;
-  return { mode: 'float', x: W - w - 40, y: 150, w, h: Math.min(500, H - 210) };
+  // the case opens on the record alone; the notepad waits in the bubble until asked for (N)
+  return { mode: 'min', x: W - w - 40, y: 150, w, h: Math.min(500, H - 210) };
 }
 
 const isOpen = (m: NotepadMode): m is OpenMode => m === 'float' || m === 'dock';

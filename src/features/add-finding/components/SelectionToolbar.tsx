@@ -7,6 +7,7 @@ import { useReadOnly } from '@/features/findings';
 import { applyRebind, cancelRebind, rebindLabel } from '../rebind';
 import { Icon } from '@/components/ui';
 import { useExtractionStore } from '@/features/extraction';
+import { useAssistantStore } from '@/features/assistant';
 
 const ITEMS: [ComposeType, string][] = [['dx', 'Diagnosis'], ['svc', 'Service'], ['mar', 'MAR'], ['doc', 'Doc'], ['note', 'Note']];
 
@@ -19,7 +20,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
   const readOnly = useReadOnly();
   const r = sel.range.getBoundingClientRect();
   if (!r.width && !r.height) return null;
-  const W = sel.overlap ? 330 : rebind ? 330 : 470;
+  const W = sel.overlap ? 390 : rebind ? 330 : 530;
   // flag what the extraction got wrong, even inside a finding's evidence
   const flag = (
     <button
@@ -31,6 +32,17 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
       <Icon.flag size={13} />Flag
     </button>
   );
+  // ask CLAIRE about the selected words
+  const ask = (
+    <button
+      type="button"
+      onClick={() => { useAssistantStore.getState().askAbout({ page: sel.page, text: sel.text }); useAddFindingStore.getState().cancel(); }}
+      title="Ask CLAIRE about these words (Q)"
+      className="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-[12.5px] font-medium hover:bg-paper/15"
+    >
+      <Icon.spark size={13} />Ask
+    </button>
+  );
   const left = clamp(r.left + r.width / 2 - W / 2, 8, window.innerWidth - W - 8);
   const top = r.top > 120 ? r.top - 46 : r.bottom + 8;
   const base = 'fixed z-70 rounded-[9px] bg-ink text-paper shadow-float';
@@ -38,8 +50,10 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
 
   if (readOnly) {
     return (
-      <motion.div data-add-finding {...anim} className={base + ' px-3 py-2 text-xs'} style={{ left, top, width: 270 }} onMouseDown={(e) => e.preventDefault()}>
-        Review completed. Reopen it to add findings.
+      <motion.div data-add-finding {...anim} className={base + ' flex items-center gap-2 py-1 pr-1 pl-3 text-xs'} style={{ left, top, width: 340 }} onMouseDown={(e) => e.preventDefault()}>
+        <span className="flex-1">Review completed. Reopen it to add findings.</span>
+        <span className="h-4 w-px bg-paper/25" />
+        {ask}
       </motion.div>
     );
   }
@@ -49,6 +63,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
         <span className="flex-1">Part of this is already a finding.</span>
         <span className="h-4 w-px bg-paper/25" />
         {flag}
+        {ask}
       </motion.div>
     );
   }
@@ -72,6 +87,7 @@ export function SelectionToolbar({ sel }: { sel: TextSelection }) {
       ))}
       <span className="mx-1 h-4 w-px bg-paper/25" />
       {flag}
+      {ask}
     </motion.div>
   );
 }

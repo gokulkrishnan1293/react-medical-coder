@@ -115,8 +115,8 @@ function TourStepView({ step, i, n, next, prev, stop }: { step: TourStep; i: num
       const t = e.target as HTMLElement;
       if (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable) return;
       if (e.key === 'Escape') stop();
-      else if (e.key === 'Enter' || (e.key === 'ArrowRight' && !step.appArrows)) next();
-      else if (e.key === 'ArrowLeft' && !step.appArrows) prev();
+      else if (e.key === 'Enter' || e.key === 'ArrowRight') next();
+      else if (e.key === 'ArrowLeft') prev();
       else return;
       e.preventDefault();
       e.stopImmediatePropagation();
@@ -194,7 +194,7 @@ function TourStepView({ step, i, n, next, prev, stop }: { step: TourStep; i: num
         <div className="mt-3 flex items-center gap-1.5">
           {i === 0
             ? <button type="button" onClick={stop} className="mr-auto text-[12.5px] text-ink-3 hover:text-ink">Skip tour</button>
-            : <span className="mr-auto hidden text-[11px] text-ink-3 sm:inline">{step.appArrows ? 'Enter' : '← →'} to move · Esc to leave</span>}
+            : <span className="mr-auto hidden text-[11px] text-ink-3 sm:inline">← → to move · Esc to leave</span>}
           {i > 0 && <Button onClick={prev}><Icon.left size={14} />Back</Button>}
           <Button variant="primary" onClick={next} className={cn(i === 0 && 'px-3.5')}>
             {i === 0 ? 'Start the tour' : last ? 'Finish' : 'Next'}

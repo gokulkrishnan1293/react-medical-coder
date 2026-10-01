@@ -1,4 +1,4 @@
-export { useNotepadStore, tuckForNarrow, keepOnScreen } from './store';
+export { useNotepadStore, tuckForNarrow, keepOnScreen, type NotepadMode } from './store';
 export { FloatingNotepad } from './components/FloatingNotepad';
 export { DockedNotepad } from './components/DockedNotepad';
 export { NotesBubble } from './components/NotesBubble';

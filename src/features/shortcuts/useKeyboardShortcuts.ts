@@ -7,11 +7,12 @@ import { isModKey } from '@/lib/platform';
 import { hoveredSide, setZoom, stepZoom } from '@/features/zoom';
 import { cycleSourceMode, setDivider, setSourceMode } from '@/features/source-view';
 import { startTour, useTourStore } from '@/features/tour';
+import { useAssistantStore } from '@/features/assistant';
 import { openFullNotes, stepFinding } from './actions';
 
 /**
  * Global keys: J/K next/previous finding, A accept, R reject (removes a coder-added finding, as do Delete and Backspace), N notepad, D dock/float,
- * F full notes, S spotlight, C clean read, O cycle original view, ? tour, Esc close, ⌘K / Ctrl+K palette, ⌘Z / Ctrl+Z undo.
+ * F full notes, S spotlight, C clean read, O cycle original view, Q ask CLAIRE (about the selection, if any), ? tour, Esc close, ⌘K / Ctrl+K palette, ⌘Z / Ctrl+Z undo.
  * The modifier follows the platform: ⌘ on Mac, Ctrl on Windows and Linux.
  * Overlay view: ← → move the slider, hold Space to see the whole scan.
  * + / − / 0 (with or without ⌘ / Ctrl) zoom the column under the pointer: the record, or the original.
@@ -42,6 +43,7 @@ export function useKeyboardShortcuts(narrow: boolean) {
         else if (ui.full) ui.set({ full: null });
         else if (ui.card) ui.set({ card: null });
         else if (add.sel) add.cancel();
+        else if (useAssistantStore.getState().open) useAssistantStore.getState().hide();
         else if (ui.source !== 'stage') setSourceMode('stage');
         return;
       }
@@ -82,6 +84,12 @@ export function useKeyboardShortcuts(narrow: boolean) {
         case 's': ui.toggleSpot(); break;
         case 'c': ui.toggleClean(); break;
         case 'o': cycleSourceMode(); break;
+        case 'q': {
+          e.preventDefault();
+          const as = useAssistantStore.getState();
+          if (add.sel) { as.askAbout({ page: add.sel.page, text: add.sel.text }); add.cancel(); } else as.toggle();
+          break;
+        }
         case '?': if (useTourStore.getState().index === null) startTour('case'); break;
       }
     };

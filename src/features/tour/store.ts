@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { NARROW_QUERY } from '@/hooks/useMediaQuery';
 import { STEPS, type TourStep } from './steps';
 import { HOME_STEPS } from './homeSteps';
-import { resetStage } from './stage';
+import { rememberStage, resetStage, restoreStage } from './stage';
 
 /** Two walkthroughs: the review workbench for a case, and the home screen. Each is seen once on its own. */
 export type TourName = 'case' | 'home';
@@ -41,6 +41,7 @@ export const useTourStore = create<TourState>((set, get) => ({
   index: null,
   start: (tour = 'case') => {
     const narrow = window.matchMedia(NARROW_QUERY).matches;
+    if (tour === 'case' && get().index === null) rememberStage();
     set({ tour, steps: TOURS[tour].steps.filter((s) => !(narrow && s.wide)) });
     get().go(0);
   },
@@ -63,7 +64,7 @@ export const useTourStore = create<TourState>((set, get) => ({
   },
   stop: () => {
     const { tour } = get();
-    if (tour === 'case') resetStage();
+    if (tour === 'case') { resetStage(); restoreStage(); }
     markSeen(tour);
     set({ index: null });
   },

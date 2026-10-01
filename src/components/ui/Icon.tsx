@@ -53,5 +53,8 @@ export const Icon = {
   sun: make(<><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>),
   moon: make(<path d="M20 14.5A8 8 0 019.5 4a8 8 0 1010.5 10.5z" />),
   monitor: make(<><rect x="3" y="4" width="18" height="12" rx="2" /><path d="M8 20h8M12 16v4" /></>),
+  spark: make(<><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" /><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" /></>),
+  send: make(<path d="M5 12h13M13 6l6 6-6 6" />),
+  stop: make(<rect x="7" y="7" width="10" height="10" rx="1.5" />),
   help: make(<><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 014.9.7c0 1.7-2.4 2.3-2.4 3.8M12 17v.5" /></>),
 };

@@ -7,6 +7,7 @@ import { useFindingsStore } from '@/features/findings';
 import { blockAt, useExtractionStore } from '@/features/extraction';
 import { setZoom, stepZoom } from '@/features/zoom';
 import { SOURCE_MODES, setSourceMode, VIEW_LABEL } from '@/features/source-view';
+import { useAssistantStore } from '@/features/assistant';
 import { closeDocMenu, showInOriginal, showInRecord } from './actions';
 
 interface Item {
@@ -43,6 +44,7 @@ export function DocMenu() {
   if (side === 'record' && sel && !readOnly) {
     entries.push({ label: 'Flag extraction problem', icon: <Icon.flag size={14} />, run: () => draft({ draft: { mode: 'words', page: sel.page, block: sel.block, text: sel.text, x: menu.x, y: menu.y } }) });
   }
+  if (side === 'record' && sel) entries.push({ label: 'Ask CLAIRE about this', hint: 'Q', icon: <Icon.spark size={14} />, run: () => { useAssistantStore.getState().askAbout({ page: sel.page, text: sel.text }); useAddFindingStore.getState().cancel(); } });
   if (side === 'record' && sel) entries.push({ label: 'Copy', icon: <Icon.copy size={14} />, run: () => void navigator.clipboard?.writeText(sel.text) }, 'sep');
   // no words for what is missing: flag the spot, on the record or on the original
   if (!sel && at && !readOnly) {

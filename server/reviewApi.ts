@@ -17,7 +17,7 @@ import type { Plugin } from 'vite';
 
 const MAX_BODY = 5 * 1024 * 1024;
 
-function body(req: IncomingMessage): Promise<string> {
+export function body(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     let size = 0;
     const chunks: Buffer[] = [];
@@ -30,7 +30,7 @@ function body(req: IncomingMessage): Promise<string> {
   });
 }
 
-const send = (res: ServerResponse, status: number, json?: unknown) => {
+export const send = (res: ServerResponse, status: number, json?: unknown) => {
   res.statusCode = status;
   if (json === undefined) return res.end();
   res.setHeader('Content-Type', 'application/json');

@@ -6,11 +6,13 @@ import { useNotepadStore } from '@/features/notepad';
 import { useUiStore } from '@/stores/uiStore';
 import { modLabel } from '@/lib/platform';
 import { startTour } from '@/features/tour';
+import { useAssistantStore } from '@/features/assistant';
 import { Link } from 'react-router';
 
-function Toggle({ pressed, onClick, title, children, className }: { pressed?: boolean; onClick: () => void; title: string; children: React.ReactNode; className?: string }) {
+function Toggle({ pressed, onClick, title, children, className, tour }: { pressed?: boolean; onClick: () => void; title: string; children: React.ReactNode; className?: string; tour?: string }) {
   return (
     <button
+      data-tour={tour}
       aria-pressed={pressed}
       onClick={onClick}
       title={title}
@@ -34,6 +36,7 @@ export function CaseHeader() {
   const { toggleSpot, toggleClean, set } = useUiStore.getState();
   const npMode = useNotepadStore((s) => s.mode);
   const toggleNp = useNotepadStore((s) => s.toggle);
+  const asking = useAssistantStore((s) => s.open);
 
   return (
     <header className="flex flex-wrap items-center gap-x-[22px] gap-y-2.5 border-b border-line bg-chrome px-4 py-2.5 max-[760px]:gap-x-3 max-[760px]:gap-y-2 max-[760px]:py-2">
@@ -64,6 +67,7 @@ export function CaseHeader() {
           <Icon.notes size={15} /><span className={label}>Notepad</span>
           <span className="rounded-full bg-ink px-1.5 py-[3px] font-mono text-[10.5px] leading-none font-semibold text-paper">{count}</span>
         </Toggle>
+        <Toggle pressed={asking} onClick={useAssistantStore.getState().toggle} title="Ask CLAIRE about this case or the screen (Q)" tour="ask"><Icon.spark size={15} /><span className={label}>Ask</span></Toggle>
         <ThemeToggle />
         <Toggle onClick={() => startTour('case')} title="Take the tour (?)"><Icon.help size={15} /><span className={label}>Tour</span></Toggle>
         <Toggle onClick={() => set({ palette: true })} title="Command palette" className="border-line"><Icon.search size={15} /><Kbd>{modLabel('K')}</Kbd></Toggle>

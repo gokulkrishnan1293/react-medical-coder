@@ -10,6 +10,7 @@ import { useNotepadStore } from '@/features/notepad';
 import { selectInRecord, useAddFindingStore } from '@/features/add-finding';
 import { useExtractionStore } from '@/features/extraction';
 import { setSourceMode } from '@/features/source-view';
+import { useAssistantStore } from '@/features/assistant';
 
 export interface TourStep {
   id: string;
@@ -26,8 +27,6 @@ export interface TourStep {
   setup?: () => void;
   /** Needs the desktop layout; skipped at phone width. */
   wide?: boolean;
-  /** Arrow keys go to the app (the overlay slider) instead of moving through the tour. */
-  appArrows?: boolean;
 }
 
 const STATUSES: FindingStatus[] = ['ai', 'confirmed', 'added', 'rejected'];
@@ -64,7 +63,7 @@ function pickFinding() {
 
 /** Words "Add what CLAIRE missed" selects: the start of the first paragraph or list item CLAIRE has not marked. */
 let shownWords: { page: number; block: string; text: string } | null = null;
-function pickWords() {
+function pickWords(select = true) {
   const marked = new Set(useFindingsStore.getState().findings.map((f) => f.block));
   shownWords = null;
   for (const p of PAGES) {
@@ -75,7 +74,7 @@ function pickWords() {
     }
   }
   const w = shownWords;
-  if (w) setTimeout(() => selectInRecord(w.page, w.text), 0);
+  if (w && select) setTimeout(() => selectInRecord(w.page, w.text), 0);
 }
 
 /** The flag editor on the words pickWords chose, opened once the record has scrolled to them. */
@@ -89,6 +88,13 @@ function openFlagEditor() {
       draft: { mode: 'words', page: w.page, block: w.block, text: w.text, x: r ? r.left + r.width / 2 : window.innerWidth / 2, y: r ? r.bottom : 160 },
     });
   }, 800);
+}
+
+/** The chat, with the words "Add what CLAIRE missed" chose attached as the quote, but without taking the tour's keys. */
+function openAssistant() {
+  pickWords(false);
+  useAssistantStore.getState().show();
+  useAssistantStore.setState({ wantFocus: false, quote: shownWords ? { page: shownWords.page, text: shownWords.text } : null });
 }
 
 const openExtractionNotes = () => {
@@ -182,9 +188,9 @@ export const STEPS: TourStep[] = [
     id: 'add',
     section: 'Review',
     title: 'Add what CLAIRE missed',
-    body: 'Select words in the record and say what they are: a diagnosis, service, MAR entry, documentation, or a note. A MAR row is always taken whole. Right-clicking a selection offers the same choices.',
+    body: 'Select words in the record and say what they are: a diagnosis, service, MAR entry, documentation, or a note. A MAR row is always taken whole. Right-clicking a selection offers the same choices, and Ask sends the words to CLAIRE with your question.',
     targets: () => (shownWords ? [`[data-block="${shownWords.block}"]`, '[aria-label="Add finding"]'] : ['[data-tour="record"]']),
-    setup: pickWords,
+    setup: () => pickWords(),
   },
   {
     id: 'extraction',
@@ -192,7 +198,7 @@ export const STEPS: TourStep[] = [
     title: 'Flag what the extraction got wrong',
     body: 'This record was extracted from the scan, and extraction can slip: a table broken up, a misread number, a line left out. Select the words and choose ⚑ Flag, even inside a finding. For something missing, right-click the spot on the record or on the original and choose Flag missing content here.',
     targets: () => (shownWords ? [`[data-block="${shownWords.block}"]`, 'button[title^="Flag an extraction problem"]'] : ['[data-tour="record"]']),
-    setup: pickWords,
+    setup: () => pickWords(),
   },
   {
     id: 'extraction-editor',
@@ -248,12 +254,11 @@ export const STEPS: TourStep[] = [
     id: 'overlay',
     section: 'The original',
     title: 'Overlay',
-    body: 'The scan laid over the extracted text of the same page. Drag the handle across to compare them line by line. Drag it back to either edge to return to reading.',
+    body: 'The scan laid over the extracted text of the same page. Drag the handle across to compare them line by line. Drag it back to either edge to return to reading. Outside the tour, ← → move the slider too.',
     targets: at('[data-tour="record"]'),
     setup: () => setSourceMode('overlay'),
-    keys: [[['←', '→'], 'Move the slider'], [['Space'], 'Hold to see the whole scan']],
+    keys: [[['Space'], 'Hold to see the whole scan']],
     wide: true,
-    appArrows: true,
   },
   {
     id: 'lenses',
@@ -307,6 +312,15 @@ export const STEPS: TourStep[] = [
     targets: at('[role="dialog"][aria-label="Command palette"]'),
     setup: () => ui().set({ palette: true }),
     keys: [[[modLabel('K')], 'Open from anywhere']],
+  },
+  {
+    id: 'ask',
+    section: 'Getting around',
+    title: 'Ask CLAIRE',
+    body: 'A chat beside the record for questions about the case or the screen, opened from the round ✦ button by the document or Ask in the header: what the record says, whether it supports the billed level, what is left to review, how to do something here. Select words in the record and choose Ask (or press Q) to ask about them; they come along as a quote, like these. Page numbers in answers are links. It floats: drag it anywhere, resize it from the corner.',
+    targets: at('[role="dialog"][aria-label="Ask CLAIRE"]', '[data-tour="ask"]'),
+    setup: openAssistant,
+    keys: [[['Q'], 'Open, or ask about the selection'], [['Esc'], 'Close']],
   },
   {
     id: 'complete',
